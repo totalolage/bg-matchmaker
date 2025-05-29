@@ -1,0 +1,32 @@
+# Environment variables
+.env.local
+.env
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Lock files (if using multiple package managers)
+bun.lockb
+
+# Convex generated files are tracked, so not ignoring _generated/
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Claude
+CLAUDE.local.md
+.claude/settings.local.json
