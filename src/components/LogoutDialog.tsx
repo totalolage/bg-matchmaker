@@ -13,25 +13,33 @@ import {
 
 export interface LogoutDialogRef {
   state: "open" | "closed";
+  set: (state: "open" | "closed") => void;
   toggle: () => void;
   open: () => void;
   close: () => void;
 }
 
-export const LogoutDialog = ({ 
-  ref 
-}: { 
-  ref?: Ref<LogoutDialogRef>;
-}) => {
+export const LogoutDialog = ({ ref }: { ref?: Ref<LogoutDialogRef> }) => {
   const { signOut } = useAuthActions();
   const [isOpen, setIsOpen] = useState(false);
 
-  useImperativeHandle(ref, () => ({
-    state: isOpen ? "open" : "closed" as "open" | "closed",
-    toggle: () => setIsOpen(prev => !prev),
-    open: () => setIsOpen(true),
-    close: () => setIsOpen(false),
-  }), [isOpen]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      state: isOpen ? "open" : ("closed" as "open" | "closed"),
+      set: (state: "open" | "closed") =>
+        setIsOpen(
+          {
+            open: true,
+            closed: false,
+          }[state],
+        ),
+      toggle: () => setIsOpen((prev) => !prev),
+      open: () => setIsOpen(true),
+      close: () => setIsOpen(false),
+    }),
+    [isOpen],
+  );
 
   const handleLogout = async () => {
     await signOut();
@@ -42,9 +50,7 @@ export const LogoutDialog = ({
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            Are you sure you want to log out?
-          </AlertDialogTitle>
+          <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
           <AlertDialogDescription>
             You will be redirected to the sign in page.
           </AlertDialogDescription>
