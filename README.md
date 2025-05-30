@@ -1,4 +1,4 @@
-# Board Game Session Matcher PWA
+# DeskoSpojka - Board Game Session Matcher PWA
   
 This is a project built with [Chef](https://chef.convex.dev) using [Convex](https://convex.dev) as its backend.
   

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BG Matchmaker is a Progressive Web Application for matchmaking board game players based on game preferences, availability, and skill level. It features a Tinder-like discovery interface and Discord integration for communication.
+DeskoSpojka is a Progressive Web Application for matchmaking board game players based on game preferences, availability, and skill level. It features a Tinder-like discovery interface and Discord integration for communication.
 
 ## Technology Stack
 
