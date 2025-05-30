@@ -56,14 +56,18 @@ function EditProfile() {
     () =>
       form.handleSubmit(async ({ displayName }) => {
         if (updateDisplayName.isPending) return false;
-        if (displayName.trim() === user.displayName) return false;
+        if (
+          displayName.trim() === user.displayName ||
+          (!displayName.trim() && user.name === user.displayName)
+        )
+          return false;
 
         await updateDisplayName.mutateAsync({ displayName });
 
         toast.success("Profile updated");
         return true; // Successfully saved
       }),
-    [form, updateDisplayName, user.displayName],
+    [form, updateDisplayName, user.displayName, user.name],
   );
 
   useEffect(
@@ -145,3 +149,4 @@ function EditProfile() {
     </PageLayout>
   );
 }
+
