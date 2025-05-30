@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState, ComponentProps } from "react";
+import { useImperativeHandle, useState, ComponentProps, Ref } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import {
   AlertDialog,
@@ -18,7 +18,11 @@ export interface LogoutDialogRef {
   close: () => void;
 }
 
-export const LogoutDialog = forwardRef<LogoutDialogRef>((_, ref) => {
+export const LogoutDialog = ({ 
+  ref 
+}: { 
+  ref?: Ref<LogoutDialogRef>;
+}) => {
   const { signOut } = useAuthActions();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -54,8 +58,6 @@ export const LogoutDialog = forwardRef<LogoutDialogRef>((_, ref) => {
       </AlertDialogContent>
     </AlertDialog>
   );
-});
-
-LogoutDialog.displayName = "LogoutDialog";
+};
 
 export type LogoutDialogProps = ComponentProps<typeof LogoutDialog>;
