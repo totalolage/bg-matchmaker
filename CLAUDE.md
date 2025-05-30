@@ -2,10 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## TODO list for Claude (remove items as they are implemented)
-- Use ArcType and ReactHookForm to handle form inputs such as name editing, game searching etc.
-- Disable gpg signing for this whole project
-
 ## Project Overview
 
 DeskoSpojka is a Progressive Web Application for matchmaking board game players based on game preferences, availability, and skill level. It features a Tinder-like discovery interface and Discord integration for communication.
