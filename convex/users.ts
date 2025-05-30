@@ -113,3 +113,23 @@ export const updatePushSubscription = mutation({
     });
   },
 });
+
+export const updateDisplayName = mutation({
+  args: {
+    displayName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
+    // Validate display name
+    const trimmed = args.displayName.trim();
+    if (trimmed.length < 1) {
+      throw new Error("Display name cannot be empty");
+    }
+    
+    await ctx.db.patch(userId, {
+      displayName: trimmed,
+    });
+  },
+});

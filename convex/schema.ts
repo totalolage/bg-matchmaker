@@ -11,7 +11,8 @@ const applicationTables = {
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
     // Custom fields for the application
-    name: v.string(),
+    name: v.string(), // Discord username
+    displayName: v.optional(v.string()), // Custom display name
     profilePic: v.optional(v.string()),
     discordId: v.string(),
     gameLibrary: v.array(v.object({

@@ -32,7 +32,7 @@ export default function App() {
     <ConvexProvider client={convex}>
       <ConvexAuthProvider client={convex}>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <RouterProvider router={router} context={{ queryClient }} />
         </QueryClientProvider>
       </ConvexAuthProvider>
     </ConvexProvider>

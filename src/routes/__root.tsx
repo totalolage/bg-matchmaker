@@ -4,14 +4,21 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInForm } from "../SignInForm";
 import { Toaster } from "sonner";
+import { Navigation } from "../components/Navigation";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
-  component: () => (
+  component: () => {
+    return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <Authenticated>
-        <Outlet />
+        <div className="relative max-w-md mx-auto bg-white min-h-screen shadow-xl flex flex-col">
+          <div className="flex-1" style={{ viewTransitionName: 'content', contain: 'layout' }}>
+            <Outlet />
+          </div>
+          <Navigation />
+        </div>
       </Authenticated>
       
       <Unauthenticated>
@@ -33,5 +40,6 @@ export const Route = createRootRouteWithContext<{
       <Toaster />
       <TanStackRouterDevtools />
     </div>
-  ),
+    );
+  },
 });

@@ -15,6 +15,7 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as DiscoverImport } from './routes/discover'
 import { Route as CreateImport } from './routes/create'
 import { Route as IndexImport } from './routes/index'
+import { Route as ProfileEditImport } from './routes/profile_.edit'
 
 // Create/Update Routes
 
@@ -39,6 +40,12 @@ const CreateRoute = CreateImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProfileEditRoute = ProfileEditImport.update({
+  id: '/profile_/edit',
+  path: '/profile/edit',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileImport
       parentRoute: typeof rootRoute
     }
+    '/profile_/edit': {
+      id: '/profile_/edit'
+      path: '/profile/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof ProfileEditImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -84,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/profile/edit': typeof ProfileEditRoute
 }
 
 export interface FileRoutesByTo {
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/profile/edit': typeof ProfileEditRoute
 }
 
 export interface FileRoutesById {
@@ -99,14 +115,15 @@ export interface FileRoutesById {
   '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/profile_/edit': typeof ProfileEditRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/discover' | '/profile'
+  fullPaths: '/' | '/create' | '/discover' | '/profile' | '/profile/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/discover' | '/profile'
-  id: '__root__' | '/' | '/create' | '/discover' | '/profile'
+  to: '/' | '/create' | '/discover' | '/profile' | '/profile/edit'
+  id: '__root__' | '/' | '/create' | '/discover' | '/profile' | '/profile_/edit'
   fileRoutesById: FileRoutesById
 }
 
@@ -115,6 +132,7 @@ export interface RootRouteChildren {
   CreateRoute: typeof CreateRoute
   DiscoverRoute: typeof DiscoverRoute
   ProfileRoute: typeof ProfileRoute
+  ProfileEditRoute: typeof ProfileEditRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateRoute: CreateRoute,
   DiscoverRoute: DiscoverRoute,
   ProfileRoute: ProfileRoute,
+  ProfileEditRoute: ProfileEditRoute,
 }
 
 export const routeTree = rootRoute
@@ -137,7 +156,8 @@ export const routeTree = rootRoute
         "/",
         "/create",
         "/discover",
-        "/profile"
+        "/profile",
+        "/profile_/edit"
       ]
     },
     "/": {
@@ -151,6 +171,9 @@ export const routeTree = rootRoute
     },
     "/profile": {
       "filePath": "profile.tsx"
+    },
+    "/profile_/edit": {
+      "filePath": "profile_.edit.tsx"
     }
   }
 }

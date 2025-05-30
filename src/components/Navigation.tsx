@@ -12,7 +12,7 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200">
+    <nav className="sticky bottom-0 bg-white border-t border-gray-200" style={{ viewTransitionName: 'navigation' }}>
       <div className="flex">
         {navItems.map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to;

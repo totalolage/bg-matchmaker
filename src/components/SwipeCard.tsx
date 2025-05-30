@@ -1,6 +1,5 @@
 import { Doc } from "../../convex/_generated/dataModel";
 import { Clock, Users, MapPin, Star } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface SwipeCardProps {
   session: Doc<"sessions"> & { matchScore?: number };
@@ -9,11 +8,7 @@ interface SwipeCardProps {
 
 export function SwipeCard({ session, onSwipe }: SwipeCardProps) {
   return (
-    <motion.div
-      className="bg-white rounded-2xl shadow-lg overflow-hidden max-w-sm mx-auto"
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300 }}
-    >
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden max-w-sm mx-auto hover:scale-[1.02] transition-transform duration-300">
       {session.gameImage && (
         <div className="relative">
           <img
@@ -88,6 +83,6 @@ export function SwipeCard({ session, onSwipe }: SwipeCardProps) {
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

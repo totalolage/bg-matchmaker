@@ -3,7 +3,6 @@ import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc } from "../../convex/_generated/dataModel";
 import { Plus, Search, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface GameLibraryProps {
   user: Doc<"users">;
@@ -83,14 +82,8 @@ export function GameLibrary({ user }: GameLibraryProps) {
         </button>
       </div>
 
-      <AnimatePresence>
-        {isAddingGame && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mb-6 p-4 bg-gray-50 rounded-lg"
-          >
+      {isAddingGame && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-gray-900">Add New Game</h3>
               <button
@@ -108,10 +101,10 @@ export function GameLibrary({ user }: GameLibraryProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for a game..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                onKeyPress={(e) => e.key === "Enter" && void handleSearch()}
               />
               <button
-                onClick={handleSearch}
+                onClick={() => void handleSearch()}
                 disabled={isSearching}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
               >
@@ -133,7 +126,7 @@ export function GameLibrary({ user }: GameLibraryProps) {
                       </p>
                     </div>
                     <select
-                      onChange={(e) => addGame(game, e.target.value)}
+                      onChange={(e) => void addGame(game, e.target.value)}
                       className="px-2 py-1 border border-gray-300 rounded text-sm"
                       defaultValue=""
                     >
@@ -148,20 +141,16 @@ export function GameLibrary({ user }: GameLibraryProps) {
                 ))}
               </div>
             )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       <div className="space-y-3">
-        {user.gameLibrary.map((game, index) => {
+        {user.gameLibrary.map((game) => {
           const expertiseLevel = expertiseLevels.find(l => l.value === game.expertiseLevel);
           return (
-            <motion.div
+            <div
               key={game.gameId}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200"
+              className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200 animate-in fade-in slide-in-from-bottom-5 duration-200"
             >
               {game.gameImage && (
                 <img
@@ -174,7 +163,7 @@ export function GameLibrary({ user }: GameLibraryProps) {
                 <h3 className="font-medium text-gray-900">{game.gameName}</h3>
                 <select
                   value={game.expertiseLevel}
-                  onChange={(e) => updateExpertise(game.gameId, e.target.value)}
+                  onChange={(e) => void updateExpertise(game.gameId, e.target.value)}
                   className={`mt-1 px-2 py-1 rounded-full text-xs font-medium border-0 ${expertiseLevel?.color}`}
                 >
                   {expertiseLevels.map(level => (
@@ -185,12 +174,12 @@ export function GameLibrary({ user }: GameLibraryProps) {
                 </select>
               </div>
               <button
-                onClick={() => removeGame(game.gameId)}
+                onClick={() => void removeGame(game.gameId)}
                 className="text-red-400 hover:text-red-600"
               >
                 <X size={16} />
               </button>
-            </motion.div>
+            </div>
           );
         })}
       </div>

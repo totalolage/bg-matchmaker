@@ -89,3 +89,6 @@ const { data } = useSuspenseQuery(convexQuery(api.tasks.get, {}));
 ## Memories
 
 - Use Context7 MCP to reference documentation
+- Use ShadCN components
+- To check that the server is running, use curl to ping the url.
+- Always validate your changes using Playwright MCP
