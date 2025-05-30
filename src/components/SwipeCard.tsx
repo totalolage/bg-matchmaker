@@ -1,21 +1,26 @@
+import { ComponentProps } from "react";
 import { Doc } from "../../convex/_generated/dataModel";
-import { Clock, Users, MapPin, Star } from "lucide-react";
+import { Users, Star } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { SessionInfo } from "./SessionInfo";
+import { GameImage } from "./GameImage";
 
-interface SwipeCardProps {
+export const SwipeCard = ({ 
+  session, 
+  onSwipe: _onSwipe 
+}: {
   session: Doc<"sessions"> & { matchScore?: number };
   onSwipe: (action: "like" | "pass") => void;
-}
-
-export function SwipeCard({ session, onSwipe: _onSwipe }: SwipeCardProps) {
+}) => {
   return (
     <Card className="max-w-sm mx-auto overflow-hidden hover:scale-[1.02] transition-transform duration-300">
       {session.gameImage && (
         <div className="relative">
-          <img
+          <GameImage
             src={session.gameImage}
             alt={session.gameName}
+            size="full"
             className="w-full h-48 object-cover"
           />
           {session.matchScore && session.matchScore > 50 && (
@@ -52,27 +57,11 @@ export function SwipeCard({ session, onSwipe: _onSwipe }: SwipeCardProps) {
             </span>
           </div>
           
-          {session.scheduledTime && (
-            <div className="flex items-center text-muted-foreground">
-              <Clock size={18} className="mr-3 text-purple-500" />
-              <div>
-                <div>{new Date(session.scheduledTime).toLocaleDateString()}</div>
-                <div className="text-sm text-muted-foreground/70">
-                  {new Date(session.scheduledTime).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {session.location && (
-            <div className="flex items-center text-muted-foreground">
-              <MapPin size={18} className="mr-3 text-purple-500" />
-              <span>{session.location}</span>
-            </div>
-          )}
+          <SessionInfo 
+            session={session} 
+            size="base"
+            showPlayers={false}
+          />
         </div>
         
         {session.description && (
@@ -83,4 +72,6 @@ export function SwipeCard({ session, onSwipe: _onSwipe }: SwipeCardProps) {
       </CardContent>
     </Card>
   );
-}
+};
+
+export type SwipeCardProps = ComponentProps<typeof SwipeCard>;

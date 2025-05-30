@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ComponentProps } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
@@ -15,14 +15,14 @@ type TimeSlot = {
   endTime: string;
 };
 
-interface AvailabilityScheduleProps {
-  user: Doc<"users">;
-}
-
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-export function AvailabilitySchedule({ user }: AvailabilityScheduleProps) {
+export const AvailabilitySchedule = ({ 
+  user 
+}: {
+  user: Doc<"users">;
+}) => {
   const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(user.availability);
   const updateAvailability = useMutation(api.users.updateAvailability);
   const [selectionStart, setSelectionStart] = useState<{ day: number; hour: number } | null>(null);
@@ -228,4 +228,6 @@ export function AvailabilitySchedule({ user }: AvailabilityScheduleProps) {
       )}
     </div>
   );
-}
+};
+
+export type AvailabilityScheduleProps = ComponentProps<typeof AvailabilitySchedule>;

@@ -1,3 +1,4 @@
+import { ComponentProps } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
@@ -20,7 +21,7 @@ const sessionFormSchema = type({
 
 type SessionFormData = typeof sessionFormSchema.infer;
 
-export function CreateSessionForm() {
+export const CreateSessionForm = () => {
   const form = useForm<SessionFormData>({
     resolver: arktypeResolver(sessionFormSchema),
     defaultValues: {
@@ -64,4 +65,6 @@ export function CreateSessionForm() {
       </Form>
     </div>
   );
-}
+};
+
+export type CreateSessionFormProps = ComponentProps<typeof CreateSessionForm>;

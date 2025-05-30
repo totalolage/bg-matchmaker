@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ComponentProps } from "react";
 import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc } from "../../convex/_generated/dataModel";
@@ -12,12 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { EmptyState } from "./EmptyState";
+import { SectionHeader } from "./SectionHeader";
+import { GameImage } from "./GameImage";
 
-interface GameLibraryProps {
+export const GameLibrary = ({ 
+  user 
+}: {
   user: Doc<"users">;
-}
-
-export function GameLibrary({ user }: GameLibraryProps) {
+}) => {
   const [isAddingGame, setIsAddingGame] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -80,17 +83,19 @@ export function GameLibrary({ user }: GameLibraryProps) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Your Games</h2>
-        <Button
-          onClick={() => setIsAddingGame(true)}
-          variant="ghost"
-          className="text-purple-600 hover:text-purple-700"
-        >
-          <Plus size={20} className="mr-1" />
-          Add Game
-        </Button>
-      </div>
+      <SectionHeader 
+        title="Your Games"
+        action={
+          <Button
+            onClick={() => setIsAddingGame(true)}
+            variant="ghost"
+            className="text-purple-600 hover:text-purple-700"
+          >
+            <Plus size={20} className="mr-1" />
+            Add Game
+          </Button>
+        }
+      />
 
       {isAddingGame && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -166,13 +171,11 @@ export function GameLibrary({ user }: GameLibraryProps) {
               key={game.gameId}
               className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200 animate-in fade-in slide-in-from-bottom-5 duration-200"
             >
-              {game.gameImage && (
-                <img
-                  src={game.gameImage}
-                  alt={game.gameName}
-                  className="w-16 h-16 rounded-lg object-cover"
-                />
-              )}
+              <GameImage 
+                src={game.gameImage} 
+                alt={game.gameName}
+                size="md"
+              />
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900">{game.gameName}</h3>
                 <Select
@@ -205,12 +208,14 @@ export function GameLibrary({ user }: GameLibraryProps) {
       </div>
 
       {user.gameLibrary.length === 0 && (
-        <div className="text-center py-8">
-          <div className="text-4xl mb-2">🎲</div>
-          <p className="text-gray-500">No games in your library yet</p>
-          <p className="text-sm text-gray-400">Add some games to get started!</p>
-        </div>
+        <EmptyState 
+          emoji="🎲"
+          title="No games in your library yet"
+          subtitle="Add some games to get started!"
+        />
       )}
     </div>
   );
-}
+};
+
+export type GameLibraryProps = ComponentProps<typeof GameLibrary>;

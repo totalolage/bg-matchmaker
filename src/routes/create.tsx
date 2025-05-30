@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CreateSessionForm } from "../components/CreateSessionForm";
+import { PageLayout, PageHeader, PageContent } from "../components/PageLayout";
 
 export const Route = createFileRoute("/create")({
   component: Create,
@@ -7,14 +8,14 @@ export const Route = createFileRoute("/create")({
 
 function Create() {
   return (
-    <div className="h-full bg-white flex flex-col">
-        <header className="bg-white border-b border-gray-200 p-4">
-          <h1 className="text-2xl font-bold text-gray-900 text-center">Create Session</h1>
-        </header>
+    <PageLayout>
+      <PageHeader>
+        <h1 className="text-2xl font-bold text-gray-900 text-center">Create Session</h1>
+      </PageHeader>
 
-        <main className="p-4 flex-1 overflow-y-auto">
-          <CreateSessionForm />
-        </main>
-      </div>
+      <PageContent>
+        <CreateSessionForm />
+      </PageContent>
+    </PageLayout>
   );
 }
