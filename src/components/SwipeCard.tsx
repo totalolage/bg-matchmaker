@@ -8,7 +8,7 @@ interface SwipeCardProps {
   onSwipe: (action: "like" | "pass") => void;
 }
 
-export function SwipeCard({ session, onSwipe }: SwipeCardProps) {
+export function SwipeCard({ session, onSwipe: _onSwipe }: SwipeCardProps) {
   return (
     <Card className="max-w-sm mx-auto overflow-hidden hover:scale-[1.02] transition-transform duration-300">
       {session.gameImage && (

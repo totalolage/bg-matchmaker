@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export function AvailabilitySchedule() {
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [_selectedDates, _setSelectedDates] = useState<string[]>([]);
 
   return (
     <div className="p-4">

@@ -37,7 +37,14 @@ export const Route = createRootRouteWithContext<{
         </div>
       </Unauthenticated>
       
-      <Toaster position="top-left" />
+      <Toaster 
+        position="bottom-left" 
+        toastOptions={{
+          style: {
+            bottom: '80px', // Position above the navbar
+          },
+        }}
+      />
       {import.meta.env.DEV && <TanStackRouterDevtools />}
     </div>
     );

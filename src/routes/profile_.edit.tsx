@@ -1,20 +1,33 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import { useCurrentUser } from "../hooks/useCurrentUser";
-import { useMutation } from "convex/react";
+import { useMutation as useConvexMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { Label } from "../components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { useForm } from "react-hook-form";
-import { type } from "arktype";
 import { arktypeResolver } from "@hookform/resolvers/arktype";
+import { type } from "arktype";
+import { useEffect, useMemo } from "react";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../components/ui/form";
+import { useMutation } from "@tanstack/react-query";
 
-// Define the form schema using Arktype
 const profileFormSchema = type({
-  displayName: "string"
+  displayName: "string",
 });
 
 type ProfileFormData = typeof profileFormSchema.infer;
@@ -26,31 +39,39 @@ export const Route = createFileRoute("/profile_/edit")({
 function EditProfile() {
   const user = useCurrentUser();
   const navigate = useNavigate();
-  const updateDisplayName = useMutation(api.users.updateDisplayName);
-  
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting, isDirty }
-  } = useForm<ProfileFormData>({
+  const router = useRouter();
+  const updateDisplayName = useMutation({
+    mutationFn: useConvexMutation(api.users.updateDisplayName),
+  });
+
+  const form = useForm<ProfileFormData>({
     resolver: arktypeResolver(profileFormSchema),
     defaultValues: {
       displayName: user.displayName || "",
-    }
+    },
   });
 
-  const displayNameValue = watch("displayName");
+  const handleSave = useMemo(
+    () =>
+      form.handleSubmit(async ({ displayName }) => {
+        if (updateDisplayName.isPending) return false;
+        if (displayName.trim() === user.displayName) return false;
 
-  const onSubmit = async (data: ProfileFormData) => {
-    try {
-      await updateDisplayName({ displayName: data.displayName });
-      toast.success("Profile updated successfully");
-      void navigate({ to: "/profile" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update profile");
-    }
-  };
+        await updateDisplayName.mutateAsync({ displayName });
+
+        toast.success("Profile updated");
+        return true; // Successfully saved
+      }),
+    [form, updateDisplayName, user.displayName],
+  );
+
+  useEffect(
+    () =>
+      router.subscribe("onBeforeNavigate", () => {
+        void handleSave();
+      }),
+    [handleSave, router],
+  );
 
   return (
     <div className="h-full bg-white flex flex-col">
@@ -70,80 +91,67 @@ function EditProfile() {
       </header>
 
       <main className="p-4 flex-1 overflow-y-auto">
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
-          {/* Profile Picture */}
-          <div className="text-center">
-            <Avatar className="w-24 h-24 mx-auto mb-2">
-              <AvatarImage 
-                src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-                alt={user.name}
-              />
-              <AvatarFallback>
-                {user.name.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <p className="text-sm text-gray-500">Profile picture from Discord</p>
-          </div>
-
-          {/* Display Name */}
-          <div>
-            <Label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
-              Display Name
-            </Label>
-            <Input
-              id="displayName"
-              type="text"
-              {...register("displayName")}
-              placeholder={user.name}
-              aria-invalid={errors.displayName ? "true" : "false"}
-            />
-            {displayNameValue?.trim() && displayNameValue.trim() !== user.name && (
-              <p className="text-xs text-gray-500 mt-1">
-                Your username: @{user.name}
+        <Form {...form}>
+          <div className="max-w-md mx-auto space-y-6">
+            {/* Profile Picture */}
+            <div className="text-center">
+              <Avatar className="w-24 h-24 mx-auto mb-2">
+                <AvatarImage
+                  src={
+                    user.profilePic ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`
+                  }
+                  alt={user.name}
+                />
+                <AvatarFallback>
+                  {user.name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <p className="text-sm text-gray-500">
+                Profile picture from Discord
               </p>
-            )}
-            {!displayNameValue?.trim() && (
-              <p className="text-xs text-gray-500 mt-1">
-                Leave empty to use your username: @{user.name}
-              </p>
-            )}
-            {errors.displayName && (
-              <p className="text-sm text-red-600 mt-1">{errors.displayName.message}</p>
-            )}
-          </div>
-
-          {/* Discord Info */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Discord Account</h3>
-            <div className="text-sm text-gray-600">
-              <p>Username: @{user.name}</p>
-              <p>ID: {user.discordId}</p>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              This information is synced from your Discord account and cannot be changed here.
-            </p>
-          </div>
-        </form>
-      </main>
 
-      {/* Save Button */}
-      <div className="p-4 border-t border-gray-200">
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          disabled={isSubmitting || !isDirty}
-          className="w-full"
-          size="lg"
-        >
-          {isSubmitting ? (
-            <span>Saving...</span>
-          ) : (
-            <>
-              <Save className="mr-2" size={18} />
-              Save Changes
-            </>
-          )}
-        </Button>
-      </div>
+            {/* Display Name */}
+            <FormField
+              control={form.control}
+              name="displayName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Display Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      onBlur={() => {
+                        field.onBlur();
+                        void handleSave();
+                      }}
+                      placeholder={user.name}
+                    />
+                  </FormControl>
+                  <FormDescription>Your username: @{user.name}</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Discord Info */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                Discord Account
+              </h3>
+              <div className="text-sm text-gray-600">
+                <p>Username: @{user.name}</p>
+                <p>ID: {user.discordId}</p>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                This information is synced from your Discord account and cannot
+                be changed here.
+              </p>
+            </div>
+          </div>
+        </Form>
+      </main>
     </div>
   );
 }
