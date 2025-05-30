@@ -11,10 +11,10 @@ export const Route = createRootRouteWithContext<{
 }>()({
   component: () => {
     return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="min-h-dvh bg-gradient-to-br from-purple-50 to-blue-50">
       <Authenticated>
         <div className="relative max-w-lg mx-auto bg-white min-h-screen shadow-xl flex flex-col">
-          <div className="flex-1" style={{ viewTransitionName: 'content', contain: 'layout' }}>
+          <div className="grid flex-1" style={{ viewTransitionName: 'content', contain: 'layout' }}>
             <Outlet />
           </div>
           <Navigation />
