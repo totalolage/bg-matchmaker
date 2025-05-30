@@ -28,7 +28,7 @@ const applicationTables = {
       )
     })),
     availability: v.array(v.object({
-      dayOfWeek: v.number(), // 0-6 (Sunday-Saturday)
+      date: v.string(), // ISO date string "YYYY-MM-DD"
       startTime: v.string(), // "HH:MM" format
       endTime: v.string(), // "HH:MM" format
     })),

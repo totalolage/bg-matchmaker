@@ -76,7 +76,7 @@ export const updateGameLibrary = mutation({
 export const updateAvailability = mutation({
   args: {
     availability: v.array(v.object({
-      dayOfWeek: v.number(),
+      date: v.string(),
       startTime: v.string(),
       endTime: v.string(),
     })),

@@ -58,11 +58,11 @@ export const getDiscoverySessions = query({
       // Time availability score (simplified for now)
       if (session.scheduledTime) {
         const sessionDate = new Date(session.scheduledTime);
-        const dayOfWeek = sessionDate.getDay();
+        const sessionDateISO = sessionDate.toISOString().split('T')[0];
         const timeStr = sessionDate.toTimeString().slice(0, 5);
         
         const availableSlot = user.availability.find(slot => 
-          slot.dayOfWeek === dayOfWeek &&
+          slot.date === sessionDateISO &&
           slot.startTime <= timeStr &&
           slot.endTime >= timeStr
         );
