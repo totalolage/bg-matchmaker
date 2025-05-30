@@ -122,14 +122,12 @@ export const updateDisplayName = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     
-    // Validate display name
+    // Trim the display name
     const trimmed = args.displayName.trim();
-    if (trimmed.length < 1) {
-      throw new Error("Display name cannot be empty");
-    }
     
+    // If empty, set displayName to undefined (will use username)
     await ctx.db.patch(userId, {
-      displayName: trimmed,
+      displayName: trimmed.length > 0 ? trimmed : undefined,
     });
   },
 });

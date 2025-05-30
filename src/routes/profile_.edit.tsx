@@ -19,21 +19,16 @@ function EditProfile() {
   const navigate = useNavigate();
   const updateDisplayName = useMutation(api.users.updateDisplayName);
   
-  const [displayName, setDisplayName] = useState(user.displayName || user.name);
+  const [displayName, setDisplayName] = useState(user.displayName || "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   const handleSave = async () => {
-    if (!displayName.trim()) {
-      setError("Display name cannot be empty");
-      return;
-    }
-
     setIsSaving(true);
     setError("");
     
     try {
-      await updateDisplayName({ displayName: displayName.trim() });
+      await updateDisplayName({ displayName: displayName });
       toast.success("Profile updated successfully");
       void navigate({ to: "/profile" });
     } catch (err) {
@@ -89,11 +84,16 @@ function EditProfile() {
                 setDisplayName(e.target.value);
                 setError("");
               }}
-              placeholder="Enter your display name"
+              placeholder={user.name}
             />
-            {displayName !== user.name && (
+            {displayName.trim() && displayName.trim() !== user.name && (
               <p className="text-xs text-gray-500 mt-1">
                 Your username: @{user.name}
+              </p>
+            )}
+            {!displayName.trim() && (
+              <p className="text-xs text-gray-500 mt-1">
+                Leave empty to use your username: @{user.name}
               </p>
             )}
             {error && (
@@ -119,7 +119,7 @@ function EditProfile() {
       <div className="p-4 border-t border-gray-200">
         <Button
           onClick={() => void handleSave()}
-          disabled={isSaving || displayName.trim() === (user.displayName || user.name)}
+          disabled={isSaving || displayName === (user.displayName || "")}
           className="w-full"
           size="lg"
         >
