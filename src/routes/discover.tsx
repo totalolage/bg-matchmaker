@@ -4,6 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { api } from "../../convex/_generated/api";
 import { SwipeCard } from "../components/SwipeCard";
 import { useState } from "react";
+import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/discover")({
   component: Discover,
@@ -60,18 +61,22 @@ function Discover() {
 
           {currentSession && (
             <div className="flex justify-center space-x-4 mt-6">
-              <button
+              <Button
                 onClick={() => void handleSwipe("pass")}
-                className="w-16 h-16 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center transition-colors"
+                variant="outline"
+                size="icon"
+                className="w-16 h-16 bg-red-100 hover:bg-red-200 rounded-full"
               >
                 <span className="text-2xl">❌</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => void handleSwipe("like")}
-                className="w-16 h-16 bg-green-100 hover:bg-green-200 rounded-full flex items-center justify-center transition-colors"
+                variant="outline"
+                size="icon"
+                className="w-16 h-16 bg-green-100 hover:bg-green-200 rounded-full"
               >
                 <span className="text-2xl">❤️</span>
-              </button>
+              </Button>
             </div>
           )}
         </main>

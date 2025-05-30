@@ -15,6 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Button } from "../components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 
 export const Route = createFileRoute("/profile")({
   component: Profile,
@@ -23,7 +26,6 @@ export const Route = createFileRoute("/profile")({
 function Profile() {
   const user = useCurrentUser();
   const { signOut } = useAuthActions();
-  const [activeTab, setActiveTab] = useState<"games" | "availability">("games");
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const handleLogout = async () => {
@@ -35,13 +37,15 @@ function Profile() {
     <>
       <div className="h-full bg-white flex flex-col">
         <header className="bg-white border-b border-gray-200 p-4 relative">
-          <button
+          <Button
             onClick={() => setShowLogoutDialog(true)}
-            className="absolute left-4 top-4 p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            variant="ghost"
+            size="icon"
+            className="absolute left-4 top-4 text-red-600 hover:text-red-700 hover:bg-red-50"
             aria-label="Log out"
           >
             <LogOut size={20} />
-          </button>
+          </Button>
           
           <Link
             to="/profile/edit"
@@ -52,11 +56,15 @@ function Profile() {
           </Link>
           
           <div className="text-center">
-            <img
-              src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-              alt={user.displayName || user.name}
-              className="w-20 h-20 rounded-full mx-auto mb-3"
-            />
+            <Avatar className="w-20 h-20 mx-auto mb-3">
+              <AvatarImage 
+                src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                alt={user.displayName || user.name}
+              />
+              <AvatarFallback>
+                {(user.displayName || user.name).slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <h1 className="text-xl font-bold text-gray-900">{user.displayName || user.name}</h1>
             {user.displayName && user.displayName !== user.name && (
               <p className="text-sm text-gray-500 mb-1">@{user.name}</p>
@@ -67,38 +75,24 @@ function Profile() {
           </div>
         </header>
 
-        <div className="border-b border-gray-200">
-          <nav className="flex">
-            <button
-              onClick={() => setActiveTab("games")}
-              className={`flex-1 py-3 px-4 text-center font-medium ${
-                activeTab === "games"
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-gray-500"
-              }`}
-            >
+        <Tabs defaultValue="games" className="flex-1 flex flex-col">
+          <TabsList className="w-full rounded-none bg-white border-b">
+            <TabsTrigger value="games" className="flex-1 data-[state=active]:text-purple-600 data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:shadow-none rounded-none">
               Game Library
-            </button>
-            <button
-              onClick={() => setActiveTab("availability")}
-              className={`flex-1 py-3 px-4 text-center font-medium ${
-                activeTab === "availability"
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-gray-500"
-              }`}
-            >
+            </TabsTrigger>
+            <TabsTrigger value="availability" className="flex-1 data-[state=active]:text-purple-600 data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:shadow-none rounded-none">
               Availability
-            </button>
-          </nav>
-        </div>
-
-        <main className="p-4 flex-1 overflow-y-auto">
-          {activeTab === "games" ? (
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="games" className="flex-1 overflow-y-auto p-4 mt-0">
             <GameLibrary user={user} />
-          ) : (
+          </TabsContent>
+          
+          <TabsContent value="availability" className="flex-1 overflow-y-auto p-4 mt-0">
             <AvailabilitySchedule />
-          )}
-        </main>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>

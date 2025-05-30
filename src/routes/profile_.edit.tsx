@@ -5,6 +5,10 @@ import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { Label } from "../components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 
 export const Route = createFileRoute("/profile_/edit")({
   component: EditProfile,
@@ -43,13 +47,15 @@ function EditProfile() {
     <div className="h-full bg-white flex flex-col">
       <header className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center">
-          <button
+          <Button
             onClick={() => void navigate({ to: "/profile" })}
-            className="p-2 -ml-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            variant="ghost"
+            size="icon"
+            className="-ml-2"
             aria-label="Go back"
           >
             <ArrowLeft size={20} />
-          </button>
+          </Button>
           <h1 className="text-xl font-bold text-gray-900 ml-3">Edit Profile</h1>
         </div>
       </header>
@@ -58,20 +64,24 @@ function EditProfile() {
         <div className="max-w-md mx-auto space-y-6">
           {/* Profile Picture */}
           <div className="text-center">
-            <img
-              src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-              alt={user.name}
-              className="w-24 h-24 rounded-full mx-auto mb-2"
-            />
+            <Avatar className="w-24 h-24 mx-auto mb-2">
+              <AvatarImage 
+                src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                alt={user.name}
+              />
+              <AvatarFallback>
+                {user.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <p className="text-sm text-gray-500">Profile picture from Discord</p>
           </div>
 
           {/* Display Name */}
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
+            <Label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
               Display Name
-            </label>
-            <input
+            </Label>
+            <Input
               id="displayName"
               type="text"
               value={displayName}
@@ -80,7 +90,6 @@ function EditProfile() {
                 setError("");
               }}
               placeholder="Enter your display name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-shadow"
             />
             {displayName !== user.name && (
               <p className="text-xs text-gray-500 mt-1">
@@ -108,10 +117,11 @@ function EditProfile() {
 
       {/* Save Button */}
       <div className="p-4 border-t border-gray-200">
-        <button
+        <Button
           onClick={() => void handleSave()}
           disabled={isSaving || displayName.trim() === (user.displayName || user.name)}
-          className="w-full flex items-center justify-center py-3 px-4 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full"
+          size="lg"
         >
           {isSaving ? (
             <span>Saving...</span>
@@ -121,7 +131,7 @@ function EditProfile() {
               Save Changes
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

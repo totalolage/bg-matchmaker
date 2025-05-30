@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 export function ProfileDropdown() {
   const user = useCurrentUser();
@@ -35,11 +36,15 @@ export function ProfileDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center space-x-2 hover:opacity-80 transition-opacity focus:outline-none">
-          <img
-            src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-            alt={user.displayName || user.name}
-            className="w-8 h-8 rounded-full"
-          />
+          <Avatar className="w-8 h-8">
+            <AvatarImage 
+              src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              alt={user.displayName || user.name}
+            />
+            <AvatarFallback>
+              {(user.displayName || user.name).slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <span className="text-sm font-medium text-gray-700">{user.displayName || user.name}</span>
           <ChevronDown className="w-4 h-4 text-gray-500" />
         </DropdownMenuTrigger>

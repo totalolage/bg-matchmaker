@@ -3,6 +3,15 @@ import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc } from "../../convex/_generated/dataModel";
 import { Plus, Search, X } from "lucide-react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface GameLibraryProps {
   user: Doc<"users">;
@@ -73,43 +82,46 @@ export function GameLibrary({ user }: GameLibraryProps) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Your Games</h2>
-        <button
+        <Button
           onClick={() => setIsAddingGame(true)}
-          className="flex items-center space-x-1 text-purple-600 hover:text-purple-700"
+          variant="ghost"
+          className="text-purple-600 hover:text-purple-700"
         >
-          <Plus size={20} />
-          <span>Add Game</span>
-        </button>
+          <Plus size={20} className="mr-1" />
+          Add Game
+        </Button>
       </div>
 
       {isAddingGame && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-gray-900">Add New Game</h3>
-              <button
+              <Button
                 onClick={() => setIsAddingGame(false)}
-                className="text-gray-400 hover:text-gray-600"
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-gray-600 h-8 w-8"
               >
                 <X size={20} />
-              </button>
+              </Button>
             </div>
             
             <div className="flex space-x-2 mb-3">
-              <input
+              <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for a game..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="flex-1"
                 onKeyPress={(e) => e.key === "Enter" && void handleSearch()}
               />
-              <button
+              <Button
                 onClick={() => void handleSearch()}
                 disabled={isSearching}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                size="icon"
               >
                 <Search size={16} />
-              </button>
+              </Button>
             </div>
 
             {searchResults.length > 0 && (
@@ -125,18 +137,20 @@ export function GameLibrary({ user }: GameLibraryProps) {
                         {game.minPlayers}-{game.maxPlayers} players • {game.playingTime}min
                       </p>
                     </div>
-                    <select
-                      onChange={(e) => void addGame(game, e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm"
-                      defaultValue=""
+                    <Select
+                      onValueChange={(value) => void addGame(game, value)}
                     >
-                      <option value="" disabled>Select level</option>
-                      {expertiseLevels.map(level => (
-                        <option key={level.value} value={level.value}>
-                          {level.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Select level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {expertiseLevels.map(level => (
+                          <SelectItem key={level.value} value={level.value}>
+                            {level.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 ))}
               </div>
@@ -161,24 +175,30 @@ export function GameLibrary({ user }: GameLibraryProps) {
               )}
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900">{game.gameName}</h3>
-                <select
+                <Select
                   value={game.expertiseLevel}
-                  onChange={(e) => void updateExpertise(game.gameId, e.target.value)}
-                  className={`mt-1 px-2 py-1 rounded-full text-xs font-medium border-0 ${expertiseLevel?.color}`}
+                  onValueChange={(value) => void updateExpertise(game.gameId, value)}
                 >
-                  {expertiseLevels.map(level => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className={`mt-1 w-32 h-7 text-xs ${expertiseLevel?.color}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {expertiseLevels.map(level => (
+                      <SelectItem key={level.value} value={level.value}>
+                        {level.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <button
+              <Button
                 onClick={() => void removeGame(game.gameId)}
-                className="text-red-400 hover:text-red-600"
+                variant="ghost"
+                size="sm"
+                className="text-red-400 hover:text-red-600 h-8 w-8 p-0"
               >
                 <X size={16} />
-              </button>
+              </Button>
             </div>
           );
         })}
