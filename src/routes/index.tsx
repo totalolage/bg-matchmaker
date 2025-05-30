@@ -13,7 +13,9 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const user = useCurrentUser();
-  const { data: sessions } = useSuspenseQuery(convexQuery(api.sessions.getUserSessions, {}));
+  const { data: sessions } = useSuspenseQuery({
+    ...convexQuery(api.sessions.getUserSessions, {}),
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">

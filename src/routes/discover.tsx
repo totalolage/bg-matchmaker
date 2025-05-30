@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convexQuery } from "@convex-dev/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Navigation } from "../components/Navigation";
 import { SwipeCard } from "../components/SwipeCard";
@@ -13,8 +12,10 @@ export const Route = createFileRoute("/discover")({
 });
 
 function Discover() {
-  const { data: sessions } = useSuspenseQuery(convexQuery(api.sessions.getDiscoverySessions, {}));
-  const swipeSession = useMutation(api.sessions.swipeSession);
+  const { data: sessions } = useSuspenseQuery({
+    ...convexQuery(api.sessions.getDiscoverySessions, {}),
+  });
+  const swipeSession = useConvexMutation(api.sessions.swipeSession);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleSwipe = async (action: "like" | "pass") => {

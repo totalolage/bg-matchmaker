@@ -4,7 +4,9 @@ import { api } from "../../convex/_generated/api";
 import { Doc } from "../../convex/_generated/dataModel";
 
 export function useCurrentUser(): Doc<"users"> {
-  const { data: user } = useSuspenseQuery(convexQuery(api.users.getCurrentUser, {}));
+  const { data: user } = useSuspenseQuery({
+    ...convexQuery(api.users.getCurrentUser, {}),
+  });
 
   // Since we're wrapped in an Authenticated component at the App level,
   // and getCurrentUser should return a user for authenticated users,

@@ -4,6 +4,13 @@ import { authTables } from "@convex-dev/auth/server";
 
 const applicationTables = {
   users: defineTable({
+    // Auth fields required by Convex Auth
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    // Custom fields for the application
     name: v.string(),
     profilePic: v.optional(v.string()),
     discordId: v.string(),
@@ -31,7 +38,8 @@ const applicationTables = {
         auth: v.string(),
       }),
     })),
-  }).index("by_discord_id", ["discordId"]),
+  }).index("by_discord_id", ["discordId"])
+    .index("email", ["email"]),
 
   sessions: defineTable({
     gameId: v.string(),

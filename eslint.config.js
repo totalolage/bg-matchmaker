@@ -29,8 +29,7 @@ export default tseslint.config(
       },
       parserOptions: {
         project: [
-          "./tsconfig.node.json",
-          "./tsconfig.app.json",
+          "./tsconfig.json",
           "./convex/tsconfig.json",
         ],
       },
