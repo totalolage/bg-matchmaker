@@ -92,5 +92,4 @@ const { data } = useSuspenseQuery(convexQuery(api.tasks.get, {}));
 - Use ShadCN components
 - To check that the server is running, use curl to ping the url.
 - Always validate your changes using Playwright MCP
-- Before finishing, check CLAUDE.local.md for any todo items. Remove items when they are completed. Only 
-  stop once there are no more tasks to complete.
+- Before finishing, check CLAUDE.local.md for any todo items. Transfer them into your Todo list. Remove items when they are completed. Only stop once there are no more tasks to complete.

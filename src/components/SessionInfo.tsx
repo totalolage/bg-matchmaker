@@ -35,10 +35,10 @@ export const SessionInfo = ({
       {scheduledDate && (
         <IconText 
           icon={<Clock size={iconSize} />}
-          text={`${scheduledDate.toLocaleDateString()} at ${scheduledDate.toLocaleTimeString([], { 
-            hour: "2-digit", 
-            minute: "2-digit" 
-          })}`}
+          text={new Intl.DateTimeFormat(undefined, {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+          }).format(scheduledDate)}
           className={textClass}
         />
       )}

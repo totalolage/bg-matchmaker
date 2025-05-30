@@ -6,7 +6,13 @@ import { Doc } from "../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 type TimeSlot = {
@@ -15,17 +21,38 @@ type TimeSlot = {
   endTime: string;
 };
 
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+// Generate day names using Intl API
+const getDayNames = () => {
+  const formatter = new Intl.DateTimeFormat(undefined, { weekday: "long" });
+  const baseDate = new Date(2024, 0, 7); // January 7, 2024 is a Sunday
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(baseDate);
+    date.setDate(baseDate.getDate() + i);
+    return formatter.format(date);
+  });
+};
+
+const DAYS = getDayNames();
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-export const AvailabilitySchedule = ({ 
-  user 
-}: {
-  user: Doc<"users">;
-}) => {
-  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(user.availability);
+// Get short day names for tabs
+const getShortDayName = (dayIndex: number) => {
+  const formatter = new Intl.DateTimeFormat(undefined, { weekday: "short" });
+  const baseDate = new Date(2024, 0, 7); // January 7, 2024 is a Sunday
+  const date = new Date(baseDate);
+  date.setDate(baseDate.getDate() + dayIndex);
+  return formatter.format(date);
+};
+
+export const AvailabilitySchedule = ({ user }: { user: Doc<"users"> }) => {
+  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(
+    user.availability,
+  );
   const updateAvailability = useMutation(api.users.updateAvailability);
-  const [selectionStart, setSelectionStart] = useState<{ day: number; hour: number } | null>(null);
+  const [selectionStart, setSelectionStart] = useState<{
+    day: number;
+    hour: number;
+  } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -34,10 +61,11 @@ export const AvailabilitySchedule = ({
   }, [user.availability]);
 
   const isSlotSelected = (dayOfWeek: number, hour: number) => {
-    return selectedSlots.some(slot => 
-      slot.dayOfWeek === dayOfWeek && 
-      parseInt(slot.startTime) <= hour && 
-      parseInt(slot.endTime) > hour
+    return selectedSlots.some(
+      (slot) =>
+        slot.dayOfWeek === dayOfWeek &&
+        parseInt(slot.startTime) <= hour &&
+        parseInt(slot.endTime) > hour,
     );
   };
 
@@ -50,38 +78,77 @@ export const AvailabilitySchedule = ({
       // End selection
       const startHour = Math.min(selectionStart.hour, hour);
       const endHour = Math.max(selectionStart.hour, hour) + 1;
-      
+
       if (selectionStart.day === dayOfWeek) {
         const newSlot: TimeSlot = {
           dayOfWeek,
-          startTime: `${startHour.toString().padStart(2, '0')}:00`,
-          endTime: `${endHour.toString().padStart(2, '0')}:00`,
+          startTime: `${startHour.toString().padStart(2, "0")}:00`,
+          endTime: `${endHour.toString().padStart(2, "0")}:00`,
         };
-        
+
         // Toggle selection - if all hours in range are selected, deselect them
-        const allSelected = Array.from({ length: endHour - startHour }, (_, i) => startHour + i)
-          .every(h => isSlotSelected(dayOfWeek, h));
-        
+        const allSelected = Array.from(
+          { length: endHour - startHour },
+          (_, i) => startHour + i,
+        ).every((h) => isSlotSelected(dayOfWeek, h));
+
         if (allSelected) {
           // Remove the time slot
-          setSelectedSlots(slots => {
-            const newSlots = slots.filter(slot => 
-              !(slot.dayOfWeek === dayOfWeek && 
-                parseInt(slot.startTime) < endHour && 
-                parseInt(slot.endTime) > startHour)
+          setSelectedSlots((slots) => {
+            const newSlots = slots.filter(
+              (slot) =>
+                !(
+                  slot.dayOfWeek === dayOfWeek &&
+                  parseInt(slot.startTime) < endHour &&
+                  parseInt(slot.endTime) > startHour
+                ),
             );
             setHasChanges(true);
             return newSlots;
           });
         } else {
           // Add the time slot (merge with existing if needed)
-          setSelectedSlots(slots => {
+          setSelectedSlots((slots) => {
             setHasChanges(true);
-            return [...slots, newSlot];
+
+            // Merge overlapping or adjacent slots
+            const mergedSlots = [...slots, newSlot].reduce<TimeSlot[]>(
+              (acc, slot) => {
+                if (slot.dayOfWeek !== dayOfWeek) {
+                  acc.push(slot);
+                  return acc;
+                }
+
+                const existing = acc.find(
+                  (s) =>
+                    s.dayOfWeek === slot.dayOfWeek &&
+                    // Overlapping: existing contains slot start OR slot contains existing start
+                    ((parseInt(s.startTime) <= parseInt(slot.startTime) &&
+                      parseInt(s.endTime) >= parseInt(slot.startTime)) ||
+                      (parseInt(slot.startTime) <= parseInt(s.startTime) &&
+                        parseInt(slot.endTime) >= parseInt(s.startTime)) ||
+                      // Adjacent: existing ends where slot starts OR slot ends where existing starts
+                      parseInt(s.endTime) === parseInt(slot.startTime) ||
+                      parseInt(slot.endTime) === parseInt(s.startTime)),
+                );
+
+                if (existing) {
+                  // Merge slots
+                  existing.startTime = `${Math.min(parseInt(existing.startTime), parseInt(slot.startTime)).toString().padStart(2, "0")}:00`;
+                  existing.endTime = `${Math.max(parseInt(existing.endTime), parseInt(slot.endTime)).toString().padStart(2, "0")}:00`;
+                } else {
+                  acc.push(slot);
+                }
+                return acc;
+              },
+              [],
+            );
+
+            return mergedSlots;
           });
         }
       }
-      
+
       setSelectionStart(null);
       setIsDragging(false);
     }
@@ -94,7 +161,8 @@ export const AvailabilitySchedule = ({
   };
 
   const isInDragRange = (dayOfWeek: number, hour: number) => {
-    if (!isDragging || !selectionStart || selectionStart.day !== dayOfWeek) return false;
+    if (!isDragging || !selectionStart || selectionStart.day !== dayOfWeek)
+      return false;
     const minHour = Math.min(selectionStart.hour, hour);
     const maxHour = Math.max(selectionStart.hour, hour);
     return hour >= minHour && hour <= maxHour;
@@ -102,18 +170,25 @@ export const AvailabilitySchedule = ({
 
   const handleSave = async () => {
     try {
-      // Merge overlapping slots and sort by day and time
+      // Merge overlapping or adjacent slots and sort by day and time
       const mergedSlots = selectedSlots.reduce<TimeSlot[]>((acc, slot) => {
-        const existing = acc.find(s => 
-          s.dayOfWeek === slot.dayOfWeek &&
-          ((parseInt(s.startTime) <= parseInt(slot.startTime) && parseInt(s.endTime) >= parseInt(slot.startTime)) ||
-           (parseInt(slot.startTime) <= parseInt(s.startTime) && parseInt(slot.endTime) >= parseInt(s.startTime)))
+        const existing = acc.find(
+          (s) =>
+            s.dayOfWeek === slot.dayOfWeek &&
+            // Overlapping: existing contains slot start OR slot contains existing start
+            ((parseInt(s.startTime) <= parseInt(slot.startTime) &&
+              parseInt(s.endTime) >= parseInt(slot.startTime)) ||
+              (parseInt(slot.startTime) <= parseInt(s.startTime) &&
+                parseInt(slot.endTime) >= parseInt(s.startTime)) ||
+              // Adjacent: existing ends where slot starts OR slot ends where existing starts
+              parseInt(s.endTime) === parseInt(slot.startTime) ||
+              parseInt(slot.endTime) === parseInt(s.startTime)),
         );
-        
+
         if (existing) {
           // Merge slots
-          existing.startTime = `${Math.min(parseInt(existing.startTime), parseInt(slot.startTime)).toString().padStart(2, '0')}:00`;
-          existing.endTime = `${Math.max(parseInt(existing.endTime), parseInt(slot.endTime)).toString().padStart(2, '0')}:00`;
+          existing.startTime = `${Math.min(parseInt(existing.startTime), parseInt(slot.startTime)).toString().padStart(2, "0")}:00`;
+          existing.endTime = `${Math.max(parseInt(existing.endTime), parseInt(slot.endTime)).toString().padStart(2, "0")}:00`;
         } else {
           acc.push(slot);
         }
@@ -123,16 +198,31 @@ export const AvailabilitySchedule = ({
       await updateAvailability({ availability: mergedSlots });
       setHasChanges(false);
       toast.success("Availability updated successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update availability");
     }
   };
 
-  // Format time for display
+  // Format time for display using Intl API
   const formatTime = (hour: number) => {
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}${period}`;
+    const date = new Date();
+    date.setHours(hour, 0, 0, 0);
+
+    // Create formatter to check if locale uses 12-hour time
+    const formatter = new Intl.DateTimeFormat(undefined, {
+      hour: "numeric",
+      hour12: true,
+    });
+
+    // Check if this locale actually uses 12-hour format
+    const resolvedOptions = formatter.resolvedOptions();
+
+    if (resolvedOptions.hour12) return formatter.format(date);
+
+    return new Intl.DateTimeFormat(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   };
 
   return (
@@ -157,30 +247,47 @@ export const AvailabilitySchedule = ({
         <CardContent>
           <Tabs defaultValue="0" className="w-full">
             <TabsList className="grid w-full grid-cols-7">
-              {DAYS.map((day, index) => (
-                <TabsTrigger key={index} value={index.toString()} className="text-xs">
-                  {day.slice(0, 3)}
+              {DAYS.map((_, index) => (
+                <TabsTrigger
+                  key={index}
+                  value={index.toString()}
+                  className="text-xs"
+                >
+                  {getShortDayName(index)}
                 </TabsTrigger>
               ))}
             </TabsList>
-            
+
             {DAYS.map((day, dayIndex) => (
-              <TabsContent key={dayIndex} value={dayIndex.toString()} className="mt-4">
+              <TabsContent
+                key={dayIndex}
+                value={dayIndex.toString()}
+                className="mt-4"
+              >
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">{day}</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    {day}
+                  </h4>
                   <div className="grid grid-cols-12 gap-1">
-                    {HOURS.map(hour => (
+                    {HOURS.map((hour) => (
                       <div
                         key={hour}
                         className={cn(
                           "col-span-3 h-10 border rounded-md cursor-pointer transition-all flex items-center justify-center text-xs font-medium",
-                          isSlotSelected(dayIndex, hour) && "bg-purple-500 text-white border-purple-600",
-                          isInDragRange(dayIndex, hour) && !isSlotSelected(dayIndex, hour) && "bg-purple-100 border-purple-300",
-                          !isSlotSelected(dayIndex, hour) && !isInDragRange(dayIndex, hour) && "hover:bg-gray-50 border-gray-200"
+                          isSlotSelected(dayIndex, hour) &&
+                            "bg-purple-500 text-white border-purple-600",
+                          isInDragRange(dayIndex, hour) &&
+                            !isSlotSelected(dayIndex, hour) &&
+                            "bg-purple-100 border-purple-300",
+                          !isSlotSelected(dayIndex, hour) &&
+                            !isInDragRange(dayIndex, hour) &&
+                            "hover:bg-gray-50 border-gray-200",
                         )}
                         onClick={() => handleSlotClick(dayIndex, hour)}
                         onMouseEnter={() => handleMouseEnter(dayIndex, hour)}
-                        onMouseUp={() => isDragging && handleSlotClick(dayIndex, hour)}
+                        onMouseUp={() =>
+                          isDragging && handleSlotClick(dayIndex, hour)
+                        }
                       >
                         {formatTime(hour)}
                       </div>
@@ -203,11 +310,13 @@ export const AvailabilitySchedule = ({
             <div className="space-y-1 text-sm">
               {DAYS.map((day, dayIndex) => {
                 const daySlots = selectedSlots
-                  .filter(slot => slot.dayOfWeek === dayIndex)
-                  .sort((a, b) => parseInt(a.startTime) - parseInt(b.startTime));
-                
+                  .filter((slot) => slot.dayOfWeek === dayIndex)
+                  .sort(
+                    (a, b) => parseInt(a.startTime) - parseInt(b.startTime),
+                  );
+
                 if (daySlots.length === 0) return null;
-                
+
                 return (
                   <div key={dayIndex} className="flex items-center gap-2">
                     <span className="font-medium w-24">{day}:</span>
@@ -215,7 +324,8 @@ export const AvailabilitySchedule = ({
                       {daySlots.map((slot, i) => (
                         <span key={i}>
                           {i > 0 && ", "}
-                          {formatTime(parseInt(slot.startTime))} - {formatTime(parseInt(slot.endTime))}
+                          {formatTime(parseInt(slot.startTime))} -{" "}
+                          {formatTime(parseInt(slot.endTime))}
                         </span>
                       ))}
                     </span>
@@ -230,4 +340,6 @@ export const AvailabilitySchedule = ({
   );
 };
 
-export type AvailabilityScheduleProps = ComponentProps<typeof AvailabilitySchedule>;
+export type AvailabilityScheduleProps = ComponentProps<
+  typeof AvailabilitySchedule
+>;

@@ -67,3 +67,4 @@ export const LogoutDialog = ({ ref }: { ref?: Ref<LogoutDialogRef> }) => {
 };
 
 export type LogoutDialogProps = ComponentProps<typeof LogoutDialog>;
+
