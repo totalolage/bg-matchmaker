@@ -37,8 +37,8 @@ export const Route = createRootRouteWithContext<{
         </div>
       </Unauthenticated>
       
-      <Toaster />
-      <TanStackRouterDevtools />
+      <Toaster position="top-left" />
+      {import.meta.env.DEV && <TanStackRouterDevtools />}
     </div>
     );
   },

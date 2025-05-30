@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -9,6 +8,16 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+import { useForm } from "react-hook-form";
+import { type } from "arktype";
+import { arktypeResolver } from "@hookform/resolvers/arktype";
+
+// Define the form schema using Arktype
+const profileFormSchema = type({
+  displayName: "string"
+});
+
+type ProfileFormData = typeof profileFormSchema.infer;
 
 export const Route = createFileRoute("/profile_/edit")({
   component: EditProfile,
@@ -19,22 +28,27 @@ function EditProfile() {
   const navigate = useNavigate();
   const updateDisplayName = useMutation(api.users.updateDisplayName);
   
-  const [displayName, setDisplayName] = useState(user.displayName || "");
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting, isDirty }
+  } = useForm<ProfileFormData>({
+    resolver: arktypeResolver(profileFormSchema),
+    defaultValues: {
+      displayName: user.displayName || "",
+    }
+  });
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setError("");
-    
+  const displayNameValue = watch("displayName");
+
+  const onSubmit = async (data: ProfileFormData) => {
     try {
-      await updateDisplayName({ displayName: displayName });
+      await updateDisplayName({ displayName: data.displayName });
       toast.success("Profile updated successfully");
       void navigate({ to: "/profile" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile");
-    } finally {
-      setIsSaving(false);
+      toast.error(err instanceof Error ? err.message : "Failed to update profile");
     }
   };
 
@@ -56,7 +70,7 @@ function EditProfile() {
       </header>
 
       <main className="p-4 flex-1 overflow-y-auto">
-        <div className="max-w-md mx-auto space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
           {/* Profile Picture */}
           <div className="text-center">
             <Avatar className="w-24 h-24 mx-auto mb-2">
@@ -79,25 +93,22 @@ function EditProfile() {
             <Input
               id="displayName"
               type="text"
-              value={displayName}
-              onChange={(e) => {
-                setDisplayName(e.target.value);
-                setError("");
-              }}
+              {...register("displayName")}
               placeholder={user.name}
+              aria-invalid={errors.displayName ? "true" : "false"}
             />
-            {displayName.trim() && displayName.trim() !== user.name && (
+            {displayNameValue?.trim() && displayNameValue.trim() !== user.name && (
               <p className="text-xs text-gray-500 mt-1">
                 Your username: @{user.name}
               </p>
             )}
-            {!displayName.trim() && (
+            {!displayNameValue?.trim() && (
               <p className="text-xs text-gray-500 mt-1">
                 Leave empty to use your username: @{user.name}
               </p>
             )}
-            {error && (
-              <p className="text-sm text-red-600 mt-1">{error}</p>
+            {errors.displayName && (
+              <p className="text-sm text-red-600 mt-1">{errors.displayName.message}</p>
             )}
           </div>
 
@@ -112,18 +123,18 @@ function EditProfile() {
               This information is synced from your Discord account and cannot be changed here.
             </p>
           </div>
-        </div>
+        </form>
       </main>
 
       {/* Save Button */}
       <div className="p-4 border-t border-gray-200">
         <Button
-          onClick={() => void handleSave()}
-          disabled={isSaving || displayName === (user.displayName || "")}
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting || !isDirty}
           className="w-full"
           size="lg"
         >
-          {isSaving ? (
+          {isSubmitting ? (
             <span>Saving...</span>
           ) : (
             <>
