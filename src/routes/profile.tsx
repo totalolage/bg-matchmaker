@@ -5,7 +5,7 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 import { GameLibrary } from "../components/GameLibrary";
-import { AvailabilitySchedule } from "../components/AvailabilitySchedule";
+import { AvailabilitySchedule } from "../components/availability";
 import { useState, useRef, useEffect } from "react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { LogOut, Edit } from "lucide-react";

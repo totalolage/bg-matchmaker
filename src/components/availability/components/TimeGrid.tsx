@@ -1,0 +1,96 @@
+import { TimeSlotButton } from "../../TimeSlotButton";
+import { formatTime, isDateInPast, findIntervalContainingHour } from "../utils";
+import { getAvailabilityForDate, AvailabilityInterval } from "../../../lib/availability";
+import { Doc } from "convex/_generated/dataModel";
+import { HOURS } from "../constants";
+
+interface TimeGridProps {
+  date: Date;
+  selectedSlots: Doc<"users">["availability"];
+  selectedTime: { date: string; hour: number } | null;
+  hoveredTime: { date: string; hour: number } | null;
+  isTimeSelected: (date: string, hour: number) => boolean;
+  isSlotSelected: (date: string, hour: number) => boolean;
+  isInHoverRange: (date: string, hour: number) => boolean;
+  onSlotClick: (date: string, hour: number) => void;
+  onSlotHover: (time: { date: string; hour: number } | null) => void;
+}
+
+export const TimeGrid = ({
+  date,
+  selectedSlots,
+  selectedTime,
+  hoveredTime,
+  isTimeSelected,
+  isSlotSelected,
+  isInHoverRange,
+  onSlotClick,
+  onSlotHover,
+}: TimeGridProps) => {
+  const dateISO = date.toISOString().split('T')[0];
+  const isPast = isDateInPast(date);
+
+  return (
+    <div className="grid grid-cols-12 gap-1">
+      {HOURS.map((hour) => {
+        const timeString = formatTime(hour);
+        const isSelected = isTimeSelected(dateISO, hour);
+        const isConfirmed = isSlotSelected(dateISO, hour);
+        const inHoverRange = isInHoverRange(dateISO, hour);
+
+        // Find which interval contains the hovered time (only when not selecting)
+        let hoveredIntervalToDelete: AvailabilityInterval | null = null;
+        if (hoveredTime && !selectedTime) {
+          const intervals = getAvailabilityForDate(
+            selectedSlots,
+            hoveredTime.date,
+          );
+          const foundInterval = findIntervalContainingHour(intervals, hoveredTime.hour);
+          if (foundInterval) {
+            hoveredIntervalToDelete = foundInterval;
+          }
+        }
+
+        // Check if this hour is part of the interval that would be deleted
+        const isPartOfDeleteSlot =
+          hoveredIntervalToDelete &&
+          hour * 60 >= hoveredIntervalToDelete.start &&
+          hour * 60 < hoveredIntervalToDelete.end;
+
+        let buttonState:
+          | "default"
+          | "selected"
+          | "confirmed"
+          | "disabled"
+          | "hoverRange"
+          | "hoverDelete" = "default";
+
+        if (isPast) {
+          buttonState = "disabled";
+        } else if (isConfirmed) {
+          // If this slot is part of the one being hovered for deletion
+          if (isPartOfDeleteSlot) buttonState = "hoverDelete";
+          else buttonState = "confirmed";
+        } else if (isSelected) {
+          buttonState = "selected";
+        } else if (inHoverRange && selectedTime) {
+          buttonState = "hoverRange";
+        }
+
+        return (
+          <TimeSlotButton
+            key={hour}
+            time={timeString}
+            state={buttonState}
+            onClick={() => onSlotClick(dateISO, hour)}
+            onMouseEnter={() =>
+              onSlotHover({ date: dateISO, hour })
+            }
+            onMouseLeave={() => onSlotHover(null)}
+            disabled={isPast}
+          />
+        );
+      })}
+    </div>
+  );
+};
