@@ -29,8 +29,10 @@ const applicationTables = {
     })),
     availability: v.array(v.object({
       date: v.string(), // ISO date string "YYYY-MM-DD"
-      startTime: v.string(), // "HH:MM" format
-      endTime: v.string(), // "HH:MM" format
+      intervals: v.array(v.object({
+        start: v.number(), // minutes since midnight (0-1439)
+        end: v.number(),   // minutes since midnight (0-1439)
+      }))
     })),
     pushSubscription: v.optional(v.object({
       endpoint: v.string(),
@@ -100,3 +102,4 @@ export default defineSchema({
   ...authTables,
   ...applicationTables,
 });
+

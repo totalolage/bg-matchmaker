@@ -1,4 +1,10 @@
-import { useState, useEffect, ComponentProps, useImperativeHandle, Ref } from "react";
+import {
+  useState,
+  useEffect,
+  ComponentProps,
+  useImperativeHandle,
+  Ref,
+} from "react";
 import { Save, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
@@ -6,7 +12,6 @@ import { Doc } from "../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -16,18 +21,20 @@ import {
 } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Calendar } from "./ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "./ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { TimeSlotButton } from "./TimeSlotButton";
+import {
+  DayAvailability,
+  AvailabilityInterval,
+  timeToMinutes,
+  minutesToTime,
+  updateDayAvailability,
+  getAvailabilityForDate,
+  addInterval,
+  removeInterval,
+} from "../lib/availability";
 
-type TimeSlot = {
-  date: string; // ISO date string
-  startTime: string;
-  endTime: string;
-};
+// Remove old TimeSlot type - now using DayAvailability and AvailabilityInterval
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -43,25 +50,74 @@ const getFullDayName = (date: Date) => {
 
 // Get short date format (DD/MM or MM/DD based on locale)
 const getShortDate = (date: Date) => {
-  return new Intl.DateTimeFormat(undefined, { 
+  return new Intl.DateTimeFormat(undefined, {
     day: "numeric",
-    month: "numeric"
+    month: "numeric",
   }).format(date);
 };
 
-// Get week dates starting from Sunday
+// Get the first day of the week for the user's locale
+const getLocaleFirstDayOfWeek = () => {
+  try {
+    // Try modern Intl.Locale.getWeekInfo() API (Chrome 130+, Safari 17+)
+    const locale = new Intl.Locale(navigator.language);
+    if ('getWeekInfo' in locale && typeof locale.getWeekInfo === 'function') {
+      const weekInfo = locale.getWeekInfo();
+      // getWeekInfo returns 1=Monday, 7=Sunday, but getDay() returns 0=Sunday, 6=Saturday
+      // Convert: 1->1, 2->2, ..., 6->6, 7->0
+      return weekInfo.firstDay === 7 ? 0 : weekInfo.firstDay;
+    }
+  } catch (e) {
+    // Ignore errors and fall back
+  }
+
+  // Fallback: Use locale-based detection
+  // Most countries use Monday (1), but US, Canada, some others use Sunday (0)
+  const locale = navigator.language.toLowerCase();
+  
+  // Countries/locales that typically start the week on Sunday
+  const sundayStartLocales = [
+    'en-us', 'en-ca', 'he', 'ar-sa', 'ar-ae', 'ar-bh', 'ar-dz', 
+    'ar-eg', 'ar-iq', 'ar-jo', 'ar-kw', 'ar-lb', 'ar-ly', 'ar-ma', 
+    'ar-om', 'ar-qa', 'ar-sy', 'ar-tn', 'ar-ye', 'th', 'pt-br'
+  ];
+  
+  // Check for exact match or if it starts with a Sunday-start locale
+  if (sundayStartLocales.some(loc => locale === loc || locale.startsWith(loc + '-'))) {
+    return 0; // Sunday
+  }
+  
+  // Check for US English specifically
+  if (locale.startsWith('en') && (locale.includes('us') || locale === 'en')) {
+    // Default to Sunday for generic 'en' since it's often US
+    return 0;
+  }
+  
+  // Default to Monday for most other locales
+  return 1;
+};
+
+// Get week dates starting from the locale-appropriate day
 const getWeekDates = (currentDate: Date) => {
   const week: Date[] = [];
   const startOfWeek = new Date(currentDate);
-  const day = startOfWeek.getDay();
-  startOfWeek.setDate(startOfWeek.getDate() - day); // Go to Sunday
+  const currentDay = startOfWeek.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+  const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
   
+  // Calculate how many days to go back to reach the first day of the week
+  let daysBack = currentDay - localeFirstDay;
+  if (daysBack < 0) {
+    daysBack += 7;
+  }
+  
+  startOfWeek.setDate(startOfWeek.getDate() - daysBack);
+
   for (let i = 0; i < 7; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
     week.push(date);
   }
-  
+
   return week;
 };
 
@@ -88,17 +144,31 @@ interface DatePickerRef {
   close: () => void;
 }
 
-export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: Ref<DatePickerRef> }) => {
+export const AvailabilitySchedule = ({
+  user,
+  ref,
+}: {
+  user: Doc<"users">;
+  ref?: Ref<DatePickerRef>;
+}) => {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
-    const day = today.getDay();
+    const currentDay = today.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
+    
+    // Calculate how many days to go back to reach the first day of the week
+    let daysBack = currentDay - localeFirstDay;
+    if (daysBack < 0) {
+      daysBack += 7;
+    }
+    
     const start = new Date(today);
-    start.setDate(today.getDate() - day);
+    start.setDate(today.getDate() - daysBack);
     return start;
   });
-  
-  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>(
-    user.availability,
+
+  const [selectedSlots, setSelectedSlots] = useState<DayAvailability[]>(
+    user.availability as DayAvailability[],
   );
   const updateAvailability = useMutation(api.users.updateAvailability);
   const [selectedTime, setSelectedTime] = useState<{
@@ -111,13 +181,13 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
   } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(() => {
-    // Start with current day selected
+    // Start with current day selected, adjusted for locale
     const today = new Date();
-    return today.getDay(); // 0 = Sunday, 6 = Saturday
+    const currentDay = today.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
+    // Calculate the day index within the week (0-6)
+    return (currentDay - localeFirstDay + 7) % 7;
   });
-  const [previousDayIndex, setPreviousDayIndex] = useState(selectedDayIndex);
-  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
-  const [animationKey, setAnimationKey] = useState(0);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   useImperativeHandle(
@@ -139,7 +209,7 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
   );
 
   useEffect(() => {
-    setSelectedSlots(user.availability);
+    setSelectedSlots(user.availability as DayAvailability[]);
   }, [user.availability]);
 
   const weekDates = getWeekDates(currentWeekStart);
@@ -147,11 +217,11 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
   const selectedDateISO = formatDateToISO(selectedDate);
 
   const isSlotSelected = (date: string, hour: number) => {
-    return selectedSlots.some(
-      (slot) =>
-        slot.date === date &&
-        parseInt(slot.startTime) <= hour &&
-        parseInt(slot.endTime) > hour,
+    const intervals = getAvailabilityForDate(selectedSlots, date);
+    const timeInMinutes = hour * 60;
+    return intervals.some(
+      (interval) =>
+        timeInMinutes >= interval.start && timeInMinutes < interval.end,
     );
   };
 
@@ -160,7 +230,12 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
   };
 
   const isInHoverRange = (date: string, hour: number) => {
-    if (!selectedTime || !hoveredTime || selectedTime.date !== date || hoveredTime.date !== date) {
+    if (
+      !selectedTime ||
+      !hoveredTime ||
+      selectedTime.date !== date ||
+      hoveredTime.date !== date
+    ) {
       return false;
     }
     const minHour = Math.min(selectedTime.hour, hoveredTime.hour);
@@ -176,17 +251,16 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
 
     // Case 1: If this exact time is already selected (light purple)
     if (isTimeSelected(date, hour)) {
-      // Create a 1-hour slot at this exact time
-      const newSlot: TimeSlot = {
-        date,
-        startTime: `${hour.toString().padStart(2, "0")}:00`,
-        endTime: `${(hour + 1).toString().padStart(2, "0")}:00`,
+      // Create a 1-hour interval at this exact time
+      const newInterval: AvailabilityInterval = {
+        start: hour * 60,
+        end: (hour + 1) * 60,
       };
 
       setSelectedSlots((slots) => {
-        // Add and merge the new slot
-        const mergedSlots = mergeSlots([...slots, newSlot], date);
-        return mergedSlots;
+        const existingIntervals = getAvailabilityForDate(slots, date);
+        const updatedIntervals = addInterval(existingIntervals, newInterval);
+        return updateDayAvailability(slots, date, updatedIntervals);
       });
       setSelectedTime(null);
       return;
@@ -194,37 +268,43 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
 
     // Case 2: If another time is selected (creating a range)
     if (selectedTime && selectedTime.date === date) {
-      // Create a time slot from the lower to upper time
+      // Create a time interval from the lower to upper time
       const startHour = Math.min(selectedTime.hour, hour);
       const endHour = Math.max(selectedTime.hour, hour) + 1;
 
-      const newSlot: TimeSlot = {
-        date,
-        startTime: `${startHour.toString().padStart(2, "0")}:00`,
-        endTime: `${endHour.toString().padStart(2, "0")}:00`,
+      const newInterval: AvailabilityInterval = {
+        start: startHour * 60,
+        end: endHour * 60,
       };
 
       setSelectedSlots((slots) => {
-        // Add and merge the new slot (this will merge with existing slots if they overlap)
-        const mergedSlots = mergeSlots([...slots, newSlot], date);
-        return mergedSlots;
+        const existingIntervals = getAvailabilityForDate(slots, date);
+        const updatedIntervals = addInterval(existingIntervals, newInterval);
+        return updateDayAvailability(slots, date, updatedIntervals);
       });
       setSelectedTime(null);
       return;
     }
 
-    // Case 3: If this time is part of an existing time slot (dark purple) and no selection active
+    // Case 3: If this time is part of an existing time interval (dark purple) and no selection active
     if (isSlotSelected(date, hour) && !selectedTime) {
-      // Delete the whole time slot containing this hour
+      // Find and remove the interval containing this hour
       setSelectedSlots((slots) => {
-        return slots.filter(
-          (slot) =>
-            !(
-              slot.date === date &&
-              parseInt(slot.startTime) <= hour &&
-              parseInt(slot.endTime) > hour
-            ),
+        const intervals = getAvailabilityForDate(slots, date);
+        const timeInMinutes = hour * 60;
+
+        // Find the interval to remove
+        const intervalToRemove = intervals.find(
+          (interval) =>
+            timeInMinutes >= interval.start && timeInMinutes < interval.end,
         );
+
+        if (intervalToRemove) {
+          const updatedIntervals = removeInterval(intervals, intervalToRemove);
+          return updateDayAvailability(slots, date, updatedIntervals);
+        }
+
+        return slots;
       });
       setSelectedTime(null);
       return;
@@ -234,98 +314,11 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
     setSelectedTime({ date, hour });
   };
 
-  // Helper function to merge overlapping or adjacent slots for a specific date
-  const mergeSlots = (slots: TimeSlot[], date: string): TimeSlot[] => {
-    // Separate slots by date
-    const slotsForOtherDates = slots.filter(slot => slot.date !== date);
-    const slotsForDate = slots.filter(slot => slot.date === date);
-    
-    if (slotsForDate.length === 0) {
-      return slots;
-    }
-    
-    // Create events for each start and end time
-    type TimeEvent = {
-      hour: number;
-      type: 'start' | 'end';
-    };
-    
-    const events: TimeEvent[] = [];
-    slotsForDate.forEach(slot => {
-      events.push({ hour: parseInt(slot.startTime), type: 'start' });
-      events.push({ hour: parseInt(slot.endTime), type: 'end' });
-    });
-    
-    // Sort events by hour, with 'start' events before 'end' events at the same hour
-    events.sort((a, b) => {
-      if (a.hour !== b.hour) return a.hour - b.hour;
-      // If same hour, process 'end' before 'start' to handle adjacent slots
-      return a.type === 'end' ? -1 : 1;
-    });
-    
-    // Remove adjacent end+start pairs
-    const filteredEvents: TimeEvent[] = [];
-    for (let i = 0; i < events.length; i++) {
-      if (i < events.length - 1 && 
-          events[i].type === 'end' && 
-          events[i + 1].type === 'start' && 
-          events[i].hour === events[i + 1].hour) {
-        // Skip both the end and start event
-        i++;
-      } else {
-        filteredEvents.push(events[i]);
-      }
-    }
-    
-    // Walk through events to create merged slots
-    const mergedSlotsForDate: TimeSlot[] = [];
-    let openCount = 0;
-    let currentSlotStart: number | null = null;
-    
-    filteredEvents.forEach(event => {
-      if (event.type === 'start') {
-        if (openCount === 0) {
-          // Starting a new slot
-          currentSlotStart = event.hour;
-        }
-        openCount++;
-      } else { // event.type === 'end'
-        openCount--;
-        if (openCount === 0 && currentSlotStart !== null) {
-          // Closing the current slot
-          mergedSlotsForDate.push({
-            date,
-            startTime: `${currentSlotStart.toString().padStart(2, "0")}:00`,
-            endTime: `${event.hour.toString().padStart(2, "0")}:00`,
-          });
-          currentSlotStart = null;
-        }
-      }
-    });
-    
-    return [...slotsForOtherDates, ...mergedSlotsForDate];
-  };
-
+  // Merging is now handled by the utility functions in availability.ts
 
   const handleSave = async () => {
     try {
-      // Group slots by date
-      const slotsByDate = new Map<string, TimeSlot[]>();
-      selectedSlots.forEach(slot => {
-        const existing = slotsByDate.get(slot.date) || [];
-        existing.push(slot);
-        slotsByDate.set(slot.date, existing);
-      });
-      
-      // Merge slots for each date
-      const mergedSlots: TimeSlot[] = [];
-      slotsByDate.forEach((slotsForDate, date) => {
-        const merged = mergeSlots(slotsForDate, date);
-        // Only keep slots for the current date
-        mergedSlots.push(...merged.filter(s => s.date === date));
-      });
-
-      await updateAvailability({ availability: mergedSlots });
+      await updateAvailability({ availability: selectedSlots });
       setHasChanges(false);
       toast.success("Availability updated successfully");
     } catch {
@@ -364,35 +357,54 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() - 7);
     setCurrentWeekStart(newStart);
-    setSelectedTime(null); // Clear selection when navigating
-    setHoveredTime(null); // Clear hover state
-    // Animate from left when going to previous week
-    setAnimationDirection('left');
-    setPreviousDayIndex(selectedDayIndex);
-    setAnimationKey(prev => prev + 1);
+    setSelectedTime(null);
+    setHoveredTime(null);
   };
 
   const goToNextWeek = () => {
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() + 7);
     setCurrentWeekStart(newStart);
-    setSelectedTime(null); // Clear selection when navigating
-    setHoveredTime(null); // Clear hover state
-    // Animate from right when going to next week
-    setAnimationDirection('right');
-    setPreviousDayIndex(selectedDayIndex);
-    setAnimationKey(prev => prev + 1);
+    setSelectedTime(null);
+    setHoveredTime(null);
+  };
+
+  // Navigate to a specific date
+  const navigateToDate = (dateString: string) => {
+    const targetDate = new Date(dateString + "T00:00:00");
+
+    // Calculate the start of the week for the selected date using locale-aware logic
+    const currentDay = targetDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
+    
+    // Calculate how many days to go back to reach the first day of the week
+    let daysBack = currentDay - localeFirstDay;
+    if (daysBack < 0) {
+      daysBack += 7;
+    }
+    
+    const weekStart = new Date(targetDate);
+    weekStart.setDate(targetDate.getDate() - daysBack);
+    setCurrentWeekStart(weekStart);
+
+    // Calculate the day index within the week (0-6)
+    const dayIndex = (currentDay - localeFirstDay + 7) % 7;
+    setSelectedDayIndex(dayIndex);
+
+    // Clear selection
+    setSelectedTime(null);
+    setHoveredTime(null);
   };
 
   // Format week range for display
   const formatWeekRange = () => {
     const start = weekDates[0];
     const end = weekDates[6];
-    
+
     // Check if dates are in same month and year
     const sameMonth = start.getMonth() === end.getMonth();
     const sameYear = start.getFullYear() === end.getFullYear();
-    
+
     if (sameMonth && sameYear) {
       // Format as "May 25 - 31, 2025"
       const monthYearFormatter = new Intl.DateTimeFormat(undefined, {
@@ -405,26 +417,26 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
       const endDayFormatter = new Intl.DateTimeFormat(undefined, {
         day: "numeric",
       });
-      
+
       const monthYear = monthYearFormatter.format(start);
       const startDay = startDayFormatter.format(start);
       const endDay = endDayFormatter.format(end);
-      
+
       // Extract month and year parts
       const parts = monthYearFormatter.formatToParts(start);
-      const month = parts.find(p => p.type === 'month')?.value || '';
-      const year = parts.find(p => p.type === 'year')?.value || '';
-      
+      const month = parts.find((p) => p.type === "month")?.value || "";
+      const year = parts.find((p) => p.type === "year")?.value || "";
+
       return `${month} ${startDay} - ${endDay}, ${year}`;
     }
-    
+
     // Different months or years - format both dates fully
     const formatter = new Intl.DateTimeFormat(undefined, {
       month: "short",
       day: "numeric",
       year: sameYear ? undefined : "numeric",
     });
-    
+
     return `${formatter.format(start)} - ${formatter.format(end)}`;
   };
 
@@ -436,7 +448,8 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
             <div>
               <CardTitle>Weekly Availability</CardTitle>
               <CardDescription>
-                Click times to select availability. Click again to confirm or extend selection.
+                Click times to select availability. Click again to confirm or
+                extend selection.
               </CardDescription>
             </div>
             {hasChanges && (
@@ -458,7 +471,7 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            
+
             <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -476,28 +489,27 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
                   selected={selectedDate}
                   onSelect={(date) => {
                     if (date) {
-                      // Calculate the start of the week for the selected date
-                      const day = date.getDay();
-                      const weekStart = new Date(date);
-                      weekStart.setDate(date.getDate() - day);
-                      setCurrentWeekStart(weekStart);
+                      // Calculate the start of the week for the selected date using locale-aware logic
+                      const currentDay = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+                      const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
                       
-                      // Select the day in the tabs
-                      const dayIndex = day;
-                      // Determine animation direction based on week change
-                      const weekDiff = weekStart.getTime() - currentWeekStart.getTime();
-                      if (weekDiff !== 0) {
-                        setAnimationDirection(weekDiff > 0 ? 'right' : 'left');
-                      } else {
-                        setAnimationDirection(dayIndex > selectedDayIndex ? 'right' : 'left');
+                      // Calculate how many days to go back to reach the first day of the week
+                      let daysBack = currentDay - localeFirstDay;
+                      if (daysBack < 0) {
+                        daysBack += 7;
                       }
-                      setPreviousDayIndex(selectedDayIndex);
-                      setSelectedDayIndex(dayIndex);
-                      setAnimationKey(prev => prev + 1);
                       
+                      const weekStart = new Date(date);
+                      weekStart.setDate(date.getDate() - daysBack);
+                      setCurrentWeekStart(weekStart);
+
+                      // Calculate the day index within the week (0-6)
+                      const dayIndex = (currentDay - localeFirstDay + 7) % 7;
+                      setSelectedDayIndex(dayIndex);
+
                       // Clear selection
                       setSelectedTime(null);
-                      
+
                       // Close the popover
                       setDatePickerOpen(false);
                     }
@@ -506,7 +518,7 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
                 />
               </PopoverContent>
             </Popover>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -517,26 +529,22 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
             </Button>
           </div>
 
-          <Tabs 
-            value={selectedDayIndex.toString()} 
+          <Tabs
+            value={selectedDayIndex.toString()}
             onValueChange={(v) => {
               const newIndex = parseInt(v);
-              // Determine animation direction
-              const newDirection = newIndex > selectedDayIndex ? 'right' : 'left';
-              setAnimationDirection(newDirection);
-              setPreviousDayIndex(selectedDayIndex);
               setSelectedDayIndex(newIndex);
-              setAnimationKey(prev => prev + 1);
-              setSelectedTime(null); // Clear selection when switching days
-              setHoveredTime(null); // Clear hover state
-            }} 
+              setSelectedTime(null);
+              setHoveredTime(null);
+            }}
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-7 h-auto p-1">
               {weekDates.map((date, index) => {
                 const isPast = isDateInPast(date);
-                const isToday = formatDateToISO(date) === formatDateToISO(new Date());
-                
+                const isToday =
+                  formatDateToISO(date) === formatDateToISO(new Date());
+
                 return (
                   <TabsTrigger
                     key={index}
@@ -544,7 +552,7 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
                     className={cn(
                       "text-xs flex flex-col gap-0.5 py-2 px-1 min-h-[3.5rem]",
                       isPast && "opacity-50",
-                      isToday && "ring-2 ring-purple-500 ring-offset-2"
+                      isToday && "ring-2 ring-purple-500 ring-offset-2",
                     )}
                   >
                     <span className="font-medium">{getShortDayName(date)}</span>
@@ -556,99 +564,88 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
               })}
             </TabsList>
 
-            <AnimatePresence mode="wait" initial={false}>
-              {weekDates.map((date, dayIndex) => {
-                const dateISO = formatDateToISO(date);
-                const isPast = isDateInPast(date);
-                
-                if (dayIndex !== selectedDayIndex) return null;
-                
-                return (
-                  <TabsContent
-                    key={`${dayIndex}-${animationKey}`}
-                    value={dayIndex.toString()}
-                    className="mt-4"
-                    forceMount
-                    asChild
-                  >
-                    <motion.div
-                      custom={animationDirection}
-                      initial={(custom) => ({ 
-                        opacity: 0, 
-                        x: custom === 'left' ? -50 : custom === 'right' ? 50 : 0 
-                      })}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={(custom) => ({ 
-                        opacity: 0, 
-                        x: custom === 'left' ? 50 : custom === 'right' ? -50 : 0 
-                      })}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      className="grid grid-cols-12 gap-1"
-                    >
-                      {HOURS.map((hour) => {
-                        const timeString = formatTime(hour);
-                        const isSelected = isTimeSelected(dateISO, hour);
-                        const isConfirmed = isSlotSelected(dateISO, hour);
-                        const inHoverRange = isInHoverRange(dateISO, hour);
-                        const isHoveredSlot = hoveredTime?.date === dateISO && hoveredTime?.hour === hour;
-                        
-                        // Find which slot contains the hovered time (only when not selecting)
-                        let hoveredSlotToDelete: TimeSlot | null = null;
-                        if (hoveredTime && !selectedTime) {
-                          const foundSlot = selectedSlots.find(
-                            slot =>
-                              slot.date === hoveredTime.date &&
-                              parseInt(slot.startTime) <= hoveredTime.hour &&
-                              parseInt(slot.endTime) > hoveredTime.hour
-                          );
-                          if (foundSlot) {
-                            hoveredSlotToDelete = foundSlot;
-                          }
-                        }
-                        
-                        // Check if this hour is part of the slot that would be deleted
-                        const isPartOfDeleteSlot = hoveredSlotToDelete &&
-                          hoveredSlotToDelete.date === dateISO &&
-                          parseInt(hoveredSlotToDelete.startTime) <= hour &&
-                          parseInt(hoveredSlotToDelete.endTime) > hour;
-                        
-                        let buttonState: "default" | "selected" | "confirmed" | "disabled" | "hoverRange" | "hoverDelete" = "default";
-                        let showStripes = false;
-                        
-                        if (isPast) {
-                          buttonState = "disabled";
-                        } else if (isConfirmed) {
-                          // If this slot is part of the one being hovered for deletion
-                          if (isPartOfDeleteSlot) {
-                            buttonState = "hoverDelete";
-                            showStripes = true;
-                          } else {
-                            buttonState = "confirmed";
-                          }
-                        } else if (isSelected) {
-                          buttonState = "selected";
-                        } else if (inHoverRange && selectedTime) {
-                          buttonState = "hoverRange";
-                        }
-                        
-                        return (
-                          <TimeSlotButton
-                            key={hour}
-                            time={timeString}
-                            state={buttonState}
-                            showDeleteStripes={showStripes}
-                            onClick={() => handleSlotClick(dateISO, hour)}
-                            onMouseEnter={() => setHoveredTime({ date: dateISO, hour })}
-                            onMouseLeave={() => setHoveredTime(null)}
-                            disabled={isPast}
-                          />
+            {weekDates.map((date, dayIndex) => {
+              const dateISO = formatDateToISO(date);
+              const isPast = isDateInPast(date);
+
+              if (dayIndex !== selectedDayIndex) return null;
+
+              return (
+                <TabsContent
+                  key={dayIndex}
+                  value={dayIndex.toString()}
+                  className="mt-4"
+                >
+                  <div className="grid grid-cols-12 gap-1">
+                    {HOURS.map((hour) => {
+                      const timeString = formatTime(hour);
+                      const isSelected = isTimeSelected(dateISO, hour);
+                      const isConfirmed = isSlotSelected(dateISO, hour);
+                      const inHoverRange = isInHoverRange(dateISO, hour);
+
+                      // Find which interval contains the hovered time (only when not selecting)
+                      let hoveredIntervalToDelete: AvailabilityInterval | null =
+                        null;
+                      if (hoveredTime && !selectedTime) {
+                        const intervals = getAvailabilityForDate(
+                          selectedSlots,
+                          hoveredTime.date,
                         );
-                      })}
-                    </motion.div>
-                  </TabsContent>
-                );
-              })}
-            </AnimatePresence>
+                        const timeInMinutes = hoveredTime.hour * 60;
+                        const foundInterval = intervals.find(
+                          (interval) =>
+                            timeInMinutes >= interval.start &&
+                            timeInMinutes < interval.end,
+                        );
+                        if (foundInterval) {
+                          hoveredIntervalToDelete = foundInterval;
+                        }
+                      }
+
+                      // Check if this hour is part of the interval that would be deleted
+                      const isPartOfDeleteSlot =
+                        hoveredIntervalToDelete &&
+                        hour * 60 >= hoveredIntervalToDelete.start &&
+                        hour * 60 < hoveredIntervalToDelete.end;
+
+                      let buttonState:
+                        | "default"
+                        | "selected"
+                        | "confirmed"
+                        | "disabled"
+                        | "hoverRange"
+                        | "hoverDelete" = "default";
+
+                      if (isPast) {
+                        buttonState = "disabled";
+                      } else if (isConfirmed) {
+                        // If this slot is part of the one being hovered for deletion
+                        if (isPartOfDeleteSlot) buttonState = "hoverDelete";
+                        else buttonState = "confirmed";
+                      } else if (isSelected) {
+                        buttonState = "selected";
+                      } else if (inHoverRange && selectedTime) {
+                        buttonState = "hoverRange";
+                      }
+
+                      return (
+                        <TimeSlotButton
+                          key={hour}
+                          time={timeString}
+                          state={buttonState}
+                          onClick={() => handleSlotClick(dateISO, hour)}
+                          onMouseEnter={() =>
+                            setHoveredTime({ date: dateISO, hour })
+                          }
+                          onMouseLeave={() => setHoveredTime(null)}
+                          disabled={isPast}
+                        />
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+              );
+            })}
           </Tabs>
         </CardContent>
       </Card>
@@ -662,23 +659,36 @@ export const AvailabilitySchedule = ({ user, ref }: { user: Doc<"users">; ref?: 
           <CardContent>
             <div className="space-y-1 text-sm max-h-48 overflow-y-auto">
               {selectedSlots
-                .sort((a, b) => a.date.localeCompare(b.date) || parseInt(a.startTime) - parseInt(b.startTime))
-                .map((slot, i) => {
-                  const date = new Date(slot.date + "T00:00:00");
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .flatMap((day) =>
+                  day.intervals.map((interval) => ({
+                    date: day.date,
+                    interval,
+                  })),
+                )
+                .map(({ date, interval }, i) => {
+                  const dateObj = new Date(date + "T00:00:00");
                   const dateFormatted = new Intl.DateTimeFormat(undefined, {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
-                  }).format(date);
-                  
+                  }).format(dateObj);
+
                   return (
-                    <div key={i} className="flex items-center gap-2">
-                      <span className="font-medium min-w-[120px]">{dateFormatted}:</span>
-                      <span className="text-gray-600">
-                        {formatTime(parseInt(slot.startTime))} -{" "}
-                        {formatTime(parseInt(slot.endTime))}
+                    <button
+                      key={dateFormatted}
+                      onClick={() => navigateToDate(date)}
+                      className="flex items-center gap-2 w-full text-left p-2 rounded hover:bg-gray-50 transition-colors cursor-pointer"
+                      title={`Click to view ${dateFormatted}`}
+                    >
+                      <span className="font-medium min-w-[120px]">
+                        {dateFormatted}:
                       </span>
-                    </div>
+                      <span className="text-gray-600">
+                        {formatTime(Math.floor(interval.start / 60))} -{" "}
+                        {formatTime(Math.floor(interval.end / 60))}
+                      </span>
+                    </button>
                   );
                 })}
             </div>

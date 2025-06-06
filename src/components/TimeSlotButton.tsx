@@ -13,7 +13,10 @@ const timeSlotButtonVariants = cva(
         confirmed: "bg-purple-500 text-white border-purple-600 hover:bg-purple-600",
         disabled: "bg-gray-50 text-gray-400 cursor-not-allowed hover:bg-gray-50",
         hoverRange: "bg-purple-200 text-purple-900 border-purple-400",
-        hoverDelete: "bg-purple-500 text-white border-purple-600",
+        hoverDelete: [
+          "bg-purple-500 text-white border-purple-600 hover:bg-purple-500 hover:text-white",
+          "[background-image:repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.3)_3px,rgba(255,255,255,0.3)_6px)]",
+        ],
       },
     },
     defaultVariants: {
@@ -27,13 +30,11 @@ export interface TimeSlotButtonProps
     VariantProps<typeof timeSlotButtonVariants> {
   time: string;
   state?: "default" | "selected" | "confirmed" | "disabled" | "hoverRange" | "hoverDelete";
-  showDeleteStripes?: boolean;
 }
 
 export const TimeSlotButton = ({
   time,
   state = "default",
-  showDeleteStripes = false,
   className,
   disabled,
   ...props
@@ -48,21 +49,7 @@ export const TimeSlotButton = ({
       aria-pressed={state === "selected" || state === "confirmed"}
       {...props}
     >
-      {showDeleteStripes && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `repeating-linear-gradient(
-              -45deg,
-              transparent,
-              transparent 3px,
-              rgba(147, 51, 234, 0.5) 3px,
-              rgba(147, 51, 234, 0.5) 6px
-            )`,
-          }}
-        />
-      )}
-      <span className="relative">{time}</span>
+      {time}
     </Button>
   );
 };

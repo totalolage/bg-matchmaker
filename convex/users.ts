@@ -77,8 +77,10 @@ export const updateAvailability = mutation({
   args: {
     availability: v.array(v.object({
       date: v.string(),
-      startTime: v.string(),
-      endTime: v.string(),
+      intervals: v.array(v.object({
+        start: v.number(),
+        end: v.number(),
+      }))
     })),
   },
   handler: async (ctx, args) => {
@@ -93,6 +95,7 @@ export const updateAvailability = mutation({
     });
   },
 });
+
 
 export const updatePushSubscription = mutation({
   args: {
