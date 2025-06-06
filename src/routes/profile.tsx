@@ -20,9 +20,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PageLayout, PageHeader } from "../components/PageLayout";
 import { UserAvatar } from "../components/UserAvatar";
 import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
+import { type } from "arktype";
+
+const searchSchema = type({
+  "date?": "string",
+});
 
 export const Route = createFileRoute("/profile")({
   component: Profile,
+  validateSearch: (search: Record<string, unknown>) => {
+    const parsed = searchSchema(search);
+    if (parsed instanceof type.errors) {
+      // Return empty object if validation fails
+      return {};
+    }
+    return parsed;
+  },
 });
 
 const TABS = ["games", "availability"] as const;

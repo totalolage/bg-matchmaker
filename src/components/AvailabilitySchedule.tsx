@@ -5,13 +5,16 @@ import {
   useImperativeHandle,
   Ref,
 } from "react";
-import { Save, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 import { Doc } from "../../convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+import { useMutation as useConvexMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
+import { useDebouncer } from "@tanstack/react-pacer";
+import { useRouter, useNavigate, useSearch, useLocation } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -24,10 +27,7 @@ import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { TimeSlotButton } from "./TimeSlotButton";
 import {
-  DayAvailability,
   AvailabilityInterval,
-  timeToMinutes,
-  minutesToTime,
   updateDayAvailability,
   getAvailabilityForDate,
   addInterval,
@@ -37,15 +37,11 @@ import {
 // Remove old TimeSlot type - now using DayAvailability and AvailabilityInterval
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const DEBOUNCE_DELAY = 2000; // 2 seconds
 
 // Get short day names for tabs
 const getShortDayName = (date: Date) => {
   return new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(date);
-};
-
-// Get full day name
-const getFullDayName = (date: Date) => {
-  return new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(date);
 };
 
 // Get short date format (DD/MM or MM/DD based on locale)
@@ -58,7 +54,6 @@ const getShortDate = (date: Date) => {
 
 // Get the first day of the week for the user's locale
 const getLocaleFirstDayOfWeek = () => {
-  try {
     // Try modern Intl.Locale.getWeekInfo() API (Chrome 130+, Safari 17+)
     const locale = new Intl.Locale(navigator.language);
     if ('getWeekInfo' in locale && typeof locale.getWeekInfo === 'function') {
@@ -67,34 +62,31 @@ const getLocaleFirstDayOfWeek = () => {
       // Convert: 1->1, 2->2, ..., 6->6, 7->0
       return weekInfo.firstDay === 7 ? 0 : weekInfo.firstDay;
     }
-  } catch (e) {
-    // Ignore errors and fall back
-  }
 
-  // Fallback: Use locale-based detection
-  // Most countries use Monday (1), but US, Canada, some others use Sunday (0)
-  const locale = navigator.language.toLowerCase();
-  
-  // Countries/locales that typically start the week on Sunday
-  const sundayStartLocales = [
-    'en-us', 'en-ca', 'he', 'ar-sa', 'ar-ae', 'ar-bh', 'ar-dz', 
-    'ar-eg', 'ar-iq', 'ar-jo', 'ar-kw', 'ar-lb', 'ar-ly', 'ar-ma', 
-    'ar-om', 'ar-qa', 'ar-sy', 'ar-tn', 'ar-ye', 'th', 'pt-br'
-  ];
-  
-  // Check for exact match or if it starts with a Sunday-start locale
-  if (sundayStartLocales.some(loc => locale === loc || locale.startsWith(loc + '-'))) {
-    return 0; // Sunday
-  }
-  
-  // Check for US English specifically
-  if (locale.startsWith('en') && (locale.includes('us') || locale === 'en')) {
-    // Default to Sunday for generic 'en' since it's often US
-    return 0;
-  }
-  
-  // Default to Monday for most other locales
-  return 1;
+  // // Fallback: Use locale-based detection
+  // // Most countries use Monday (1), but US, Canada, some others use Sunday (0)
+  // const locale = navigator.language.toLowerCase();
+  //
+  // // Countries/locales that typically start the week on Sunday
+  // const sundayStartLocales = [
+  //   'en-us', 'en-ca', 'he', 'ar-sa', 'ar-ae', 'ar-bh', 'ar-dz', 
+  //   'ar-eg', 'ar-iq', 'ar-jo', 'ar-kw', 'ar-lb', 'ar-ly', 'ar-ma', 
+  //   'ar-om', 'ar-qa', 'ar-sy', 'ar-tn', 'ar-ye', 'th', 'pt-br'
+  // ];
+  //
+  // // Check for exact match or if it starts with a Sunday-start locale
+  // if (sundayStartLocales.some(loc => locale === loc || locale.startsWith(loc + '-'))) {
+  //   return 0; // Sunday
+  // }
+  //
+  // // Check for US English specifically
+  // if (locale.startsWith('en') && (locale.includes('us') || locale === 'en')) {
+  //   // Default to Sunday for generic 'en' since it's often US
+  //   return 0;
+  // }
+  //
+  // // Default to Monday for most other locales
+  // return 1;
 };
 
 // Get week dates starting from the locale-appropriate day
@@ -122,7 +114,8 @@ const getWeekDates = (currentDate: Date) => {
 };
 
 // Format date to ISO string (YYYY-MM-DD)
-const formatDateToISO = (date: Date) => {
+const formatDateToISO = (dateOrString: Date | string) => {
+  const date = new Date(dateOrString);
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");
@@ -151,26 +144,80 @@ export const AvailabilitySchedule = ({
   user: Doc<"users">;
   ref?: Ref<DatePickerRef>;
 }) => {
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const today = new Date();
-    const currentDay = today.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-    const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
-    
-    // Calculate how many days to go back to reach the first day of the week
+  const router = useRouter();
+  const navigate = useNavigate();
+  const search = useSearch({ from: "/profile" });
+  const location = useLocation();
+  
+  // Parse date from URL or calculate current week start
+  const getWeekStartFromDate = (date: Date) => {
+    const currentDay = date.getDay();
+    const localeFirstDay = getLocaleFirstDayOfWeek();
     let daysBack = currentDay - localeFirstDay;
     if (daysBack < 0) {
       daysBack += 7;
     }
-    
-    const start = new Date(today);
-    start.setDate(today.getDate() - daysBack);
+    const start = new Date(date);
+    start.setDate(date.getDate() - daysBack);
     return start;
-  });
+  };
+  
+  // Initialize currentWeekStart based on URL or today
+  const currentWeekStart = (() => {
+    if (search.date) {
+      const parsedDate = new Date(search.date);
+      if (!isNaN(parsedDate.getTime())) {
+        return getWeekStartFromDate(parsedDate);
+      }
+    }
+    return getWeekStartFromDate(new Date());
+  })();
+  
+  // Navigate to a specific date
+  const navigateToDate = (date: string | Date) => {
+    // Navigate to the specific date (not just the week start)
+    void navigate({
+      to: ".",
+      search: { date: formatDateToISO(date) },
+      hash: location.hash,
+      replace: true,
+      viewTransition: false,
+    });
 
-  const [selectedSlots, setSelectedSlots] = useState<DayAvailability[]>(
-    user.availability as DayAvailability[],
+    // Clear selection
+    setSelectedTime(null);
+    setHoveredTime(null);
+  };
+
+  // Update URL when week changes
+  const setCurrentWeekStart = (newWeekStart: Date) => {
+    navigateToDate(newWeekStart);
+  };
+
+  // Use availability directly from Convex query - no local state
+  const selectedSlots = user.availability;
+  
+  // Debounced success notification  
+  const successDebouncer = useDebouncer(
+    () => toast.success("Availability updated"),
+    {
+      wait: DEBOUNCE_DELAY,
+      trailing: true,
+      leading: false
+    }
   );
-  const updateAvailability = useMutation(api.users.updateAvailability);
+  
+  // Mutation with debounced success notification
+  const updateAvailability = useMutation({
+    mutationFn: useConvexMutation(api.users.updateAvailability),
+    onSuccess: () => {
+      successDebouncer.maybeExecute();
+    },
+    onError: () => {
+      toast.error("Failed to update availability");
+    }
+  });
+  
   const [selectedTime, setSelectedTime] = useState<{
     date: string;
     hour: number;
@@ -179,16 +226,36 @@ export const AvailabilitySchedule = ({
     date: string;
     hour: number;
   } | null>(null);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(() => {
-    // Start with current day selected, adjusted for locale
-    const today = new Date();
-    const currentDay = today.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-    const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
-    // Calculate the day index within the week (0-6)
-    return (currentDay - localeFirstDay + 7) % 7;
-  });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  
+  // Calculate selectedDayIndex from URL date
+  const selectedDayIndex = (() => {
+    if (!search.date) {
+      // If no date in URL, use today
+      const today = new Date();
+      const currentDay = today.getDay();
+      const localeFirstDay = getLocaleFirstDayOfWeek();
+      return (currentDay - localeFirstDay + 7) % 7;
+    }
+    
+    // Calculate day index from URL date
+    const urlDate = new Date(search.date);
+    const dayOfWeek = urlDate.getDay();
+    const localeFirstDay = getLocaleFirstDayOfWeek();
+    return (dayOfWeek - localeFirstDay + 7) % 7;
+  })();
+
+  // Show notification immediately on navigation
+  useEffect(() => {
+    return router.subscribe("onBeforeNavigate", () => {
+      if (successDebouncer.getIsPending()) {
+        // Cancel the debounced notification
+        successDebouncer.cancel();
+        // Show immediately
+        toast.success("Availability updated");
+      }
+    });
+  }, [router, successDebouncer]);
 
   useImperativeHandle(
     ref,
@@ -208,13 +275,9 @@ export const AvailabilitySchedule = ({
     [datePickerOpen],
   );
 
-  useEffect(() => {
-    setSelectedSlots(user.availability as DayAvailability[]);
-  }, [user.availability]);
 
   const weekDates = getWeekDates(currentWeekStart);
   const selectedDate = weekDates[selectedDayIndex];
-  const selectedDateISO = formatDateToISO(selectedDate);
 
   const isSlotSelected = (date: string, hour: number) => {
     const intervals = getAvailabilityForDate(selectedSlots, date);
@@ -247,8 +310,6 @@ export const AvailabilitySchedule = ({
     // Don't allow selection on past dates
     if (isDateInPast(new Date(date))) return;
 
-    setHasChanges(true);
-
     // Case 1: If this exact time is already selected (light purple)
     if (isTimeSelected(date, hour)) {
       // Create a 1-hour interval at this exact time
@@ -257,11 +318,12 @@ export const AvailabilitySchedule = ({
         end: (hour + 1) * 60,
       };
 
-      setSelectedSlots((slots) => {
-        const existingIntervals = getAvailabilityForDate(slots, date);
-        const updatedIntervals = addInterval(existingIntervals, newInterval);
-        return updateDayAvailability(slots, date, updatedIntervals);
-      });
+      const existingIntervals = getAvailabilityForDate(selectedSlots, date);
+      const updatedIntervals = addInterval(existingIntervals, newInterval);
+      const newSlots = updateDayAvailability(selectedSlots, date, updatedIntervals);
+      
+      updateAvailability.mutate({ availability: newSlots });
+      
       setSelectedTime(null);
       return;
     }
@@ -277,11 +339,12 @@ export const AvailabilitySchedule = ({
         end: endHour * 60,
       };
 
-      setSelectedSlots((slots) => {
-        const existingIntervals = getAvailabilityForDate(slots, date);
-        const updatedIntervals = addInterval(existingIntervals, newInterval);
-        return updateDayAvailability(slots, date, updatedIntervals);
-      });
+      const existingIntervals = getAvailabilityForDate(selectedSlots, date);
+      const updatedIntervals = addInterval(existingIntervals, newInterval);
+      const newSlots = updateDayAvailability(selectedSlots, date, updatedIntervals);
+      
+      updateAvailability.mutate({ availability: newSlots });
+      
       setSelectedTime(null);
       return;
     }
@@ -289,23 +352,22 @@ export const AvailabilitySchedule = ({
     // Case 3: If this time is part of an existing time interval (dark purple) and no selection active
     if (isSlotSelected(date, hour) && !selectedTime) {
       // Find and remove the interval containing this hour
-      setSelectedSlots((slots) => {
-        const intervals = getAvailabilityForDate(slots, date);
-        const timeInMinutes = hour * 60;
+      const intervals = getAvailabilityForDate(selectedSlots, date);
+      const timeInMinutes = hour * 60;
 
-        // Find the interval to remove
-        const intervalToRemove = intervals.find(
-          (interval) =>
-            timeInMinutes >= interval.start && timeInMinutes < interval.end,
-        );
+      // Find the interval to remove
+      const intervalToRemove = intervals.find(
+        (interval) =>
+          timeInMinutes >= interval.start && timeInMinutes < interval.end,
+      );
 
-        if (intervalToRemove) {
-          const updatedIntervals = removeInterval(intervals, intervalToRemove);
-          return updateDayAvailability(slots, date, updatedIntervals);
-        }
-
-        return slots;
-      });
+      if (intervalToRemove) {
+        const updatedIntervals = removeInterval(intervals, intervalToRemove);
+        const newSlots = updateDayAvailability(selectedSlots, date, updatedIntervals);
+        
+        updateAvailability.mutate({ availability: newSlots });
+      }
+      
       setSelectedTime(null);
       return;
     }
@@ -315,16 +377,6 @@ export const AvailabilitySchedule = ({
   };
 
   // Merging is now handled by the utility functions in availability.ts
-
-  const handleSave = async () => {
-    try {
-      await updateAvailability({ availability: selectedSlots });
-      setHasChanges(false);
-      toast.success("Availability updated successfully");
-    } catch {
-      toast.error("Failed to update availability");
-    }
-  };
 
   // Format time for display using Intl API
   const formatTime = (hour: number) => {
@@ -354,6 +406,12 @@ export const AvailabilitySchedule = ({
 
   // Navigation functions
   const goToPreviousWeek = () => {
+    // Show success notification immediately if we have pending changes
+    if (successDebouncer.getIsPending()) {
+      successDebouncer.cancel();
+      toast.success("Availability updated");
+    }
+    
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() - 7);
     setCurrentWeekStart(newStart);
@@ -362,36 +420,15 @@ export const AvailabilitySchedule = ({
   };
 
   const goToNextWeek = () => {
+    // Show success notification immediately if we have pending changes
+    if (successDebouncer.getIsPending()) {
+      successDebouncer.cancel();
+      toast.success("Availability updated");
+    }
+    
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() + 7);
     setCurrentWeekStart(newStart);
-    setSelectedTime(null);
-    setHoveredTime(null);
-  };
-
-  // Navigate to a specific date
-  const navigateToDate = (dateString: string) => {
-    const targetDate = new Date(dateString + "T00:00:00");
-
-    // Calculate the start of the week for the selected date using locale-aware logic
-    const currentDay = targetDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-    const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
-    
-    // Calculate how many days to go back to reach the first day of the week
-    let daysBack = currentDay - localeFirstDay;
-    if (daysBack < 0) {
-      daysBack += 7;
-    }
-    
-    const weekStart = new Date(targetDate);
-    weekStart.setDate(targetDate.getDate() - daysBack);
-    setCurrentWeekStart(weekStart);
-
-    // Calculate the day index within the week (0-6)
-    const dayIndex = (currentDay - localeFirstDay + 7) % 7;
-    setSelectedDayIndex(dayIndex);
-
-    // Clear selection
     setSelectedTime(null);
     setHoveredTime(null);
   };
@@ -418,7 +455,6 @@ export const AvailabilitySchedule = ({
         day: "numeric",
       });
 
-      const monthYear = monthYearFormatter.format(start);
       const startDay = startDayFormatter.format(start);
       const endDay = endDayFormatter.format(end);
 
@@ -452,12 +488,6 @@ export const AvailabilitySchedule = ({
                 extend selection.
               </CardDescription>
             </div>
-            {hasChanges && (
-              <Button onClick={() => void handleSave()} size="sm">
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -489,23 +519,13 @@ export const AvailabilitySchedule = ({
                   selected={selectedDate}
                   onSelect={(date) => {
                     if (date) {
-                      // Calculate the start of the week for the selected date using locale-aware logic
-                      const currentDay = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-                      const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
-                      
-                      // Calculate how many days to go back to reach the first day of the week
-                      let daysBack = currentDay - localeFirstDay;
-                      if (daysBack < 0) {
-                        daysBack += 7;
+                      // Show success notification immediately if we have pending changes
+                      if (successDebouncer.getIsPending()) {
+                        successDebouncer.cancel();
+                        toast.success("Availability updated");
                       }
                       
-                      const weekStart = new Date(date);
-                      weekStart.setDate(date.getDate() - daysBack);
-                      setCurrentWeekStart(weekStart);
-
-                      // Calculate the day index within the week (0-6)
-                      const dayIndex = (currentDay - localeFirstDay + 7) % 7;
-                      setSelectedDayIndex(dayIndex);
+                      navigateToDate(date);
 
                       // Clear selection
                       setSelectedTime(null);
@@ -532,8 +552,13 @@ export const AvailabilitySchedule = ({
           <Tabs
             value={selectedDayIndex.toString()}
             onValueChange={(v) => {
-              const newIndex = parseInt(v);
-              setSelectedDayIndex(newIndex);
+              if (successDebouncer.getIsPending()) {
+                successDebouncer.cancel();
+                toast.success("Availability updated");
+              }
+              
+              navigateToDate(weekDates[parseInt(v)]);
+              
               setSelectedTime(null);
               setHoveredTime(null);
             }}
@@ -666,7 +691,7 @@ export const AvailabilitySchedule = ({
                     interval,
                   })),
                 )
-                .map(({ date, interval }, i) => {
+                .map(({ date, interval }) => {
                   const dateObj = new Date(date + "T00:00:00");
                   const dateFormatted = new Intl.DateTimeFormat(undefined, {
                     weekday: "short",
@@ -676,7 +701,7 @@ export const AvailabilitySchedule = ({
 
                   return (
                     <button
-                      key={dateFormatted}
+                      key={`${date}-${interval.start}-${interval.end}`}
                       onClick={() => navigateToDate(date)}
                       className="flex items-center gap-2 w-full text-left p-2 rounded hover:bg-gray-50 transition-colors cursor-pointer"
                       title={`Click to view ${dateFormatted}`}

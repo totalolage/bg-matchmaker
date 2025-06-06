@@ -61,11 +61,17 @@ export const getDiscoverySessions = query({
         const sessionDateISO = sessionDate.toISOString().split('T')[0];
         const timeStr = sessionDate.toTimeString().slice(0, 5);
         
-        const availableSlot = user.availability.find(slot => 
-          slot.date === sessionDateISO &&
-          slot.startTime <= timeStr &&
-          slot.endTime >= timeStr
-        );
+        // Convert session time to minutes since midnight
+        const sessionMinutes = sessionDate.getHours() * 60 + sessionDate.getMinutes();
+        
+        const availableSlot = user.availability.find(slot => {
+          if (slot.date !== sessionDateISO) return false;
+          
+          // Check if session time falls within any interval
+          return slot.intervals.some(interval =>
+            sessionMinutes >= interval.start && sessionMinutes < interval.end
+          );
+        });
         
         if (availableSlot) {
           score += 30;

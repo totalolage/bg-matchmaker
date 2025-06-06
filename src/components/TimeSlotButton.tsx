@@ -15,7 +15,7 @@ const timeSlotButtonVariants = cva(
         hoverRange: "bg-purple-200 text-purple-900 border-purple-400",
         hoverDelete: [
           "bg-purple-500 text-white border-purple-600 hover:bg-purple-500 hover:text-white",
-          "[background-image:repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(255,255,255,0.3)_3px,rgba(255,255,255,0.3)_6px)]",
+          "[background-image:repeating-linear-gradient(-45deg,transparent,transparent_3px,rgba(255,255,255,0.3)_3px,rgba(255,255,255,0.3)_6px)]",
         ],
       },
     },
