@@ -4,7 +4,7 @@ import {
   useNavigate,
   useLocation,
 } from "@tanstack/react-router";
-import { GameLibrary } from "../components/GameLibrary";
+import { GameLibrary } from "../components/game-library";
 import { AvailabilitySchedule } from "../components/availability";
 import { useState, useRef, useEffect } from "react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
