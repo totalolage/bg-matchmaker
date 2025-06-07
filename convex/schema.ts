@@ -82,12 +82,18 @@ const applicationTables = {
     bggId: v.string(),
     name: v.string(),
     image: v.optional(v.string()),
-    minPlayers: v.number(),
-    maxPlayers: v.number(),
-    playingTime: v.number(),
+    minPlayers: v.optional(v.number()),
+    maxPlayers: v.optional(v.number()),
+    playingTime: v.optional(v.number()),
     complexity: v.optional(v.number()),
     description: v.optional(v.string()),
-  }).index("by_bgg_id", ["bggId"]),
+    yearPublished: v.optional(v.number()),
+    lastUpdated: v.number(), // Timestamp for cache freshness
+    popularity: v.optional(v.number()), // For sorting search results
+  }).index("by_bgg_id", ["bggId"])
+    .searchIndex("search_name", {
+      searchField: "name",
+    }),
 
   userSwipes: defineTable({
     userId: v.id("users"),
