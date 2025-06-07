@@ -5,8 +5,8 @@ import {
   removeInterval,
   updateDayAvailability,
   AvailabilityInterval
-} from "../../../lib/availability";
-import { Doc } from "convex/_generated/dataModel";
+} from "@/lib/availability";
+import { Doc } from "@convex/_generated/dataModel";
 import { isDateInPast, findIntervalContainingHour } from "../utils";
 
 interface SelectedTime {

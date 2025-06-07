@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
-import { Button } from "../../ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { Calendar } from "../../ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { formatWeekRange } from "../utils";
 
 interface WeekNavigationProps {

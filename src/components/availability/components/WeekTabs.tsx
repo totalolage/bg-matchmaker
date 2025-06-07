@@ -1,5 +1,5 @@
-import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
-import { cn } from "../../../lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { getShortDayName, getShortDate, formatDateToISO, isDateInPast } from "../utils";
 
 interface WeekTabsProps {

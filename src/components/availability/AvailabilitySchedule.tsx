@@ -5,9 +5,9 @@ import {
   useImperativeHandle,
   Ref,
 } from "react";
-import { Doc } from "convex/_generated/dataModel";
+import { Doc } from "@convex/_generated/dataModel";
 import { useMutation as useConvexMutation } from "convex/react";
-import { api } from "convex/_generated/api";
+import { api } from "@convex/_generated/api";
 import { toast } from "sonner";
 import { useDebouncer } from "@tanstack/react-pacer";
 import { useRouter, useSearch } from "@tanstack/react-router";
@@ -18,8 +18,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { TabsContent } from "../ui/tabs";
+} from "@/components/ui/card";
+import { TabsContent } from "@/components/ui/tabs";
 
 // Local imports
 import { DEBOUNCE_DELAY } from "./constants";

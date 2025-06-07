@@ -1,7 +1,7 @@
-import { TimeSlotButton } from "../../TimeSlotButton";
+import { TimeSlotButton } from "@/components/TimeSlotButton";
 import { formatTime, isDateInPast, findIntervalContainingHour } from "../utils";
-import { getAvailabilityForDate, AvailabilityInterval } from "../../../lib/availability";
-import { Doc } from "convex/_generated/dataModel";
+import { getAvailabilityForDate, AvailabilityInterval } from "@/lib/availability";
+import { Doc } from "@convex/_generated/dataModel";
 import { HOURS } from "../constants";
 
 interface TimeGridProps {

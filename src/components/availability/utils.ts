@@ -1,4 +1,4 @@
-import { AvailabilityInterval } from "../../lib/availability";
+import { AvailabilityInterval } from "@/lib/availability";
 
 // Get short day names for tabs
 export const getShortDayName = (date: Date) => {
