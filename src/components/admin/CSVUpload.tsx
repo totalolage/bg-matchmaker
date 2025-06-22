@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@convex/_generated/api";
+import { CSV_IMPORT } from "@convex/lib/constants";
 
 interface CSVRow {
   id: string;
@@ -132,28 +133,40 @@ export function CSVUpload() {
           }
         }
 
-        // Process all games at once asynchronously
+        // Process games in batches of 1000
         setGamesToUpload(allGames.length);
         
         void (async () => {
           setCurrentStage("uploading");
           setUploadProgress(0);
           
-          try {
-            // Upload all games in a single request
-            await uploadMutation.mutateAsync(allGames);
-            localStats.imported = allGames.length;
-            setUploadProgress(100);
-            setStats({ ...localStats });
+          let totalImported = 0;
+          const totalBatches = Math.ceil(allGames.length / CSV_IMPORT.BATCH_SIZE);
+          
+          for (let i = 0; i < allGames.length; i += CSV_IMPORT.BATCH_SIZE) {
+            const batch = allGames.slice(i, i + CSV_IMPORT.BATCH_SIZE);
+            const batchNumber = Math.floor(i / CSV_IMPORT.BATCH_SIZE) + 1;
+            
+            try {
+              await uploadMutation.mutateAsync(batch);
+              totalImported += batch.length;
+              localStats.imported = totalImported;
+              
+              // Update progress based on batches completed
+              const progress = (batchNumber / totalBatches) * 100;
+              setUploadProgress(progress);
+              setStats({ ...localStats });
+            } catch (error) {
+              console.error(`Error importing batch ${batchNumber}:`, error);
+              localStats.errors += batch.length;
+              toast.error(`Failed to import batch ${batchNumber} of ${totalBatches} (${batch.length} games)`);
+            }
+          }
 
+          if (totalImported > 0) {
             toast.success(
-              `Import complete! Imported ${localStats.imported} games out of ${localStats.total} total.`
+              `Import complete! Imported ${totalImported} games out of ${localStats.total} total.`
             );
-          } catch (error) {
-            console.error("Error importing games:", error);
-            localStats.errors = allGames.length;
-            toast.error(`Failed to import ${allGames.length} games`);
-            setStats({ ...localStats });
           }
 
           setIsUploading(false);
@@ -236,7 +249,7 @@ export function CSVUpload() {
                 </div>
                 <Progress value={uploadProgress} className="transition-all duration-500" />
                 <div className="text-sm text-muted-foreground text-center">
-                  Saving {gamesToUpload.toLocaleString()} games to database...
+                  Saving {gamesToUpload.toLocaleString()} games to database in batches of {CSV_IMPORT.BATCH_SIZE.toLocaleString()}...
                 </div>
               </div>
             )}

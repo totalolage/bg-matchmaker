@@ -19,4 +19,10 @@ export const BGG_SEEDING = {
   SEED_NAME: "bgg_seed",
 } as const;
 
+// CSV Import Constants
+export const CSV_IMPORT = {
+  // Batch size for bulk imports to avoid memory issues
+  BATCH_SIZE: 1000,
+} as const;
+
 // Other app constants can be added here as needed

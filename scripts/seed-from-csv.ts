@@ -9,6 +9,7 @@ import { createInterface } from "readline";
 import { ConvexHttpClient } from "convex/browser";
 
 import { api } from "../convex/_generated/api";
+import { CSV_IMPORT } from "../convex/lib/constants";
 
 // Type for CSV row data
 interface CSVRow {
@@ -135,7 +136,6 @@ async function seedFromCSV(): Promise<void> {
   let skipped = 0;
   let errors = 0;
   const batch: ParsedGameData[] = [];
-  const BATCH_SIZE = 50; // Process in batches to avoid overwhelming the database
 
   // Create CSV parser
   const parser = parse({
@@ -179,7 +179,7 @@ async function seedFromCSV(): Promise<void> {
             batch.push(gameData);
             
             // Process batch when it reaches the size limit
-            if (batch.length >= BATCH_SIZE) {
+            if (batch.length >= CSV_IMPORT.BATCH_SIZE) {
               void processBatch();
             }
           } else {
