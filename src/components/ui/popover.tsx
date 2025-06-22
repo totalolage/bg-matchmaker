@@ -31,4 +31,4 @@ export const PopoverContent = (props: React.ComponentPropsWithoutRef<typeof Popo
 }
 export type PopoverContentProps = ComponentProps<typeof PopoverContent>
 
-export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger }
+export { Popover, PopoverAnchor, PopoverTrigger }

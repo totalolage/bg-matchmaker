@@ -159,13 +159,6 @@ export type SelectSeparatorProps = ComponentProps<typeof SelectSeparator>
 
 export {
   Select,
-  SelectContent,
   SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
-  SelectSeparator,
-  SelectTrigger,
   SelectValue,
 }

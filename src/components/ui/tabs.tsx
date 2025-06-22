@@ -57,4 +57,4 @@ export const TabsContent = (props: React.ComponentPropsWithoutRef<typeof TabsPri
 }
 export type TabsContentProps = ComponentProps<typeof TabsContent>
 
-export { Tabs, TabsContent, TabsList, TabsTrigger }
+export { Tabs }
