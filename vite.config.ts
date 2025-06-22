@@ -1,10 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tanstackRouter  from "@tanstack/router-plugin/vite";
 import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
+    tanstackRouter(),
     react(),
     // The code below enables dev tools like taking screenshots of your site
     // while it is being developed on chef.convex.dev.
