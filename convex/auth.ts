@@ -61,6 +61,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         gameLibrary: [],
         availability: [],
         isAnonymous: false,
+        role: "User", // Default role for new users
       });
       return userId;
     },

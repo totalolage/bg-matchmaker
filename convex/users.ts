@@ -40,6 +40,7 @@ export const createOrUpdateProfile = mutation({
         discordId: args.discordId,
         gameLibrary: [],
         availability: [],
+        role: "User", // Default role for new users
       });
     }
   },

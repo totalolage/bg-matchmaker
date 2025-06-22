@@ -15,6 +15,7 @@ const applicationTables = {
     displayName: v.optional(v.string()), // Custom display name
     profilePic: v.optional(v.string()),
     discordId: v.string(),
+    role: v.optional(v.union(v.literal("User"), v.literal("Admin"))),
     gameLibrary: v.array(v.object({
       gameId: v.string(),
       gameName: v.string(),
@@ -82,6 +83,7 @@ const applicationTables = {
     bggId: v.string(),
     name: v.string(),
     image: v.optional(v.string()),
+    thumbnail: v.optional(v.string()),
     minPlayers: v.optional(v.number()),
     maxPlayers: v.optional(v.number()),
     playingTime: v.optional(v.number()),
@@ -90,6 +92,7 @@ const applicationTables = {
     yearPublished: v.optional(v.number()),
     lastUpdated: v.number(), // Timestamp for cache freshness
     popularity: v.optional(v.number()), // For sorting search results
+    averageRating: v.optional(v.number()), // BGG average rating
   }).index("by_bgg_id", ["bggId"])
     .searchIndex("search_name", {
       searchField: "name",
@@ -102,6 +105,30 @@ const applicationTables = {
   }).index("by_user", ["userId"])
     .index("by_session", ["sessionId"])
     .index("by_user_session", ["userId", "sessionId"]),
+
+  jobs: defineTable({
+    name: v.string(), // Unique job identifier (e.g., "bgg_seed")
+    type: v.string(), // Job type (e.g., "seeding", "import", "export")
+    status: v.union(
+      v.literal("in_progress"),
+      v.literal("stopping"),
+      v.literal("stopped"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    progress: v.object({
+      current: v.number(), // Current progress value
+      total: v.optional(v.number()), // Total items to process (if known)
+    }),
+    metadata: v.any(), // Job-specific metadata (flexible schema)
+    error: v.optional(v.string()), // Error message if failed
+    startedAt: v.number(), // Timestamp when job started
+    lastUpdatedAt: v.number(), // Timestamp of last update
+    completedAt: v.optional(v.number()), // Timestamp when completed
+    scheduledFunctionId: v.optional(v.id("_scheduled_functions")), // ID of scheduled continuation
+  }).index("by_name", ["name"])
+    .index("by_type", ["type"])
+    .index("by_status", ["status"]),
 };
 
 export default defineSchema({
