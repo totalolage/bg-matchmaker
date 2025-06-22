@@ -21,20 +21,20 @@
 
 // Re-export types
 export type {
-  BGGSearchResult,
-  BGGGameDetails,
   BGGDataSourceConfig,
+  BGGGameDetails,
+  BGGSearchResult,
   BulkFetchResult,
 } from "./types";
 
 // Re-export service functions
 export {
-  searchGames,
   getGameDetails,
-  getMultipleGameDetails,
-  getHotGames,
-  getTopRankedGames,
   getGameDetailsWithErrorHandling,
+  getHotGames,
+  getMultipleGameDetails,
+  getTopRankedGames,
+  searchGames,
 } from "./bgg_service";
 
 // Create namespace for cleaner imports

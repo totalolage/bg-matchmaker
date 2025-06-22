@@ -1,4 +1,5 @@
-import { ReactNode, ComponentProps } from "react";
+import { ComponentProps,ReactNode } from "react";
+
 import { cn } from "../lib/utils";
 
 export const SectionHeader = ({ 

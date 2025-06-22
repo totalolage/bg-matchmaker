@@ -1,5 +1,6 @@
-import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
 import Discord from "@auth/core/providers/discord";
+import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
+
 import { query } from "./_generated/server";
 import { MutationCtx } from "./_generated/server";
 

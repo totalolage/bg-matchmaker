@@ -2,9 +2,11 @@
  * Rate limiting configuration and utilities for BGG API
  */
 import { RateLimiter, SECOND } from "@convex-dev/rate-limiter";
+
+import { ConvexError } from "convex/values";
+
 import { components } from "../../_generated/api";
 import { ActionCtx } from "../../_generated/server";
-import { ConvexError } from "convex/values";
 
 // Initialize rate limiter with BGG-specific policies
 export const rateLimiter = new RateLimiter(components.rateLimiter, {

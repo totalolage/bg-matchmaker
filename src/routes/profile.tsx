@@ -1,26 +1,27 @@
 import {
   createFileRoute,
   Link,
-  useNavigate,
   useLocation,
+  useNavigate,
 } from "@tanstack/react-router";
-import { GameLibrary } from "../components/game-library";
+import { type } from "arktype";
+import { AnimatePresence,motion } from "framer-motion";
+import { Edit,LogOut } from "lucide-react";
+import { useEffect,useRef, useState } from "react";
+
 import { AvailabilitySchedule } from "../components/availability";
-import { useState, useRef, useEffect } from "react";
-import { useCurrentUser } from "../hooks/useCurrentUser";
-import { LogOut, Edit } from "lucide-react";
+import { GameLibrary } from "../components/game-library";
+import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
+import { PageHeader,PageLayout } from "../components/PageLayout";
+import { Button } from "../components/ui/button";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { Button } from "../components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
-import { PageLayout, PageHeader } from "../components/PageLayout";
 import { UserAvatar } from "../components/UserAvatar";
-import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
-import { type } from "arktype";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 const searchSchema = type({
   "date?": "string",

@@ -1,15 +1,16 @@
 /**
  * Data transformation functions for BGG API responses
  */
-import { BGGSearchResult, BGGGameDetails, BGGAPIError } from "./types";
 import {
-  BGGSearchResponse,
-  BGGThingResponse,
   BGGHotResponse,
   BGGSearchItem,
+  BGGSearchResponse,
   BGGThingItem,
+  BGGThingResponse,
 } from "../bggSchemas";
 import { hasProperty } from "../utils";
+
+import { BGGAPIError,BGGGameDetails, BGGSearchResult } from "./types";
 
 /**
  * Transform BGG search response to search results

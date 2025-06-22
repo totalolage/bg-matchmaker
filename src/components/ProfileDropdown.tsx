@@ -1,7 +1,9 @@
-import { useRef, ComponentProps } from "react";
 import { Link } from "@tanstack/react-router";
+import { ChevronDown, LogOut,User } from "lucide-react";
+import { ComponentProps,useRef } from "react";
+
 import { useCurrentUser } from "../hooks/useCurrentUser";
-import { ChevronDown, User, LogOut } from "lucide-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { UserAvatar } from "./UserAvatar";
 import { LogoutDialog, LogoutDialogRef } from "./LogoutDialog";
+import { UserAvatar } from "./UserAvatar";
 
 export const ProfileDropdown = () => {
   const user = useCurrentUser();

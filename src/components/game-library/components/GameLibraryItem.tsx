@@ -1,4 +1,6 @@
 import { X } from "lucide-react";
+
+import { GameImage } from "@/components/GameImage";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -7,9 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GameImage } from "@/components/GameImage";
-import type { GameLibraryItem as GameLibraryItemType } from "../types";
+
 import { EXPERTISE_LEVELS } from "../constants";
+import type { GameLibraryItem as GameLibraryItemType } from "../types";
 
 interface GameLibraryItemProps {
   game: GameLibraryItemType;

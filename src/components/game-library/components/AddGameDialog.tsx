@@ -1,14 +1,17 @@
+import { useDebouncedValue } from "@tanstack/react-pacer";
+import { Loader2, Search, X } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "convex/react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { api } from "@convex/_generated/api";
 import { Doc } from "@convex/_generated/dataModel";
-import { Plus, Search, X, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useDebouncedValue } from "@tanstack/react-pacer";
-import { GameSearchResults } from "./GameSearchResults";
+import { useQuery } from "convex/react";
+
+import { MIN_SEARCH_LENGTH,SEARCH_DEBOUNCE_MS } from "../constants";
 import type { GameSearchResult } from "../types";
-import { SEARCH_DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "../constants";
+
+import { GameSearchResults } from "./GameSearchResults";
 
 interface AddGameDialogProps {
   user: Doc<"users">;

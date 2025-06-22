@@ -1,13 +1,14 @@
 import { useState } from "react";
+
 import { 
-  getAvailabilityForDate,
   addInterval,
+  AvailabilityInterval,
+  getAvailabilityForDate,
   removeInterval,
-  updateDayAvailability,
-  AvailabilityInterval
-} from "@/lib/availability";
+  updateDayAvailability} from "@/lib/availability";
 import { Doc } from "@convex/_generated/dataModel";
-import { isDateInPast, findIntervalContainingHour } from "../utils";
+
+import { findIntervalContainingHour,isDateInPast } from "../utils";
 
 interface SelectedTime {
   date: string;

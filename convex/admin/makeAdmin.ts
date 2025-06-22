@@ -1,5 +1,6 @@
-import { mutation } from "../_generated/server";
 import { v } from "convex/values";
+
+import { mutation } from "../_generated/server";
 
 // This mutation can be run from the Convex dashboard to make a user an admin
 export const makeUserAdmin = mutation({

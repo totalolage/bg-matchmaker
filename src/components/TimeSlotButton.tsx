@@ -1,7 +1,9 @@
-import { ComponentProps } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Button } from "./ui/button";
+import { ComponentProps } from "react";
+
 import { cn } from "../lib/utils";
+
+import { Button } from "./ui/button";
 
 const timeSlotButtonVariants = cva(
   "col-span-3 h-10 text-xs font-medium transition-all relative overflow-hidden",

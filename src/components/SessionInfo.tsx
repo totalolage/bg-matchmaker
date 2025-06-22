@@ -1,8 +1,10 @@
+import { Clock, MapPin,Users } from "lucide-react";
 import { ComponentProps } from "react";
-import { Users, Clock, MapPin } from "lucide-react";
+
 import { Doc } from "../../convex/_generated/dataModel";
-import { IconText } from "./IconText";
 import { cn } from "../lib/utils";
+
+import { IconText } from "./IconText";
 
 export const SessionInfo = ({ 
   session, 

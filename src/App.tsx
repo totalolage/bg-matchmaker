@@ -1,8 +1,10 @@
-import { RouterProvider } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConvexQueryClient } from "@convex-dev/react-query";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexQueryClient } from "@convex-dev/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "@tanstack/react-router";
+
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+
 import { createRouter } from "./router";
 
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL!;

@@ -1,8 +1,10 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { AdminPage } from '../components/admin/AdminPage'
-import { useQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+
 import { api } from '@convex/_generated/api'
+
+import { AdminPage } from '../components/admin/AdminPage'
 
 function AdminRoute() {
   const { data: user } = useQuery(convexQuery(api.auth.loggedInUser, {}))

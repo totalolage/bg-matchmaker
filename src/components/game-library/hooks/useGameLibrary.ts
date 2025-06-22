@@ -1,8 +1,10 @@
-import { useMutation } from "convex/react";
+import { toast } from "sonner";
+
 import { api } from "@convex/_generated/api";
 import { Doc } from "@convex/_generated/dataModel";
-import { toast } from "sonner";
-import type { GameSearchResult, ExpertiseLevel } from "../types";
+import { useMutation } from "convex/react";
+
+import type { ExpertiseLevel,GameSearchResult } from "../types";
 
 export function useGameLibrary(user: Doc<"users">) {
   const updateGameLibrary = useMutation(api.users.updateGameLibrary);

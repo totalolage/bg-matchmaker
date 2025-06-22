@@ -1,7 +1,8 @@
-import { useNavigate, useLocation, useSearch } from "@tanstack/react-router";
-import { formatDateToISO, getWeekStartFromDate } from "../utils";
 import { Debouncer } from "@tanstack/react-pacer";
+import { useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
+
+import { formatDateToISO, getWeekStartFromDate } from "../utils";
 
 export const useWeekNavigation = (successDebouncer: Debouncer<() => void>) => {
   const navigate = useNavigate();

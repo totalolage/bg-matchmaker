@@ -2,15 +2,17 @@
  * XML parsing utilities for BGG API responses
  */
 import { XMLParser } from "fast-xml-parser";
-import { BGGAPIError } from "./types";
+
 import {
-  validateSearchResponse,
-  validateThingResponse,
-  validateHotResponse,
+  BGGHotResponse,
   BGGSearchResponse,
   BGGThingResponse,
-  BGGHotResponse,
+  validateHotResponse,
+  validateSearchResponse,
+  validateThingResponse,
 } from "../bggSchemas";
+
+import { BGGAPIError } from "./types";
 
 // Parser configuration
 const parserOptions = {

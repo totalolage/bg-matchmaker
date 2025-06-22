@@ -1,12 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { api } from "../../convex/_generated/api";
-import { SwipeCard } from "../components/SwipeCard";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button } from "../components/ui/button";
-import { PageLayout, PageHeader, PageContent } from "../components/PageLayout";
+
+import { api } from "../../convex/_generated/api";
 import { EmptyState } from "../components/EmptyState";
+import { PageContent,PageHeader, PageLayout } from "../components/PageLayout";
+import { SwipeCard } from "../components/SwipeCard";
+import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/discover")({
   component: Discover,
@@ -24,13 +25,13 @@ function Discover() {
 
     const session = sessions[currentIndex];
     if (!session) return;
-    
+
     await swipeSession({
       sessionId: session._id,
       action,
     });
 
-    setCurrentIndex(prev => prev + 1);
+    setCurrentIndex((prev) => prev + 1);
   };
 
   const currentSession = sessions[currentIndex];
@@ -38,24 +39,31 @@ function Discover() {
   return (
     <PageLayout>
       <PageHeader>
-        <h1 className="text-2xl font-bold text-gray-900 text-center">Discover Sessions</h1>
+        <h1 className="text-2xl font-bold text-gray-900 text-center">
+          Discover Sessions
+        </h1>
       </PageHeader>
 
       <PageContent className="flex flex-col overflow-hidden">
         <div className="flex-1 flex items-center justify-center">
           {currentSession ? (
             <div key={currentSession._id} className="w-full">
-              <SwipeCard session={currentSession} onSwipe={(action) => void handleSwipe(action)} />
+              <SwipeCard
+                session={currentSession}
+                onSwipe={(action) => void handleSwipe(action)}
+              />
             </div>
           ) : (
-            <EmptyState 
+            <EmptyState
               emoji="🎉"
               title="All caught up!"
               subtitle={
                 <>
                   No more sessions to discover right now.
                   <br />
-                  <span className="text-sm text-gray-400">Check back later for new sessions!</span>
+                  <span className="text-sm text-gray-400">
+                    Check back later for new sessions!
+                  </span>
                 </>
               }
             />
@@ -86,3 +94,4 @@ function Discover() {
     </PageLayout>
   );
 }
+

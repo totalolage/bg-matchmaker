@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatTime } from "../utils";
 import { Doc } from "@convex/_generated/dataModel";
+
+import { formatTime } from "../utils";
 
 interface AvailabilitySummaryProps {
   selectedSlots: Doc<"users">["availability"];

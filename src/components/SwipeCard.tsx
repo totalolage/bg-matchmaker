@@ -1,10 +1,12 @@
+import { Star,Users } from "lucide-react";
 import { ComponentProps } from "react";
+
 import { Doc } from "../../convex/_generated/dataModel";
-import { Users, Star } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+
 import { Badge } from "./ui/badge";
-import { SessionInfo } from "./SessionInfo";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { GameImage } from "./GameImage";
+import { SessionInfo } from "./SessionInfo";
 
 export const SwipeCard = ({ 
   session, 

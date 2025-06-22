@@ -1,9 +1,11 @@
-import { useState, ComponentProps } from "react";
-import { Doc } from "@convex/_generated/dataModel";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ComponentProps,useState } from "react";
+
 import { EmptyState } from "@/components/EmptyState";
 import { SectionHeader } from "@/components/SectionHeader";
+import { Button } from "@/components/ui/button";
+import { Doc } from "@convex/_generated/dataModel";
+
 import { AddGameDialog } from "./components/AddGameDialog";
 import { GameLibraryItem } from "./components/GameLibraryItem";
 import { useGameLibrary } from "./hooks/useGameLibrary";

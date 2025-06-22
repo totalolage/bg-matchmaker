@@ -3,25 +3,26 @@
  * Combines API client, parsing, and mapping functionality
  */
 import { ActionCtx } from "../../_generated/server";
-import { BGGSearchResult, BGGGameDetails, BulkFetchResult } from "./types";
+
 import {
-  makeRequest,
+  buildHotParams,
   buildSearchParams,
   buildThingParams,
-  buildHotParams,
   buildTopRankedParams,
+  makeRequest,
 } from "./api_client";
 import {
-  parseSearchResponse,
-  parseThingResponse,
-  parseHotResponse,
-} from "./xml_parser";
-import {
+  mapHotResponse,
+  mapMultipleThingItems,
   mapSearchResponse,
   mapThingResponse,
-  mapMultipleThingItems,
-  mapHotResponse,
 } from "./mappers";
+import { BGGGameDetails, BGGSearchResult, BulkFetchResult } from "./types";
+import {
+  parseHotResponse,
+  parseSearchResponse,
+  parseThingResponse,
+} from "./xml_parser";
 
 /**
  * Search for games by name

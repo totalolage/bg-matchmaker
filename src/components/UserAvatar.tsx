@@ -1,8 +1,10 @@
 import { ComponentProps } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+
 import { Doc } from "../../convex/_generated/dataModel";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { cn } from "../lib/utils";
+
+import { Avatar, AvatarFallback,AvatarImage } from "./ui/avatar";
 
 const sizeClasses = {
   sm: "w-8 h-8",

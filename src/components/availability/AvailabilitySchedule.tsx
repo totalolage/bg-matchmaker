@@ -1,17 +1,14 @@
-import {
-  useState,
-  useEffect,
-  ComponentProps,
-  useImperativeHandle,
-  Ref,
-} from "react";
-import { Doc } from "@convex/_generated/dataModel";
-import { useMutation as useConvexMutation } from "convex/react";
-import { api } from "@convex/_generated/api";
-import { toast } from "sonner";
 import { useDebouncer } from "@tanstack/react-pacer";
-import { useRouter, useSearch } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter, useSearch } from "@tanstack/react-router";
+import {
+  Ref,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
+import { toast } from "sonner";
+
 import {
   Card,
   CardContent,
@@ -20,16 +17,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
+import { api } from "@convex/_generated/api";
+import { Doc } from "@convex/_generated/dataModel";
+import { useMutation as useConvexMutation } from "convex/react";
 
-// Local imports
-import { DEBOUNCE_DELAY } from "./constants";
-import { getWeekDates, getLocaleFirstDayOfWeek } from "./utils";
-import { useAvailabilitySelection } from "./hooks/useAvailabilitySelection";
-import { useWeekNavigation } from "./hooks/useWeekNavigation";
+import { AvailabilitySummary } from "./components/AvailabilitySummary";
+import { TimeGrid } from "./components/TimeGrid";
 import { WeekNavigation } from "./components/WeekNavigation";
 import { WeekTabs } from "./components/WeekTabs";
-import { TimeGrid } from "./components/TimeGrid";
-import { AvailabilitySummary } from "./components/AvailabilitySummary";
+import { useAvailabilitySelection } from "./hooks/useAvailabilitySelection";
+import { useWeekNavigation } from "./hooks/useWeekNavigation";
+// Local imports
+import { DEBOUNCE_DELAY } from "./constants";
+import { getLocaleFirstDayOfWeek,getWeekDates } from "./utils";
 
 interface DatePickerRef {
   state: "open" | "closed";

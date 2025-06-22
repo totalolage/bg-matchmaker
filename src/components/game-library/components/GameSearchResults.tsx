@@ -1,4 +1,5 @@
 import { AlertCircle } from "lucide-react";
+
 import {
   Select,
   SelectContent,
@@ -6,8 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { GameSearchResult, GameLibraryItem } from "../types";
+
 import { EXPERTISE_LEVELS } from "../constants";
+import type { GameLibraryItem,GameSearchResult } from "../types";
 
 interface GameSearchResultsProps {
   searchResults: GameSearchResult[];

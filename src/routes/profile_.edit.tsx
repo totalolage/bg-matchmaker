@@ -1,19 +1,21 @@
+import { arktypeResolver } from "@hookform/resolvers/arktype";
+import { useMutation } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
-import { useCurrentUser } from "../hooks/useCurrentUser";
-import { useMutation as useConvexMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { useForm } from "react-hook-form";
-import { arktypeResolver } from "@hookform/resolvers/arktype";
 import { type } from "arktype";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import { useMutation as useConvexMutation } from "convex/react";
+
+import { api } from "../../convex/_generated/api";
+import { PageContent,PageHeader, PageLayout } from "../components/PageLayout";
+import { Button } from "../components/ui/button";
 import {
   Form,
   FormControl,
@@ -23,9 +25,9 @@ import {
   FormLabel,
   FormMessage,
 } from "../components/ui/form";
-import { useMutation } from "@tanstack/react-query";
-import { PageLayout, PageHeader, PageContent } from "../components/PageLayout";
+import { Input } from "../components/ui/input";
 import { UserAvatar } from "../components/UserAvatar";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 const profileFormSchema = type({
   displayName: "string",
