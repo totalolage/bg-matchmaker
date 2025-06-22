@@ -22,6 +22,8 @@ import { BGG_SEEDING } from "@convex/lib/constants";
 
 import { PageContent,PageHeader, PageLayout } from "../PageLayout";
 
+import { CSVUpload } from "./CSVUpload";
+
 export function AdminPage() {
   // Query seeding status - automatically stays up to date
   const { data: status } = useQuery(
@@ -157,7 +159,10 @@ export function AdminPage() {
       </PageHeader>
 
       <PageContent>
-        <Card>
+        <div className="space-y-6">
+          <CSVUpload />
+          
+          <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -341,6 +346,7 @@ export function AdminPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </PageContent>
     </PageLayout>
   );
