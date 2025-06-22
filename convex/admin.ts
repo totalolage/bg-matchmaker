@@ -7,7 +7,6 @@ import { requireAdminAction } from "./lib/adminAuth";
 
 // Get admin seeding status with next run time
 export const getSeedingAdminStatus = query({
-  args: {},
   handler: async (ctx) => {
     // Get seeding job
     const job = await ctx.db
