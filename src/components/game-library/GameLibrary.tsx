@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { ComponentProps, useState } from "react";
+import { useState } from "react";
 
 import { EmptyState } from "@/components/EmptyState";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -7,18 +7,34 @@ import { Button } from "@/components/ui/button";
 import { Doc } from "@convex/_generated/dataModel";
 
 import { AddGameDialog } from "./components/AddGameDialog";
+import { AddGameDialogWithPagination } from "./components/AddGameDialogWithPagination";
 import { GameLibraryItem } from "./components/GameLibraryItem";
 import { useGameLibrary } from "./hooks/useGameLibrary";
 import type { GameSearchResult } from "./types";
 
-export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
+interface GameLibraryProps {
+  user: Doc<"users">;
+  usePagination?: boolean;
+}
+
+export const GameLibrary = ({
+  user,
+  usePagination = true,
+}: GameLibraryProps) => {
   const [isAddingGame, setIsAddingGame] = useState(false);
   const { addGame, removeGame, updateExpertise } = useGameLibrary(user);
 
-  const handleAddGame = async (game: GameSearchResult, expertiseLevel: string) => {
+  const handleAddGame = async (
+    game: GameSearchResult,
+    expertiseLevel: string,
+  ) => {
     await addGame(game, expertiseLevel);
     setIsAddingGame(false);
   };
+
+  const AddGameComponent = usePagination
+    ? AddGameDialogWithPagination
+    : AddGameDialog;
 
   return (
     <div>
@@ -37,7 +53,7 @@ export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
       />
 
       {isAddingGame && (
-        <AddGameDialog
+        <AddGameComponent
           user={user}
           onAddGame={(game, expertiseLevel) =>
             void handleAddGame(game, expertiseLevel)
@@ -70,5 +86,4 @@ export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
   );
 };
 
-export type GameLibraryProps = ComponentProps<typeof GameLibrary>;
-
+export { type GameLibraryProps };
