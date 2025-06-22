@@ -1,14 +1,13 @@
-import { ComponentProps,ReactNode } from "react";
+import { ComponentProps, PropsWithChildren } from "react";
 
 import { cn } from "../lib/utils";
 
-export const PageLayout = ({ 
-  children, 
-  className 
-}: { 
-  children: ReactNode;
+export const PageLayout = ({
+  children,
+  className,
+}: PropsWithChildren<{
   className?: string;
-}) => {
+}>) => {
   return (
     <div className={cn("h-full bg-white flex flex-col", className)}>
       {children}
@@ -16,35 +15,36 @@ export const PageLayout = ({
   );
 };
 
-export const PageHeader = ({ 
-  children, 
-  className 
-}: { 
-  children: ReactNode;
+export const PageHeader = ({
+  children,
+  className,
+}: PropsWithChildren<{
   className?: string;
-}) => {
+}>) => {
   return (
-    <header className={cn("bg-white border-b border-gray-200 p-4", className)}>
+    <header
+      className={cn(
+        "bg-white border-b border-gray-200 p-4 sticky top-0 z-10",
+        className,
+      )}
+    >
       {children}
     </header>
   );
 };
 
-export const PageContent = ({ 
-  children, 
-  className, 
-  noPadding 
-}: { 
-  children: ReactNode;
+export const PageContent = ({
+  children,
+  className,
+  noPadding,
+}: PropsWithChildren<{
   className?: string;
   noPadding?: boolean;
-}) => {
+}>) => {
   return (
-    <main className={cn(
-      "flex-1 overflow-y-auto",
-      !noPadding && "p-4",
-      className
-    )}>
+    <main
+      className={cn("flex-1 overflow-y-auto", !noPadding && "p-4", className)}
+    >
       {children}
     </main>
   );

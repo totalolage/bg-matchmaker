@@ -102,37 +102,53 @@ body {
   ::view-transition-group(content) {
     overflow: hidden;
   }
-  
+
   /* Page transitions */
   ::view-transition-old(page) {
     animation: slide-out 300ms ease-in-out;
   }
-  
+
   ::view-transition-new(page) {
     animation: slide-in 300ms ease-in-out;
   }
-  
+
   /* Slide animations based on direction */
   @keyframes slide-out-left {
-    from { transform: translateX(0); }
-    to { transform: translateX(-100%); }
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
   }
-  
+
   @keyframes slide-out-right {
-    from { transform: translateX(0); }
-    to { transform: translateX(100%); }
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
   }
-  
+
   @keyframes slide-in-left {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
-  
+
   @keyframes slide-in-right {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
-  
+
   /* Direction-based page transitions using TanStack Router types */
   html:active-view-transition-type(slide-forward) {
     &::view-transition-old(content) {
@@ -142,7 +158,7 @@ body {
       animation: slide-in-right 300ms ease-in-out;
     }
   }
-  
+
   html:active-view-transition-type(slide-backward) {
     &::view-transition-old(content) {
       animation: slide-out-right 300ms ease-in-out;
@@ -151,7 +167,7 @@ body {
       animation: slide-in-left 300ms ease-in-out;
     }
   }
-  
+
   html:active-view-transition-type(fade) {
     &::view-transition-old(content) {
       animation: fade-out 200ms ease-in-out;
@@ -160,16 +176,16 @@ body {
       animation: fade-in 200ms ease-in-out;
     }
   }
-  
+
   /* Modal transitions */
   ::view-transition-old(modal) {
     animation: modal-out 200ms ease-in;
   }
-  
+
   ::view-transition-new(modal) {
     animation: modal-in 200ms ease-out;
   }
-  
+
   @keyframes modal-in {
     from {
       opacity: 0;
@@ -180,7 +196,7 @@ body {
       transform: translateY(0);
     }
   }
-  
+
   @keyframes modal-out {
     from {
       opacity: 1;
@@ -191,35 +207,43 @@ body {
       transform: translateY(100%);
     }
   }
-  
+
   /* Fade transitions */
   ::view-transition-old(fade) {
     animation: fade-out 200ms ease-in-out;
   }
-  
+
   ::view-transition-new(fade) {
     animation: fade-in 200ms ease-in-out;
   }
-  
+
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
-  
+
   @keyframes fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
   }
-  
+
   /* Card transitions */
   ::view-transition-old(card) {
     animation: card-out 200ms ease-in;
   }
-  
+
   ::view-transition-new(card) {
     animation: card-in 200ms ease-out;
   }
-  
+
   @keyframes card-in {
     from {
       opacity: 0;
@@ -230,7 +254,7 @@ body {
       transform: scale(1) translateY(0);
     }
   }
-  
+
   @keyframes card-out {
     from {
       opacity: 1;
@@ -240,5 +264,43 @@ body {
       opacity: 0;
       transform: scale(0.9) translateY(20px);
     }
+  }
+}
+
+/* Swipe Card Animations */
+@layer components {
+  .swipe-card-container {
+    @apply touch-none select-none;
+  }
+
+  /* Prevent scrolling while swiping */
+  .swipe-active {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* Card stack visual effects */
+  .card-stack {
+    @apply relative;
+    perspective: 1000px;
+  }
+
+  /* Swipe feedback indicators */
+  .swipe-indicator {
+    @apply absolute inset-0 pointer-events-none transition-opacity duration-200;
+  }
+
+  .swipe-indicator-like {
+    @apply bg-gradient-to-r from-green-500/30 to-transparent;
+  }
+
+  .swipe-indicator-pass {
+    @apply bg-gradient-to-l from-red-500/30 to-transparent;
+  }
+
+  /* Smooth transitions for non-swiping interactions */
+  .swipe-card-transition {
+    @apply transition-all duration-300 ease-out;
   }
 }

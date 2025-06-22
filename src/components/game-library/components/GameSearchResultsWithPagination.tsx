@@ -11,6 +11,7 @@ import {
 
 import { EXPERTISE_LEVELS } from "../constants";
 import type { GameLibraryItem, GameSearchResult } from "../types";
+
 import { PaginationError } from "./PaginationError";
 
 interface GameSearchResultsWithPaginationProps {
@@ -38,7 +39,12 @@ export function GameSearchResultsWithPagination({
 }: GameSearchResultsWithPaginationProps) {
   // Error state
   if (error && onRetry) {
-    return <PaginationError onRetry={onRetry} message="Failed to load search results" />;
+    return (
+      <PaginationError
+        onRetry={onRetry}
+        message="Failed to load search results"
+      />
+    );
   }
 
   // Loading state for initial load

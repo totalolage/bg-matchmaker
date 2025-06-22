@@ -3,16 +3,26 @@ import { ComponentProps } from "react";
 import { Doc } from "../../convex/_generated/dataModel";
 
 import { Badge } from "./ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { GameImage } from "./GameImage";
 import { SessionInfo } from "./SessionInfo";
 
-export const SessionCard = ({ 
-  session 
+export const SessionCard = ({
+  session,
+  className,
 }: {
   session: Doc<"sessions">;
+  className?: string;
 }) => {
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusVariant = (
+    status: string,
+  ): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "proposed":
       case "established":
@@ -28,14 +38,10 @@ export const SessionCard = ({
   };
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-3">
-          <GameImage 
-            src={session.gameImage}
-            alt={session.gameName}
-            size="md"
-          />
+          <GameImage src={session.gameImage} alt={session.gameName} size="md" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg truncate">
@@ -50,7 +56,7 @@ export const SessionCard = ({
       </CardHeader>
       <CardContent>
         <SessionInfo session={session} size="sm" />
-        
+
         {session.description && (
           <CardDescription className="mt-3 line-clamp-2">
             {session.description}
