@@ -3,7 +3,7 @@
  */
 import { ActionCtx } from "../../_generated/server";
 import { BGGAPIError, FetchOptions } from "./types";
-import { enforceRateLimits } from "./rate_limiter";
+import { enforceBGGRateLimit } from "./rate_limiter";
 
 const BGG_BASE_URL = "https://boardgamegeek.com/xmlapi2";
 
@@ -15,7 +15,7 @@ export async function makeRequest(
   options: FetchOptions
 ): Promise<string> {
   // Enforce rate limits before making request
-  await enforceRateLimits(ctx);
+  await enforceBGGRateLimit(ctx);
 
   // Build URL
   const url = new URL(`${BGG_BASE_URL}${options.endpoint}`);
@@ -94,3 +94,4 @@ export function buildTopRankedParams(page: number = 1): URLSearchParams {
     page: page.toString(),
   });
 }
+

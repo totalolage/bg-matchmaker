@@ -15,13 +15,13 @@ const bggValueType = type({
 // Search API response types
 export const bggSearchItemType = type({
   id: "number",
-  name: ["unknown", bggNameType],
+  name: bggNameType,
   "yearpublished?": bggValueType,
 });
 
 export const bggSearchResponseType = type({
   items: {
-    "item?": [bggSearchItemType, type(bggSearchItemType, "[]")],
+    "item?": type(bggSearchItemType, "[]"),
   },
 });
 
@@ -45,7 +45,7 @@ const bggStatisticsType = type({
 
 export const bggThingItemType = type({
   id: "number",
-  name: [bggNameType, type(bggNameType, "[]")],
+  name: type([bggNameType, "|", type(bggNameType, "[]")]),
   "description?": "string",
   "yearpublished?": bggValueType,
   "minplayers?": bggValueType,
@@ -61,7 +61,7 @@ export const bggThingItemType = type({
 
 export const bggThingResponseType = type({
   items: {
-    "item?": [bggThingItemType, type(bggThingItemType, "[]")],
+    "item?": type(bggThingItemType, "[]"),
   },
 });
 
@@ -69,11 +69,9 @@ export const bggThingResponseType = type({
 export const bggHotItemType = type({
   id: "number",
   rank: "number",
-  name: {
-    value: "string",
-  },
+  name: bggNameType,
   "yearpublished?": {
-    value: "string",
+    value: type(["string", "|", "number"]),
   },
   thumbnail: {
     value: "string",
@@ -82,26 +80,32 @@ export const bggHotItemType = type({
 
 export const bggHotResponseType = type({
   items: {
-    "item?": [bggHotItemType, type(bggHotItemType, "[]")],
+    "item?": type(bggHotItemType, "[]"),
   },
 });
 
 // Type guards and validators
-export function validateSearchResponse(data: unknown): asserts data is typeof bggSearchResponseType.infer {
+export function validateSearchResponse(
+  data: unknown,
+): asserts data is typeof bggSearchResponseType.infer {
   const result = bggSearchResponseType(data);
   if (result instanceof type.errors) {
     throw new Error(`Invalid BGG search response: ${result.summary}`);
   }
 }
 
-export function validateThingResponse(data: unknown): asserts data is typeof bggThingResponseType.infer {
+export function validateThingResponse(
+  data: unknown,
+): asserts data is typeof bggThingResponseType.infer {
   const result = bggThingResponseType(data);
   if (result instanceof type.errors) {
     throw new Error(`Invalid BGG thing response: ${result.summary}`);
   }
 }
 
-export function validateHotResponse(data: unknown): asserts data is typeof bggHotResponseType.infer {
+export function validateHotResponse(
+  data: unknown,
+): asserts data is typeof bggHotResponseType.infer {
   const result = bggHotResponseType(data);
   if (result instanceof type.errors) {
     throw new Error(`Invalid BGG hot response: ${result.summary}`);

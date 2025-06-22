@@ -74,7 +74,8 @@ export async function getMultipleGameDetails(
   }
 
   const results: BGGGameDetails[] = [];
-  const BATCH_SIZE = 20; // BGG's limit
+  const { BGG_SEEDING } = await import("../constants");
+  const BATCH_SIZE = BGG_SEEDING.API_BATCH_SIZE;
 
   // Process in batches
   for (let i = 0; i < bggIds.length; i += BATCH_SIZE) {

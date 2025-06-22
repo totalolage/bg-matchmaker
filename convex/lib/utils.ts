@@ -11,18 +11,7 @@ export function castArray<T>(value: T | T[]): T[] {
  */
 export function hasProperty<T extends object, K extends PropertyKey>(
   obj: T,
-  prop: K
+  prop: K,
 ): obj is T & Record<K, unknown> {
   return prop in obj;
-}
-
-/**
- * Extract name value from BGG name field which can be string or object
- */
-export function extractNameValue(name: unknown): string {
-  if (typeof name === 'string') return name;
-  if (typeof name === 'object' && name !== null && hasProperty(name, 'value') && typeof name.value === 'string') {
-    return name.value;
-  }
-  return "Unknown";
 }

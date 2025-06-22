@@ -3,26 +3,25 @@
  */
 import { BGGSearchResult, BGGGameDetails, BGGAPIError } from "./types";
 import {
-  BGGSearchItem,
-  BGGThingItem,
-  BGGHotItem,
   BGGSearchResponse,
   BGGThingResponse,
   BGGHotResponse,
+  BGGSearchItem,
+  BGGThingItem,
 } from "../bggSchemas";
-import { castArray, extractNameValue, hasProperty } from "../utils";
+import { hasProperty } from "../utils";
 
 /**
  * Transform BGG search response to search results
  */
-export function mapSearchResponse(response: BGGSearchResponse): BGGSearchResult[] {
+export function mapSearchResponse(
+  response: BGGSearchResponse,
+): BGGSearchResult[] {
   if (!response.items || !response.items.item) {
     return [];
   }
 
-  const items = castArray(response.items.item);
-  
-  return items
+  return response.items.item
     .map((item) => mapSearchItem(item))
     .filter((item): item is BGGSearchResult => item !== null);
 }
@@ -30,56 +29,45 @@ export function mapSearchResponse(response: BGGSearchResponse): BGGSearchResult[
 /**
  * Transform a single search item
  */
-function mapSearchItem(item: unknown): BGGSearchResult | null {
-  if (!item || typeof item !== "object") {
-    return null;
-  }
-
+function mapSearchItem(item: BGGSearchItem): BGGSearchResult | null {
   const result: BGGSearchResult = {
-    id: hasProperty(item, "id") ? String(item.id) : "",
-    name: hasProperty(item, "name") ? extractNameValue(item.name) : "Unknown",
+    id: item.id.toString(),
+    name: item.name.value,
   };
 
   // Add year if available
-  if (
-    hasProperty(item, "yearpublished") &&
-    item.yearpublished &&
-    typeof item.yearpublished === "object" &&
-    hasProperty(item.yearpublished, "value")
-  ) {
+  if (item.yearpublished)
     result.yearPublished = Number(item.yearpublished.value);
-  }
 
-  return result.id ? result : null;
+  return result;
 }
 
 /**
  * Transform BGG thing response to game details
  */
-export function mapThingResponse(response: BGGThingResponse, bggId: string): BGGGameDetails {
-  if (!response.items || !response.items.item) {
+export function mapThingResponse(
+  response: BGGThingResponse,
+  bggId: string,
+): BGGGameDetails {
+  if (!response.items.item?.length)
+    throw new BGGAPIError(`Game with BGG ID ${bggId} not found`, 404);
+
+  const item = response.items.item[0];
+  if (!item) {
     throw new BGGAPIError(`Game with BGG ID ${bggId} not found`, 404);
   }
-
-  const items = castArray(response.items.item);
-  if (items.length === 0) {
-    throw new BGGAPIError(`Game with BGG ID ${bggId} not found`, 404);
-  }
-
-  const item = items[0];
   return mapThingItem(item, bggId);
 }
 
 /**
  * Transform multiple thing items to game details
  */
-export function mapMultipleThingItems(response: BGGThingResponse): BGGGameDetails[] {
-  if (!response.items || !response.items.item) {
-    return [];
-  }
+export function mapMultipleThingItems(
+  response: BGGThingResponse,
+): BGGGameDetails[] {
+  if (!response.items.item?.length) return [];
 
-  const items = castArray(response.items.item);
-  return items
+  return response.items.item
     .map((item) => {
       try {
         const id = hasProperty(item, "id") ? String(item.id) : "";
@@ -94,11 +82,8 @@ export function mapMultipleThingItems(response: BGGThingResponse): BGGGameDetail
 /**
  * Transform a single thing item to game details
  */
-function mapThingItem(item: unknown, bggId: string): BGGGameDetails {
-  if (!item || typeof item !== "object") {
-    throw new BGGAPIError(`Invalid item data for BGG ID ${bggId}`, 400);
-  }
-
+function mapThingItem(item: BGGThingItem, bggId: string): BGGGameDetails {
+  // Extract primary name from name field
   const primaryName = extractPrimaryName(item);
   
   const result: BGGGameDetails = {
@@ -116,37 +101,25 @@ function mapThingItem(item: unknown, bggId: string): BGGGameDetails {
 /**
  * Extract primary name from item
  */
-function extractPrimaryName(item: any): string {
-  if (!hasProperty(item, "name") || !item.name) {
-    return "Unknown";
+function extractPrimaryName(item: BGGThingItem): string {
+  // If name is an array, find the primary name
+  if (Array.isArray(item.name)) {
+    const primary = item.name.find(n => n.type === 'primary');
+    return primary ? primary.value : item.name[0]?.value || 'Unknown';
   }
-
-  const names = castArray(item.name);
-
-  // Look for primary name
-  for (const name of names) {
-    if (
-      typeof name === "object" &&
-      name &&
-      hasProperty(name, "type") &&
-      hasProperty(name, "value") &&
-      name.type === "primary" &&
-      typeof name.value === "string"
-    ) {
-      return name.value;
-    }
-  }
-
-  // Fallback to first name
-  return extractNameValue(names[0]);
+  // If name is a single object
+  return item.name.value;
 }
 
 /**
  * Map basic fields from item to game details
  */
-function mapBasicFields(item: any, result: BGGGameDetails): void {
+function mapBasicFields(item: BGGThingItem, result: BGGGameDetails): void {
   // Direct string fields
-  if (hasProperty(item, "description") && typeof item.description === "string") {
+  if (
+    hasProperty(item, "description") &&
+    typeof item.description === "string"
+  ) {
     result.description = item.description;
   }
   if (hasProperty(item, "image") && typeof item.image === "string") {
@@ -172,7 +145,8 @@ function mapBasicFields(item: any, result: BGGGameDetails): void {
       typeof item[source] === "object" &&
       hasProperty(item[source], "value")
     ) {
-      (result as any)[target] = Number(item[source].value);
+      const value = Number(item[source].value);
+      result[target] = value;
     }
   }
 }
@@ -180,7 +154,7 @@ function mapBasicFields(item: any, result: BGGGameDetails): void {
 /**
  * Map statistics fields from item to game details
  */
-function mapStatistics(item: any, result: BGGGameDetails): void {
+function mapStatistics(item: BGGThingItem, result: BGGGameDetails): void {
   if (
     !hasProperty(item, "statistics") ||
     !item.statistics ||
@@ -219,13 +193,9 @@ function mapStatistics(item: any, result: BGGGameDetails): void {
  * Transform BGG hot response to game IDs
  */
 export function mapHotResponse(response: BGGHotResponse): string[] {
-  if (!response.items || !response.items.item) {
-    return [];
-  }
+  if (!response.items || !response.items.item) return [];
 
-  const items = castArray(response.items.item);
-  
-  return items
+  return response.items.item
     .map((item) => {
       if (item && typeof item === "object" && hasProperty(item, "id")) {
         return String(item.id);
