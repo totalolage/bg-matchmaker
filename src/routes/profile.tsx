@@ -49,7 +49,7 @@ function Profile() {
   const activeTab = useLocation({
     select: (location): Tab => {
       const tabIndex = TABS.indexOf(location.hash as Tab);
-      return tabIndex >= 0 ? TABS[tabIndex] : TABS[0];
+      return tabIndex >= 0 ? (TABS[tabIndex] as Tab) : TABS[0];
     },
   });
 

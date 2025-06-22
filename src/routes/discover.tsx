@@ -23,6 +23,8 @@ function Discover() {
     if (!sessions || currentIndex >= sessions.length) return;
 
     const session = sessions[currentIndex];
+    if (!session) return;
+    
     await swipeSession({
       sessionId: session._id,
       action,
