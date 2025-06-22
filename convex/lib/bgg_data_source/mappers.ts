@@ -92,6 +92,12 @@ function mapThingItem(item: BGGThingItem, bggId: string): BGGGameDetails {
     name: primaryName,
   };
 
+  // Extract alternate names
+  const alternateNames = extractAlternateNames(item);
+  if (alternateNames.length > 0) {
+    result.alternateNames = alternateNames;
+  }
+
   // Map optional fields
   mapBasicFields(item, result);
   mapStatistics(item, result);
@@ -110,6 +116,24 @@ function extractPrimaryName(item: BGGThingItem): string {
   }
   // If name is a single object
   return item.name.value;
+}
+
+/**
+ * Extract alternate names from item
+ */
+function extractAlternateNames(item: BGGThingItem): string[] {
+  const alternateNames: string[] = [];
+  
+  // If name is an array, extract all non-primary names
+  if (Array.isArray(item.name)) {
+    for (const nameObj of item.name) {
+      if (nameObj.type === 'alternate' && nameObj.value) {
+        alternateNames.push(nameObj.value);
+      }
+    }
+  }
+  
+  return alternateNames;
 }
 
 /**

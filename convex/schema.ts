@@ -83,6 +83,8 @@ const applicationTables = {
   gameData: defineTable({
     bggId: v.string(),
     name: v.string(),
+    alternateNames: v.optional(v.array(v.string())), // Alternate game names from BGG
+    searchText: v.optional(v.string()), // Combined search field for name + alternate names
     image: v.optional(v.string()),
     thumbnail: v.optional(v.string()),
     minPlayers: v.optional(v.number()),
@@ -95,8 +97,8 @@ const applicationTables = {
     popularity: v.optional(v.number()), // For sorting search results
     averageRating: v.optional(v.number()), // BGG average rating
   }).index("by_bgg_id", ["bggId"])
-    .searchIndex("search_name", {
-      searchField: "name",
+    .searchIndex("search_all_names", {
+      searchField: "searchText",
     }),
 
   userSwipes: defineTable({

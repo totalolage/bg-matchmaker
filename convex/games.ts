@@ -33,10 +33,10 @@ export const searchGames = query({
       return [];
     }
 
-    // Use Convex full-text search on our cached games
+    // Use Convex full-text search on searchText field which includes both name and alternate names
     const results = await ctx.db
       .query("gameData")
-      .withSearchIndex("search_name", (q) => q.search("name", args.query))
+      .withSearchIndex("search_all_names", (q) => q.search("searchText", args.query))
       .take(20);
 
     return results.map((game) => ({
@@ -48,6 +48,55 @@ export const searchGames = query({
       playingTime: game.playingTime || 0,
       complexity: game.complexity || 0,
     }));
+  },
+});
+
+// Paginated search - returns results with pagination metadata
+export const searchGamesPaginated = query({
+  args: {
+    query: v.string(),
+    paginationOpts: v.object({
+      numItems: v.number(),
+      cursor: v.union(v.string(), v.null()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    if (!args.query || args.query.trim().length < 2) {
+      return {
+        page: [],
+        isDone: true,
+        continueCursor: "",
+      };
+    }
+
+    // Convert undefined cursor to null for Convex pagination
+    const paginationOptions = {
+      numItems: args.paginationOpts.numItems,
+      cursor: args.paginationOpts.cursor ?? null,
+    };
+
+    // Use Convex full-text search on searchText field which includes both name and alternate names
+    const paginatedResults = await ctx.db
+      .query("gameData")
+      .withSearchIndex("search_all_names", (q) => q.search("searchText", args.query))
+      .paginate(paginationOptions);
+
+    // Transform the page results to match GameSearchResult format
+    const transformedPage = paginatedResults.page.map((game) => ({
+      bggId: game.bggId,
+      name: game.name,
+      image: game.image || "",
+      minPlayers: game.minPlayers || 1,
+      maxPlayers: game.maxPlayers || 1,
+      playingTime: game.playingTime || 0,
+      complexity: game.complexity || 0,
+    }));
+
+    return {
+      page: transformedPage,
+      isDone: paginatedResults.isDone,
+      continueCursor: paginatedResults.continueCursor,
+    };
   },
 });
 
@@ -84,6 +133,44 @@ export const getPopularGames = query({
     }
 
     return games;
+  },
+});
+
+// Paginated popular games
+export const getPopularGamesPaginated = query({
+  args: {
+    paginationOpts: v.object({
+      numItems: v.number(),
+      cursor: v.union(v.string(), v.null()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    // Convert undefined cursor to null for Convex pagination
+    const paginationOptions = {
+      numItems: args.paginationOpts.numItems,
+      cursor: args.paginationOpts.cursor ?? null,
+    };
+
+    const paginatedResults = await ctx.db
+      .query("gameData")
+      .paginate(paginationOptions);
+
+    // Transform the page results to match GameSearchResult format
+    const transformedPage = paginatedResults.page.map((game) => ({
+      bggId: game.bggId,
+      name: game.name,
+      image: game.image || "",
+      minPlayers: game.minPlayers || 1,
+      maxPlayers: game.maxPlayers || 1,
+      playingTime: game.playingTime || 0,
+      complexity: game.complexity || 0,
+    }));
+
+    return {
+      page: transformedPage,
+      isDone: paginatedResults.isDone,
+      continueCursor: paginatedResults.continueCursor,
+    };
   },
 });
 
@@ -144,6 +231,7 @@ export const cacheGame = internalMutation({
   args: {
     bggId: v.string(),
     name: v.string(),
+    alternateNames: v.optional(v.array(v.string())),
     image: v.optional(v.string()),
     thumbnail: v.optional(v.string()),
     minPlayers: v.optional(v.number()),
@@ -161,8 +249,14 @@ export const cacheGame = internalMutation({
       .withIndex("by_bgg_id", (q) => q.eq("bggId", args.bggId))
       .unique();
 
+    // Generate searchText by combining name and alternate names
+    const searchText = args.alternateNames && args.alternateNames.length > 0
+      ? `${args.name} ${args.alternateNames.join(' ')}`
+      : args.name;
+
     const gameData = {
       ...args,
+      searchText,
       lastUpdated: Date.now(),
     };
 
@@ -183,6 +277,7 @@ export const cacheGames = internalMutation({
       v.object({
         bggId: v.string(),
         name: v.string(),
+        alternateNames: v.optional(v.array(v.string())),
         image: v.optional(v.string()),
         thumbnail: v.optional(v.string()),
         minPlayers: v.optional(v.number()),
@@ -213,8 +308,14 @@ export const cacheGames = internalMutation({
           .withIndex("by_bgg_id", (q) => q.eq("bggId", game.bggId))
           .unique();
 
+        // Generate searchText by combining name and alternate names
+        const searchText = game.alternateNames && game.alternateNames.length > 0
+          ? `${game.name} ${game.alternateNames.join(' ')}`
+          : game.name;
+
         const gameData = {
           ...game,
+          searchText,
           lastUpdated: now,
         };
 
@@ -257,6 +358,7 @@ export const importGameByBggId = action({
       await ctx.runMutation(internal.games.cacheGame, {
         bggId: details.id,
         name: details.name,
+        alternateNames: details.alternateNames,
         image: details.image,
         minPlayers: details.minPlayers,
         maxPlayers: details.maxPlayers,
@@ -331,6 +433,7 @@ export const refreshGameInBackground = internalAction({
       await ctx.runMutation(internal.games.cacheGame, {
         bggId: details.id,
         name: details.name,
+        alternateNames: details.alternateNames,
         image: details.image,
         minPlayers: details.minPlayers,
         maxPlayers: details.maxPlayers,
@@ -687,6 +790,7 @@ export const seedDatabase = action({
               const gamesToCache = gameDetails.map((details) => ({
                 bggId: details.id,
                 name: details.name,
+                alternateNames: details.alternateNames,
                 image: details.image,
                 minPlayers: details.minPlayers,
                 maxPlayers: details.maxPlayers,

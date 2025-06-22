@@ -12,6 +12,7 @@ export interface BGGSearchResult {
 export interface BGGGameDetails {
   id: string;
   name: string;
+  alternateNames?: string[];
   description?: string;
   yearPublished?: number;
   minPlayers?: number;

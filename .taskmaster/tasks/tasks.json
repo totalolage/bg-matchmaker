@@ -75,7 +75,7 @@
         "dependencies": [
           1
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -83,7 +83,7 @@
             "description": "Modify the database schema to support storing multiple alternate names for each game",
             "dependencies": [],
             "details": "1. Create a new table 'game_alternate_names' with columns: id, game_id, name, source (e.g., 'bgg', 'manual')\n2. Add foreign key constraint from game_alternate_names.game_id to games.id\n3. Add appropriate indexes for performance optimization\n4. Update database migration scripts\n5. Update ORM models to reflect the new schema\n6. Write unit tests for the new models\n\nAcceptance Criteria:\n- New table properly created with correct relationships\n- ORM models correctly represent the new schema\n- All tests pass for database operations with alternate names\n- Documentation updated to reflect schema changes",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -94,7 +94,7 @@
               1
             ],
             "details": "1. Modify the BGG API client to extract alternate names from the XML response\n2. Process and clean alternate names data (handle HTML entities using the existing resolution system)\n3. Update the game import/update service to store alternate names in the database\n4. Add logging for alternate names extraction\n5. Handle edge cases (duplicates, empty names, etc.)\n\nAcceptance Criteria:\n- BGG API client successfully extracts alternate names\n- Alternate names are properly cleaned and stored in the database\n- Duplicate names are not stored\n- System correctly handles games with no alternate names\n- Logging provides visibility into the extraction process",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -106,7 +106,7 @@
               2
             ],
             "details": "1. Update search queries to include the game_alternate_names table\n2. Modify relevance scoring to appropriately weight matches in alternate names\n3. Ensure search performance remains acceptable with the additional data\n4. Update search result formatting to indicate when a match was found in an alternate name\n5. Add unit and integration tests for the enhanced search functionality\n\nAcceptance Criteria:\n- Search results include games that match on alternate names\n- Search performance remains within acceptable limits\n- Search results indicate when a match was found in an alternate name\n- All tests pass for the enhanced search functionality",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -118,7 +118,7 @@
               2
             ],
             "details": "1. Develop a migration script to fetch alternate names for all existing games in the database\n2. Implement batching to handle large numbers of games efficiently\n3. Add progress tracking and reporting\n4. Include error handling and retry logic\n5. Create a rollback plan in case of migration issues\n\nAcceptance Criteria:\n- Migration script successfully populates alternate names for all existing games\n- Script handles errors gracefully and can be safely rerun\n- Performance impact on the production system is minimized\n- Complete audit log of migration results is available\n- Verification process confirms data integrity after migration",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -130,7 +130,7 @@
               3
             ],
             "details": "1. Update game detail page to show alternate names\n2. Modify search results to display matching alternate names\n3. Add tooltips or expandable sections for games with multiple alternate names\n4. Ensure responsive design works with the additional content\n5. Add appropriate styling for alternate names display\n6. Update UI tests to cover the new features\n\nAcceptance Criteria:\n- Game detail page clearly displays alternate names\n- Search results show which alternate name matched the query\n- UI remains responsive and accessible with the additional information\n- Design is consistent with the rest of the application\n- All UI tests pass with the new features",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -150,8 +150,8 @@
             "title": "Backend Pagination Implementation",
             "description": "Implement cursor-based pagination for search results in the backend API",
             "dependencies": [],
-            "details": "- Create pagination parameters in API endpoints (limit, cursor)\n- Modify database queries to support cursor-based pagination\n- Implement response format with next/previous cursor values\n- Add pagination metadata to API responses (total count, has_next_page)\n- Handle edge cases (invalid cursors, empty results)\n- Document API changes for pagination\n\nAcceptance Criteria:\n- API endpoints accept pagination parameters\n- Results are properly limited based on the 'limit' parameter\n- Next cursor is correctly generated for subsequent requests\n- Performance testing shows no significant degradation with pagination",
-            "status": "pending",
+            "details": "- Create pagination parameters in API endpoints (limit, cursor)\n- Modify database queries to support cursor-based pagination\n- Implement response format with next/previous cursor values\n- Add pagination metadata to API responses (total count, has_next_page)\n- Handle edge cases (invalid cursors, empty results)\n- Document API changes for pagination\n\nAcceptance Criteria:\n- API endpoints accept pagination parameters\n- Results are properly limited based on the 'limit' parameter\n- Next cursor is correctly generated for subsequent requests\n- Performance testing shows no significant degradation with pagination\n<info added on 2025-06-22T13:46:16.858Z>\nRemembering...Let me search for more specific information about BG Matchmaker.Based on the user request, I need to generate the new text content that documents what has been implemented for the backend pagination. The user has provided details about the implementation that should be recorded in the subtask.Updated subtask 3.1 with implementation details. Backend pagination is now complete with searchGamesPaginated and getPopularGamesPaginated queries.\n</info added on 2025-06-22T13:46:16.858Z>",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -370,7 +370,7 @@
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-22T13:06:37.565Z",
+      "updated": "2025-06-22T13:46:23.155Z",
       "description": "Tasks for master context"
     }
   }

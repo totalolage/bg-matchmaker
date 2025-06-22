@@ -249,6 +249,7 @@ export const batchUpsertGames = mutation({
       const gameData = {
         bggId: game.bggId,
         name: game.name,
+        searchText: game.name, // CSV imports don't have alternate names
         // Optional fields with defaults or from CSV
         description: "", // Empty for CSV imports
         minPlayers: 2, // Default values
