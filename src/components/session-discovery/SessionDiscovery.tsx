@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Doc } from "../../../convex/_generated/dataModel";
 import { Button } from "../ui/button";
@@ -46,9 +46,7 @@ export const SessionDiscovery = ({
   onLoadMore,
   isLoading = false,
 }: SessionDiscoveryProps) => {
-  const [currentSessionIds, setCurrentSessionIds] = useState<string[]>(
-    sessions.map((s) => s._id),
-  );
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(
     null,
   );
@@ -56,25 +54,34 @@ export const SessionDiscovery = ({
     { sessionId: string; action: "declined" | "interested" }[]
   >([]);
 
-  const currentSessionId = currentSessionIds[0];
-  const currentSession = sessions.find((s) => s._id === currentSessionId);
+  // Reset index when sessions change (e.g., after optimistic updates)
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [sessions]);
+
+  const currentSession = sessions[currentIndex];
 
   const handleDecline = () => {
     if (!currentSession) return;
 
     setExitDirection("left");
+
+    // Update history immediately for undo functionality
+    setHistory((prev) => [
+      ...prev,
+      { sessionId: currentSession._id, action: "declined" },
+    ]);
+
+    // Call the parent handler immediately (optimistic update)
+    onDecline(currentSession._id);
+
+    // Reset exit direction after animation completes
     setTimeout(() => {
-      onDecline(currentSession._id);
-      setHistory((prev) => [
-        ...prev,
-        { sessionId: currentSession._id, action: "declined" },
-      ]);
-      setCurrentSessionIds((prev) => prev.slice(1));
       setExitDirection(null);
     }, 300);
 
     // Trigger load more when running low on sessions
-    if (currentSessionIds.length <= 3 && onLoadMore) {
+    if (sessions.length <= 3 && onLoadMore) {
       onLoadMore();
     }
   };
@@ -83,36 +90,40 @@ export const SessionDiscovery = ({
     if (!currentSession) return;
 
     setExitDirection("right");
+
+    // Update history immediately for undo functionality
+    setHistory((prev) => [
+      ...prev,
+      { sessionId: currentSession._id, action: "interested" },
+    ]);
+
+    // Call the parent handler immediately (optimistic update)
+    onInterest(currentSession._id);
+
+    // Reset exit direction after animation completes
     setTimeout(() => {
-      onInterest(currentSession._id);
-      setHistory((prev) => [
-        ...prev,
-        { sessionId: currentSession._id, action: "interested" },
-      ]);
-      setCurrentSessionIds((prev) => prev.slice(1));
       setExitDirection(null);
     }, 300);
 
     // Trigger load more when running low on sessions
-    if (currentSessionIds.length <= 3 && onLoadMore) {
+    if (sessions.length <= 3 && onLoadMore) {
       onLoadMore();
     }
   };
 
   const handleReset = () => {
-    setCurrentSessionIds(sessions.map((s) => s._id));
+    setCurrentIndex(0);
     setHistory([]);
   };
 
   const handleUndo = () => {
     if (history.length === 0) return;
 
-    const lastAction = history[history.length - 1];
     setHistory((prev) => prev.slice(0, -1));
-    setCurrentSessionIds((prev) => [lastAction!.sessionId, ...prev]);
 
-    // TODO: Also undo the database action when Task #9 is implemented
-    // This will require an undo mutation in Convex
+    // TODO: Also undo the database action and re-show the session
+    // This will require coordination with the parent component
+    console.log("Undo not yet fully implemented for optimistic updates");
   };
 
   if (!currentSession && !isLoading) {
