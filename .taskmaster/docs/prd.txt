@@ -1,0 +1,72 @@
+# BG Matchmaker - Current Development Tasks PRD
+
+## Project Overview
+BG Matchmaker is a Progressive Web Application for matchmaking board game players. The app uses Convex as the backend, Discord for authentication, and BoardGameGeek (BGG) API for game data.
+
+## Current Development Phase: Bug Fixes and Search Improvements
+
+### High Priority Issues
+
+#### 1. Fix XML Parser HTML Entity Resolution
+The BGG XML parser is not properly decoding HTML entities in game titles and descriptions. For example, apostrophes appear as "&#039;" in the database instead of being properly decoded.
+
+Requirements:
+- Investigate the XML parser in convex/lib/bgg_data_source/xml_parser.ts
+- Implement proper HTML entity decoding for all text fields from BGG API
+- Test with games containing special characters (apostrophes, quotes, ampersands, etc.)
+- Update existing game data in the database with properly decoded text
+
+#### 2. Add Alternate Game Names Support
+Many board games have alternate names or editions. The search functionality should support finding games by any of their known names.
+
+Requirements:
+- Add alternateNames field to the gameData schema in convex/schema.ts
+- Update the BGG data source to fetch and store alternate names
+- Modify the search functionality to include alternate names in search results
+- Update the seeding process to populate alternate names for existing games
+
+### Medium Priority Features
+
+#### 3. Implement Search Results Pagination
+The game search currently returns a fixed number of results without pagination support.
+
+Requirements:
+- Add pagination support to the searchGames query in convex/games.ts
+- Return cursor and hasMore fields in the response
+- Update the frontend GameSearchResults component to support pagination
+- Add a "Load More" button or implement cursor-based pagination
+
+#### 4. Implement Infinite Scrolling with TanStack Virtual
+Enhance the search experience with virtualized infinite scrolling for better performance with large result sets.
+
+Requirements:
+- Install and configure @tanstack/react-virtual
+- Implement virtual scrolling in the GameSearchResults component
+- Integrate with the pagination API from task #3
+- Ensure smooth scrolling performance with hundreds of results
+- Add loading indicators for fetching new pages
+
+### Additional Improvements
+
+#### 5. Search Performance Optimization
+Optimize the game search for better performance and reduced bandwidth usage.
+
+Requirements:
+- Add filter fields to the search index (minPlayers, maxPlayers, complexity)
+- Implement server-side filtering to reduce data transfer
+- Consider implementing search result caching for popular queries
+- Add popularity-based result ranking
+
+## Technical Constraints
+- Use existing Convex backend infrastructure
+- Maintain compatibility with current BGG data source implementation
+- Follow existing code patterns and conventions
+- Ensure all changes are properly tested
+- No breaking changes to existing APIs
+
+## Success Criteria
+- HTML entities are properly decoded in all game data
+- Users can search for games by alternate names
+- Search results load efficiently with pagination
+- Virtual scrolling provides smooth UX for large result sets
+- All existing functionality continues to work correctly

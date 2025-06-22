@@ -32,3 +32,24 @@ CLAUDE.local.md
 .claude/settings.local.json
 .vercel
 .env*.local
+
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Task Master
+.taskmaster/reports/
+.taskmaster/state.json
+.taskmaster/config.local.json 

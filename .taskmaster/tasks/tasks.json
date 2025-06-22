@@ -1,0 +1,368 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Fix XML Parser HTML Entity Resolution",
+        "description": "Modify the BGG XML parser to properly decode HTML entities in game titles and descriptions, ensuring special characters display correctly.",
+        "details": "1. Examine the current XML parser in convex/lib/bgg_data_source/xml_parser.ts\n2. Identify where text content is extracted from XML nodes\n3. Implement HTML entity decoding using a library like 'he' or 'html-entities'\n4. Apply the decoding to all text fields (title, description, etc.)\n5. Create a migration script to update existing records in the database\n6. Test with games containing special characters like apostrophes ('&#039;'), quotes, and ampersands\n\nPseudo-code for parser update:\n```typescript\nimport { decode } from 'html-entities';\n\n// Find where text content is extracted, e.g.:\nfunction extractTextContent(node: XMLNode): string {\n  const rawText = node.textContent;\n  return decode(rawText); // Apply HTML entity decoding\n}\n```\n\nMigration script:\n```typescript\nexport async function migrateGameData(ctx: Context) {\n  const games = await ctx.db.query('games').collect();\n  for (const game of games) {\n    await ctx.db.patch(game._id, {\n      title: decode(game.title),\n      description: decode(game.description),\n      // Update other text fields as needed\n    });\n  }\n}\n```",
+        "testStrategy": "1. Create unit tests for the XML parser with sample XML containing various HTML entities\n2. Test with real BGG API responses containing special characters\n3. Create a test suite with edge cases (nested entities, malformed entities)\n4. Verify existing games in the database after migration\n5. Manual testing with games known to have special characters in their titles or descriptions\n6. Create regression tests to ensure the fix doesn't break other functionality",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Analyze Current XML Parser Implementation",
+            "description": "Review the existing XML parser code to understand how it currently handles HTML entities and identify the specific areas that need modification.",
+            "dependencies": [],
+            "details": "- Examine the current parsing logic in the XMLParser class\n- Document the current entity handling approach\n- Identify all places where text content is processed\n- Determine the optimal insertion point for entity resolution\n- Create a technical design document outlining the proposed changes\n- Acceptance criteria: Complete analysis document with code references and implementation plan",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement HTML Entity Decoding",
+            "description": "Add HTML entity resolution functionality to the XML parser to properly decode entities like &amp;, &lt;, &gt;, etc. into their corresponding characters.",
+            "dependencies": [
+              1
+            ],
+            "details": "- Create a new EntityResolver utility class\n- Implement methods to handle numeric entities (&#123;) and named entities (&amp;)\n- Update the XMLParser to use the EntityResolver when processing text content\n- Handle edge cases like malformed entities\n- Add configuration option to enable/disable entity resolution\n- Acceptance criteria: Parser correctly converts all standard HTML entities to their character equivalents",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Database Migration for Existing Records",
+            "description": "Develop a migration script to update existing XML data in the database to resolve HTML entities that were previously stored in encoded form.",
+            "dependencies": [
+              2
+            ],
+            "details": "- Create a database migration script that uses the new EntityResolver\n- Implement batched processing to handle large datasets efficiently\n- Add logging and error handling for the migration process\n- Include rollback capability in case of failures\n- Test the migration on a copy of production data\n- Acceptance criteria: Migration script successfully processes all existing records without data loss",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Testing and Validation",
+            "description": "Thoroughly test the HTML entity resolution implementation and database migration to ensure correct functionality and performance.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "- Create unit tests for the EntityResolver class\n- Add integration tests for the updated XMLParser\n- Develop performance tests to ensure parsing speed is not significantly impacted\n- Test with a comprehensive set of entity examples\n- Validate migrated data against expected outputs\n- Document any edge cases or limitations\n- Acceptance criteria: All tests pass, performance benchmarks meet targets, and no regressions in existing functionality",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Add Alternate Game Names Support",
+        "description": "Extend the game data schema and search functionality to support alternate names and editions of board games.",
+        "details": "1. Update the game schema in convex/schema.ts to include alternateNames field:\n```typescript\nconst gameSchema = defineTable({\n  // existing fields\n  alternateNames: v.optional(v.array(v.string())),\n});\n```\n\n2. Modify the BGG data source to extract alternate names:\n```typescript\nfunction extractAlternateNames(gameXml: XMLDocument): string[] {\n  const alternateNames: string[] = [];\n  // Extract from name nodes with type='alternate'\n  const nameNodes = gameXml.querySelectorAll('name[type=\"alternate\"]');\n  for (const node of nameNodes) {\n    const name = decode(node.getAttribute('value') || '');\n    if (name) alternateNames.push(name);\n  }\n  return alternateNames;\n}\n```\n\n3. Update the game data insertion/update logic to include alternate names\n\n4. Modify the search function in convex/games.ts to include alternate names in the search:\n```typescript\nexport const searchGames = query({\n  args: { searchTerm: v.string() },\n  handler: async (ctx, args) => {\n    const { searchTerm } = args;\n    if (!searchTerm) return [];\n    \n    return await ctx.db\n      .query('games')\n      .filter(q =>\n        q.or(\n          q.text('title').search(searchTerm),\n          q.text('description').search(searchTerm),\n          // Add search on alternate names\n          q.field('alternateNames').includes(name => \n            q.text(name).search(searchTerm)\n          )\n        )\n      )\n      .collect();\n  },\n});\n```\n\n5. Create a migration script to populate alternate names for existing games by re-fetching data from BGG",
+        "testStrategy": "1. Unit tests for the alternate names extraction function\n2. Integration tests with sample BGG API responses containing alternate names\n3. Test the search functionality with games that have known alternate names\n4. Verify that searching by alternate name returns the correct game\n5. Test edge cases like games with many alternate names or names with special characters\n6. Performance testing to ensure search speed isn't significantly impacted",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Update Database Schema for Alternate Game Names",
+            "description": "Modify the database schema to support storing multiple alternate names for each game",
+            "dependencies": [],
+            "details": "1. Create a new table 'game_alternate_names' with columns: id, game_id, name, source (e.g., 'bgg', 'manual')\n2. Add foreign key constraint from game_alternate_names.game_id to games.id\n3. Add appropriate indexes for performance optimization\n4. Update database migration scripts\n5. Update ORM models to reflect the new schema\n6. Write unit tests for the new models\n\nAcceptance Criteria:\n- New table properly created with correct relationships\n- ORM models correctly represent the new schema\n- All tests pass for database operations with alternate names\n- Documentation updated to reflect schema changes",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement BGG Data Extraction for Alternate Names",
+            "description": "Enhance the BGG data extraction process to capture and store alternate game names",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Modify the BGG API client to extract alternate names from the XML response\n2. Process and clean alternate names data (handle HTML entities using the existing resolution system)\n3. Update the game import/update service to store alternate names in the database\n4. Add logging for alternate names extraction\n5. Handle edge cases (duplicates, empty names, etc.)\n\nAcceptance Criteria:\n- BGG API client successfully extracts alternate names\n- Alternate names are properly cleaned and stored in the database\n- Duplicate names are not stored\n- System correctly handles games with no alternate names\n- Logging provides visibility into the extraction process",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Enhance Search Functionality for Alternate Names",
+            "description": "Modify the search functionality to include alternate game names in search results",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Update search queries to include the game_alternate_names table\n2. Modify relevance scoring to appropriately weight matches in alternate names\n3. Ensure search performance remains acceptable with the additional data\n4. Update search result formatting to indicate when a match was found in an alternate name\n5. Add unit and integration tests for the enhanced search functionality\n\nAcceptance Criteria:\n- Search results include games that match on alternate names\n- Search performance remains within acceptable limits\n- Search results indicate when a match was found in an alternate name\n- All tests pass for the enhanced search functionality",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement Data Migration for Existing Games",
+            "description": "Create and execute a migration script to populate alternate names for existing games in the database",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Develop a migration script to fetch alternate names for all existing games in the database\n2. Implement batching to handle large numbers of games efficiently\n3. Add progress tracking and reporting\n4. Include error handling and retry logic\n5. Create a rollback plan in case of migration issues\n\nAcceptance Criteria:\n- Migration script successfully populates alternate names for all existing games\n- Script handles errors gracefully and can be safely rerun\n- Performance impact on the production system is minimized\n- Complete audit log of migration results is available\n- Verification process confirms data integrity after migration",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Update UI to Display Alternate Game Names",
+            "description": "Enhance the user interface to display alternate game names where appropriate",
+            "dependencies": [
+              1,
+              3
+            ],
+            "details": "1. Update game detail page to show alternate names\n2. Modify search results to display matching alternate names\n3. Add tooltips or expandable sections for games with multiple alternate names\n4. Ensure responsive design works with the additional content\n5. Add appropriate styling for alternate names display\n6. Update UI tests to cover the new features\n\nAcceptance Criteria:\n- Game detail page clearly displays alternate names\n- Search results show which alternate name matched the query\n- UI remains responsive and accessible with the additional information\n- Design is consistent with the rest of the application\n- All UI tests pass with the new features",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement Search Results Pagination",
+        "description": "Add pagination support to the game search functionality to handle large result sets efficiently.",
+        "details": "1. Modify the searchGames query in convex/games.ts to support pagination:\n```typescript\nexport const searchGames = query({\n  args: {\n    searchTerm: v.string(),\n    cursor: v.optional(v.string()),\n    limit: v.optional(v.number()),\n  },\n  handler: async (ctx, args) => {\n    const { searchTerm, cursor, limit = 20 } = args;\n    if (!searchTerm) return { games: [], cursor: null, hasMore: false };\n    \n    let query = ctx.db\n      .query('games')\n      .filter(q =>\n        q.or(\n          q.text('title').search(searchTerm),\n          q.text('description').search(searchTerm),\n          // Include alternate names search if implemented\n        )\n      )\n      .order('desc')\n      .take(limit + 1);\n      \n    if (cursor) {\n      query = query.startAfter(cursor);\n    }\n    \n    const results = await query.collect();\n    const hasMore = results.length > limit;\n    const games = hasMore ? results.slice(0, limit) : results;\n    const nextCursor = hasMore ? games[games.length - 1]._id : null;\n    \n    return {\n      games,\n      cursor: nextCursor,\n      hasMore,\n    };\n  },\n});\n```\n\n2. Update the frontend GameSearchResults component to handle pagination:\n```typescript\nconst GameSearchResults = ({ searchTerm }) => {\n  const [cursor, setCursor] = useState(null);\n  const { results, hasMore, isLoading } = useQuery(api.games.searchGames, {\n    searchTerm,\n    cursor,\n    limit: 20,\n  });\n  \n  const loadMore = () => {\n    if (hasMore && !isLoading) {\n      setCursor(results.cursor);\n    }\n  };\n  \n  return (\n    <div>\n      {/* Render game results */}\n      {results.games.map(game => (\n        <GameCard key={game._id} game={game} />\n      ))}\n      \n      {hasMore && (\n        <Button onClick={loadMore} disabled={isLoading}>\n          {isLoading ? 'Loading...' : 'Load More'}\n        </Button>\n      )}\n    </div>\n  );\n};\n```",
+        "testStrategy": "1. Unit tests for the pagination logic in the searchGames query\n2. Test with various page sizes and cursor positions\n3. Test edge cases: empty results, exactly limit results, more than limit results\n4. Verify that hasMore flag is correctly set based on available results\n5. Test cursor-based navigation through large result sets\n6. UI testing to ensure the Load More button appears and functions correctly\n7. Performance testing with large datasets",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Backend Pagination Implementation",
+            "description": "Implement cursor-based pagination for search results in the backend API",
+            "dependencies": [],
+            "details": "- Create pagination parameters in API endpoints (limit, cursor)\n- Modify database queries to support cursor-based pagination\n- Implement response format with next/previous cursor values\n- Add pagination metadata to API responses (total count, has_next_page)\n- Handle edge cases (invalid cursors, empty results)\n- Document API changes for pagination\n\nAcceptance Criteria:\n- API endpoints accept pagination parameters\n- Results are properly limited based on the 'limit' parameter\n- Next cursor is correctly generated for subsequent requests\n- Performance testing shows no significant degradation with pagination",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Frontend Pagination UI Components",
+            "description": "Develop UI components for displaying and navigating paginated search results",
+            "dependencies": [
+              1
+            ],
+            "details": "- Create pagination controls (next/previous buttons, page indicators)\n- Implement loading states for pagination transitions\n- Design responsive pagination UI that works on mobile and desktop\n- Add visual indicators for current page/position\n- Ensure accessibility compliance for pagination controls\n- Implement smooth scrolling to top when changing pages\n\nAcceptance Criteria:\n- Pagination controls render correctly on all supported devices\n- Visual indicators clearly show current position in results\n- UI handles edge cases (first/last page, single page of results)\n- All pagination controls are keyboard accessible and screen-reader friendly\n- Design matches approved mockups",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "State Management for Pagination",
+            "description": "Implement state management for handling pagination across the application",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "- Store pagination state (current cursor, limit, total count)\n- Handle URL parameters for deep linking to specific result pages\n- Implement caching strategy for previously loaded pages\n- Manage pagination state persistence during navigation\n- Handle pagination state reset when search parameters change\n- Implement error handling for pagination failures\n\nAcceptance Criteria:\n- Pagination state is correctly maintained during user session\n- URL reflects current pagination state for sharing/bookmarking\n- Previously visited pages load from cache when possible\n- Changing search parameters correctly resets pagination\n- Error states are handled gracefully with user feedback",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Testing Pagination Functionality",
+            "description": "Develop comprehensive tests for pagination implementation",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "- Write unit tests for backend pagination logic\n- Create integration tests for API pagination endpoints\n- Develop frontend component tests for pagination UI\n- Implement end-to-end tests for complete pagination flow\n- Test edge cases (empty results, last page, changing page size)\n- Performance testing for pagination with large result sets\n\nAcceptance Criteria:\n- All tests pass consistently in CI/CD pipeline\n- Edge cases are properly covered in test suite\n- Performance tests verify acceptable response times\n- Test coverage meets project standards (>80%)\n- Documentation includes examples of pagination usage",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Infinite Scrolling with TanStack Virtual",
+        "description": "Enhance the search experience with virtualized infinite scrolling for better performance with large result sets.",
+        "details": "1. Install required dependencies:\n```bash\nnpm install @tanstack/react-virtual\n```\n\n2. Implement virtual scrolling in the GameSearchResults component:\n```typescript\nimport { useVirtualizer } from '@tanstack/react-virtual';\nimport { useRef, useEffect } from 'react';\n\nconst GameSearchResults = ({ searchTerm }) => {\n  const [cursor, setCursor] = useState(null);\n  const { results, hasMore, isLoading } = useQuery(api.games.searchGames, {\n    searchTerm,\n    cursor,\n    limit: 50, // Fetch more items at once for smoother scrolling\n  });\n  \n  const parentRef = useRef(null);\n  \n  // Set up virtualizer\n  const rowVirtualizer = useVirtualizer({\n    count: results.games.length + (hasMore ? 1 : 0),\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 150, // Estimated height of each game card\n    overscan: 5,\n  });\n  \n  // Load more when scrolling near the end\n  useEffect(() => {\n    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();\n    \n    if (\n      lastItem &&\n      lastItem.index >= results.games.length - 5 &&\n      hasMore &&\n      !isLoading\n    ) {\n      setCursor(results.cursor);\n    }\n  }, [rowVirtualizer.getVirtualItems(), results, hasMore, isLoading]);\n  \n  return (\n    <div\n      ref={parentRef}\n      style={{\n        height: '600px', // Fixed height container\n        overflow: 'auto',\n      }}\n    >\n      <div\n        style={{\n          height: `${rowVirtualizer.getTotalSize()}px`,\n          width: '100%',\n          position: 'relative',\n        }}\n      >\n        {rowVirtualizer.getVirtualItems().map(virtualRow => {\n          const isLoaderRow = virtualRow.index >= results.games.length;\n          const game = results.games[virtualRow.index];\n          \n          return (\n            <div\n              key={virtualRow.index}\n              style={{\n                position: 'absolute',\n                top: 0,\n                left: 0,\n                width: '100%',\n                height: `${virtualRow.size}px`,\n                transform: `translateY(${virtualRow.start}px)`,\n              }}\n            >\n              {isLoaderRow ? (\n                <LoadingIndicator />\n              ) : (\n                <GameCard game={game} />\n              )}\n            </div>\n          );\n        })}\n      </div>\n    </div>\n  );\n};\n```\n\n3. Create a LoadingIndicator component for when new pages are being fetched\n\n4. Optimize the GameCard component for virtualization (avoid expensive operations)\n\n5. Add debouncing to search input to prevent excessive API calls during typing",
+        "testStrategy": "1. Performance testing with large datasets (100+ games)\n2. Test scrolling behavior on different devices and browsers\n3. Verify that new pages are loaded automatically when scrolling near the end\n4. Test with slow network conditions to ensure loading states display correctly\n5. Memory profiling to ensure there are no leaks during continuous scrolling\n6. Test keyboard navigation through the virtualized list\n7. Accessibility testing for screen readers and keyboard-only users",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "TanStack Virtual Integration",
+            "description": "Set up and integrate TanStack Virtual library to handle virtualized rendering of large data sets",
+            "dependencies": [],
+            "details": "- Install TanStack Virtual and required dependencies\n- Create a virtualized container component that will handle the infinite scroll\n- Configure the virtual list with appropriate row height settings\n- Set up the viewport tracking and measurement utilities\n- Implement basic rendering of virtualized items\n- Create tests to verify correct rendering of visible items only\n- Document the integration approach for team reference",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Scroll-based Data Fetching",
+            "description": "Implement the mechanism to fetch additional data when user scrolls near the end of the current content",
+            "dependencies": [
+              1
+            ],
+            "details": "- Create a scroll position tracking utility\n- Implement a threshold detection to trigger data loading (e.g., when user scrolls to 80% of loaded content)\n- Set up API integration to fetch the next page of data\n- Implement data merging logic to append new items to existing list\n- Handle edge cases like reaching the end of available data\n- Add debouncing to prevent multiple rapid fetch requests\n- Create unit tests for the scroll detection and fetch triggering logic",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Virtualized Rendering Optimization",
+            "description": "Optimize the rendering performance of virtualized items to ensure smooth scrolling experience",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "- Implement item memoization to prevent unnecessary re-renders\n- Configure overscan (buffer) items to render slightly more than visible viewport\n- Optimize the row height calculation for variable content\n- Implement efficient key management for list items\n- Add render profiling to identify and fix performance bottlenecks\n- Test scrolling performance with large datasets (10,000+ items)\n- Document performance optimization techniques used",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Loading State Management",
+            "description": "Implement visual indicators and state management for loading additional data during scrolling",
+            "dependencies": [
+              2
+            ],
+            "details": "- Create a loading indicator component to display at the bottom of the list\n- Implement loading state in the data store/context\n- Add error handling for failed data fetches\n- Create retry mechanism for failed requests\n- Implement skeleton screens for initial load and subsequent fetches\n- Ensure loading states don't cause layout shifts or scrolling jumps\n- Test different network conditions to verify loading state behavior",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Performance Optimization",
+            "description": "Implement advanced performance optimizations to ensure smooth scrolling and minimal memory usage",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "- Implement windowing technique to limit DOM nodes\n- Add request cancellation for aborted scrolls\n- Optimize image loading with lazy loading and placeholders\n- Implement data caching strategy to prevent redundant fetches\n- Add memory management to prevent memory leaks during long sessions\n- Use Chrome DevTools to profile and optimize CPU and memory usage\n- Implement browser idle time detection for prefetching\n- Document performance metrics before and after optimizations",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Accessibility Improvements",
+            "description": "Enhance the infinite scrolling implementation with accessibility features to ensure inclusive user experience",
+            "dependencies": [
+              5
+            ],
+            "details": "- Add keyboard navigation support for the virtualized list\n- Implement proper ARIA attributes for dynamic content loading\n- Ensure focus management works correctly when new content loads\n- Add screen reader announcements for new content loading\n- Implement pause/resume functionality for auto-loading content\n- Test with screen readers (NVDA, VoiceOver, JAWS)\n- Create alternative navigation method (e.g., 'Load More' button) for users who prefer it\n- Document accessibility features and compliance with WCAG guidelines",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Search Performance Optimization",
+        "description": "Optimize the game search functionality for better performance, reduced bandwidth usage, and improved result relevance.",
+        "details": "1. Add filter fields to the search index in convex/schema.ts:\n```typescript\nconst gameSchema = defineTable({\n  // existing fields\n  minPlayers: v.optional(v.number()),\n  maxPlayers: v.optional(v.number()),\n  complexity: v.optional(v.number()),\n  popularity: v.optional(v.number()), // For ranking\n}).index('by_players', ['minPlayers', 'maxPlayers'])\n  .index('by_complexity', ['complexity'])\n  .index('by_popularity', ['popularity']);\n```\n\n2. Implement server-side filtering in the search query:\n```typescript\nexport const searchGames = query({\n  args: {\n    searchTerm: v.string(),\n    cursor: v.optional(v.string()),\n    limit: v.optional(v.number()),\n    filters: v.optional(v.object({\n      minPlayers: v.optional(v.number()),\n      maxPlayers: v.optional(v.number()),\n      minComplexity: v.optional(v.number()),\n      maxComplexity: v.optional(v.number()),\n    })),\n  },\n  handler: async (ctx, args) => {\n    const { searchTerm, cursor, limit = 20, filters = {} } = args;\n    if (!searchTerm) return { games: [], cursor: null, hasMore: false };\n    \n    let query = ctx.db.query('games');\n    \n    // Apply text search\n    query = query.filter(q =>\n      q.or(\n        q.text('title').search(searchTerm),\n        q.text('description').search(searchTerm),\n        // Include alternate names search if implemented\n      )\n    );\n    \n    // Apply filters\n    if (filters.minPlayers) {\n      query = query.filter(q => q.gte(q.field('minPlayers'), filters.minPlayers));\n    }\n    if (filters.maxPlayers) {\n      query = query.filter(q => q.lte(q.field('maxPlayers'), filters.maxPlayers));\n    }\n    if (filters.minComplexity) {\n      query = query.filter(q => q.gte(q.field('complexity'), filters.minComplexity));\n    }\n    if (filters.maxComplexity) {\n      query = query.filter(q => q.lte(q.field('complexity'), filters.maxComplexity));\n    }\n    \n    // Apply ranking by popularity\n    query = query.order('desc', 'popularity');\n    \n    // Apply pagination\n    query = query.take(limit + 1);\n    if (cursor) {\n      query = query.startAfter(cursor);\n    }\n    \n    const results = await query.collect();\n    const hasMore = results.length > limit;\n    const games = hasMore ? results.slice(0, limit) : results;\n    const nextCursor = hasMore ? games[games.length - 1]._id : null;\n    \n    return {\n      games,\n      cursor: nextCursor,\n      hasMore,\n    };\n  },\n});\n```\n\n3. Implement search result caching for popular queries:\n```typescript\n// In a new file: convex/cache.ts\nexport const cacheSearchResults = mutation({\n  args: {\n    searchTerm: v.string(),\n    filters: v.optional(v.object({\n      // filter fields\n    })),\n    results: v.array(v.id('games')),\n    timestamp: v.number(),\n  },\n  handler: async (ctx, args) => {\n    const { searchTerm, filters, results, timestamp } = args;\n    const cacheKey = JSON.stringify({ searchTerm, filters });\n    \n    // Store in a new 'searchCache' table\n    await ctx.db.insert('searchCache', {\n      key: cacheKey,\n      results,\n      timestamp,\n      expiresAt: timestamp + 24 * 60 * 60 * 1000, // 24 hours\n    });\n  },\n});\n\n// Modify searchGames to check cache first\nexport const searchGames = query({\n  // args...\n  handler: async (ctx, args) => {\n    const { searchTerm, filters } = args;\n    const cacheKey = JSON.stringify({ searchTerm, filters });\n    \n    // Check cache\n    const cachedResult = await ctx.db\n      .query('searchCache')\n      .filter(q => q.eq(q.field('key'), cacheKey))\n      .filter(q => q.gt(q.field('expiresAt'), Date.now()))\n      .first();\n    \n    if (cachedResult) {\n      // Return cached results\n      // Apply pagination to cached results\n    }\n    \n    // Proceed with normal search if no cache hit\n    // ...\n    \n    // Cache results for popular searches\n    if (isPopularSearch(searchTerm)) {\n      await ctx.db.insert('searchCache', {\n        // cache data\n      });\n    }\n  },\n});\n```\n\n4. Add a filter UI component to the search interface to allow users to refine results\n\n5. Implement result ranking based on relevance score and popularity",
+        "testStrategy": "1. Benchmark search performance before and after optimizations\n2. Test with various filter combinations to ensure correct results\n3. Verify cache hit/miss behavior for repeated searches\n4. Load testing to ensure the system handles concurrent searches efficiently\n5. Test with large datasets to verify pagination and filtering work correctly\n6. Verify that popular searches are cached and served from cache when appropriate\n7. Test edge cases like searches with no results or searches with many filters\n8. Verify that ranking produces intuitive and relevant results",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Database Schema Indexing Improvements",
+            "description": "Analyze and implement optimal database indexes to improve search query performance",
+            "dependencies": [],
+            "details": "1. Analyze current query execution plans\n2. Identify frequently queried columns\n3. Create appropriate indexes on search-related tables\n4. Test index effectiveness with sample queries\n5. Document index strategy\n\nAcceptance Criteria:\n- Query execution time reduced by at least 40%\n- No negative impact on write operations\n- All indexes are documented with rationale\n- Index size impact on database is acceptable",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Filter Implementation",
+            "description": "Develop backend logic for filtering search results based on various criteria",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Design filter parameter structure\n2. Implement filter logic in search queries\n3. Support multiple filter combinations\n4. Ensure filter parameters are validated\n5. Create filter-specific indexes if needed\n\nAcceptance Criteria:\n- All filters work correctly in isolation and combination\n- Filter parameters properly sanitized\n- Filter operations maintain performance standards\n- Support for range, categorical, and text-based filters\n- Documentation for all available filters",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Search Result Caching System",
+            "description": "Implement a caching layer to store and retrieve frequent search results",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Select appropriate caching technology (Redis/Memcached)\n2. Design cache key structure based on search parameters\n3. Implement cache invalidation strategy\n4. Add cache hit/miss metrics\n5. Configure appropriate TTL for cached results\n\nAcceptance Criteria:\n- Cache hit rate > 30% after implementation\n- Cache invalidation works correctly when data changes\n- Response time for cached queries reduced by 80%\n- Memory usage stays within allocated limits\n- Cache metrics are available for monitoring",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Result Ranking Algorithm",
+            "description": "Develop and implement an algorithm to rank search results by relevance",
+            "dependencies": [
+              2
+            ],
+            "details": "1. Research appropriate ranking algorithms (TF-IDF, BM25, etc.)\n2. Implement chosen algorithm\n3. Add weighting for different search fields\n4. Include recency and popularity factors\n5. Test algorithm with sample queries\n\nAcceptance Criteria:\n- Relevance scores correctly prioritize results\n- Algorithm performance meets latency requirements\n- Ranking factors are configurable\n- Documentation of ranking methodology\n- A/B test shows improved user engagement with search results",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Filter UI Components",
+            "description": "Design and implement user interface components for search filters",
+            "dependencies": [
+              2
+            ],
+            "details": "1. Design filter UI mockups\n2. Implement filter components (checkboxes, sliders, dropdowns)\n3. Add client-side validation\n4. Ensure responsive design for all devices\n5. Implement filter state management\n\nAcceptance Criteria:\n- All filter UI components render correctly\n- Filter state persists across page navigation\n- Components are accessible (WCAG AA compliant)\n- Filter changes trigger search updates with minimal delay\n- UI handles edge cases (no results, error states)",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Performance Benchmarking",
+            "description": "Establish baseline metrics and conduct performance testing for search functionality",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "1. Define key performance metrics\n2. Create benchmark test suite\n3. Establish baseline performance\n4. Implement automated performance tests\n5. Create performance monitoring dashboard\n\nAcceptance Criteria:\n- Benchmark suite covers various search scenarios\n- Performance tests run in CI/CD pipeline\n- Dashboard shows key metrics (response time, throughput, error rate)\n- Documentation of performance testing methodology\n- Alerts configured for performance degradation",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Optimization of Query Execution",
+            "description": "Fine-tune query execution plans and database configuration for optimal search performance",
+            "dependencies": [
+              1,
+              6
+            ],
+            "details": "1. Analyze query execution plans from benchmarking\n2. Optimize SQL queries\n3. Configure database parameters for search workload\n4. Implement query hints where beneficial\n5. Consider database-specific optimizations\n\nAcceptance Criteria:\n- Query execution time improved by at least 30% from baseline\n- Database CPU and memory usage optimized\n- All optimizations are documented\n- No regression in other database operations\n- Load testing confirms improvements at scale",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-22T11:18:07.489Z",
+      "updated": "2025-06-22T11:18:07.489Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
