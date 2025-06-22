@@ -1,0 +1,33 @@
+{
+  "released": false,
+  "prerelease": "alpha",
+  "skip": {
+    "bump": false,
+    "changelog": false,
+    "commit": false,
+    "tag": true
+  },
+  "types": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "chore", "hidden": true },
+    { "type": "docs", "hidden": true },
+    { "type": "style", "hidden": true },
+    { "type": "refactor", "hidden": true },
+    { "type": "perf", "hidden": true },
+    { "type": "test", "hidden": true }
+  ],
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
+  "bumpFiles": [
+    {
+      "filename": "package.json",
+      "type": "json"
+    }
+  ],
+  "packageFiles": [
+    {
+      "filename": "package.json",
+      "type": "json"
+    }
+  ]
+}

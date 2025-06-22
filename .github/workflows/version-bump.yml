@@ -1,0 +1,92 @@
+name: Version Bump
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    # Only run if not a version bump commit
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      
+      - name: Parse commit messages for version bump
+        id: parse
+        run: |
+          bun scripts/parse-commits.js
+      
+      - name: Read current version
+        id: current
+        run: |
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+      - name: Bump version
+        if: env.BUMP_LEVEL != ''
+        run: |
+          # Configure git
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Use bun's version command (or npm if bun doesn't support it)
+          if command -v bun >/dev/null 2>&1; then
+            # Try bun first, fall back to npm if needed
+            bun version ${{ env.BUMP_LEVEL }} --no-git-tag-version || npm version ${{ env.BUMP_LEVEL }} --no-git-tag-version
+          else
+            npm version ${{ env.BUMP_LEVEL }} --no-git-tag-version
+          fi
+          
+          # Get the new version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
+      
+      - name: Commit version bump
+        if: env.BUMP_LEVEL != ''
+        run: |
+          git add package.json
+          # Add bun.lockb if it was modified
+          if [[ -f bun.lockb ]] && git diff --name-only | grep -q "bun.lockb"; then
+            git add bun.lockb
+          fi
+          
+          git commit -m "chore(release): ${{ env.new_version }}
+
+          Automated version bump from ${{ steps.current.outputs.version }} to ${{ env.new_version }}
+          Bump level: ${{ env.BUMP_LEVEL }}"
+          
+          git push origin HEAD:${{ github.ref_name }}
+      
+      - name: Create Release (if not prerelease)
+        if: env.BUMP_LEVEL != '' && !contains(env.new_version, '-')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.new_version }}
+          release_name: Release v${{ env.new_version }}
+          draft: false
+          prerelease: false
+          body: |
+            ## Changes in this release
+            
+            Automated release created from commit messages.
+            See commit history for detailed changes.

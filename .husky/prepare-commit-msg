@@ -1,0 +1,19 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Check if this is a merge commit or amend
+# Don't run on merge commits
+if [ "$2" = "merge" ]; then
+  exit 0
+fi
+
+# Don't run on amend commits
+if [ "$2" = "commit" ] && git rev-parse --verify HEAD > /dev/null 2>&1; then
+  exit 0
+fi
+
+# Run the analyze-version-bump script to suggest version bump
+# The script will append [version:patch|minor|major] to the commit message
+bun scripts/analyze-version-bump.js "$1" "$2" "$3" 2>/dev/null || true
+
+exit 0
