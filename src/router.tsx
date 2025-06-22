@@ -1,5 +1,6 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { getNavigationOrder } from "./lib/navigation";
 
 export function createRouter() {
   const router = createTanStackRouter({
@@ -13,7 +14,7 @@ export function createRouter() {
       types: ({ fromLocation, toLocation }) => {
         if (!fromLocation || !toLocation) return [];
         
-        const pageOrder = ["/", "/discover", "/create", "/profile"];
+        const pageOrder = getNavigationOrder();
         const fromIndex = pageOrder.indexOf(fromLocation.pathname);
         const toIndex = pageOrder.indexOf(toLocation.pathname);
         
