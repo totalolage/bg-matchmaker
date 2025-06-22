@@ -210,3 +210,68 @@ export const updateSeedingStatus = internalMutation({
     }
   },
 });
+
+// Batch upsert games from CSV import
+export const batchUpsertGames = mutation({
+  args: {
+    games: v.array(
+      v.object({
+        bggId: v.string(),
+        name: v.string(),
+        yearPublished: v.optional(v.number()),
+        rank: v.optional(v.number()),
+        bayesAverage: v.optional(v.number()),
+        average: v.optional(v.number()),
+        usersRated: v.optional(v.number()),
+        isExpansion: v.boolean(),
+        abstractsRank: v.optional(v.number()),
+        cgsRank: v.optional(v.number()),
+        childrensGamesRank: v.optional(v.number()),
+        familyGamesRank: v.optional(v.number()),
+        partyGamesRank: v.optional(v.number()),
+        strategyGamesRank: v.optional(v.number()),
+        thematicRank: v.optional(v.number()),
+        wargamesRank: v.optional(v.number()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { games } = args;
+    let upserted = 0;
+
+    for (const game of games) {
+      // Check if game already exists
+      const existing = await ctx.db
+        .query("gameData")
+        .withIndex("by_bgg_id", (q) => q.eq("bggId", game.bggId))
+        .first();
+
+      const gameData = {
+        bggId: game.bggId,
+        name: game.name,
+        // Optional fields with defaults or from CSV
+        description: "", // Empty for CSV imports
+        minPlayers: 2, // Default values
+        maxPlayers: 4,
+        playingTime: 60,
+        yearPublished: game.yearPublished,
+        averageRating: game.average,
+        complexity: undefined, // Not in CSV
+        lastUpdated: Date.now(),
+        popularity: game.usersRated, // Use number of ratings as popularity indicator
+      };
+
+      if (existing) {
+        // Update existing game
+        await ctx.db.patch(existing._id, gameData);
+      } else {
+        // Insert new game
+        await ctx.db.insert("gameData", gameData);
+      }
+
+      upserted++;
+    }
+
+    return { upserted };
+  },
+});

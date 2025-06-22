@@ -26,7 +26,6 @@ import type * as lib_bgg_data_source_types from "../lib/bgg_data_source/types.js
 import type * as lib_bgg_data_source_xml_parser from "../lib/bgg_data_source/xml_parser.js";
 import type * as lib_constants from "../lib/constants.js";
 import type * as lib_utils from "../lib/utils.js";
-import type * as migrations_addUserRoles from "../migrations/addUserRoles.js";
 import type * as router from "../router.js";
 import type * as sessions from "../sessions.js";
 import type * as users from "../users.js";
@@ -64,7 +63,6 @@ declare const fullApi: ApiFromModules<{
   "lib/bgg_data_source/xml_parser": typeof lib_bgg_data_source_xml_parser;
   "lib/constants": typeof lib_constants;
   "lib/utils": typeof lib_utils;
-  "migrations/addUserRoles": typeof migrations_addUserRoles;
   router: typeof router;
   sessions: typeof sessions;
   users: typeof users;
