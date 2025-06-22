@@ -34,9 +34,9 @@ export const TimeGrid = ({
     <div className="grid grid-cols-12 gap-1">
       {HOURS.map((hour) => {
         const timeString = formatTime(hour);
-        const isSelected = isTimeSelected(dateISO, hour);
-        const isConfirmed = isSlotSelected(dateISO, hour);
-        const inHoverRange = isInHoverRange(dateISO, hour);
+        const isSelected = dateISO ? isTimeSelected(dateISO, hour) : false;
+        const isConfirmed = dateISO ? isSlotSelected(dateISO, hour) : false;
+        const inHoverRange = dateISO ? isInHoverRange(dateISO, hour) : false;
 
         // Find which interval contains the hovered time (only when not selecting)
         let hoveredIntervalToDelete: AvailabilityInterval | null = null;
@@ -82,9 +82,9 @@ export const TimeGrid = ({
             key={hour}
             time={timeString}
             state={buttonState}
-            onClick={() => onSlotClick(dateISO, hour)}
+            onClick={() => dateISO && onSlotClick(dateISO, hour)}
             onMouseEnter={() =>
-              onSlotHover({ date: dateISO, hour })
+              dateISO && onSlotHover({ date: dateISO, hour })
             }
             onMouseLeave={() => onSlotHover(null)}
             disabled={isPast}

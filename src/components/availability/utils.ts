@@ -110,6 +110,10 @@ export const formatTime = (hour: number) => {
 export const formatWeekRange = (weekDates: Date[]) => {
   const start = weekDates[0];
   const end = weekDates[6];
+  
+  if (!start || !end) {
+    return "";
+  }
 
   // Check if dates are in same month and year
   const sameMonth = start.getMonth() === end.getMonth();

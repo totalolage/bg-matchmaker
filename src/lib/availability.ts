@@ -18,7 +18,7 @@ export type DayAvailability = {
  */
 export function timeToMinutes(timeString: string): number {
   const [hours, minutes] = timeString.split(':').map(Number);
-  return hours * 60 + minutes;
+  return (hours || 0) * 60 + (minutes || 0);
 }
 
 /**
@@ -40,11 +40,16 @@ export function mergeIntervals(intervals: AvailabilityInterval[]): AvailabilityI
   
   // Sort by start time
   const sorted = [...intervals].sort((a, b) => a.start - b.start);
-  const merged: AvailabilityInterval[] = [sorted[0]];
+  const firstInterval = sorted[0];
+  if (!firstInterval) return [];
+  
+  const merged: AvailabilityInterval[] = [firstInterval];
   
   for (let i = 1; i < sorted.length; i++) {
     const current = sorted[i];
     const last = merged[merged.length - 1];
+    
+    if (!current || !last) continue;
     
     // Check if intervals overlap or are adjacent
     if (current.start <= last.end) {

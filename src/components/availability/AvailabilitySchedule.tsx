@@ -149,8 +149,11 @@ export const AvailabilitySchedule = ({
   const selectedDate = weekDates[selectedDayIndex];
 
   const handleDayChange = (dayIndex: number) => {
-    navigateWithToast(weekDates[dayIndex]);
-    clearSelection();
+    const date = weekDates[dayIndex];
+    if (date) {
+      navigateWithToast(date);
+      clearSelection();
+    }
   };
 
   const handleDateSelect = (date: Date) => {
@@ -186,7 +189,7 @@ export const AvailabilitySchedule = ({
         <CardContent>
           <WeekNavigation
             weekDates={weekDates}
-            selectedDate={selectedDate}
+            selectedDate={selectedDate || new Date()}
             datePickerOpen={datePickerOpen}
             onDatePickerChange={setDatePickerOpen}
             onDateSelect={handleDateSelect}
