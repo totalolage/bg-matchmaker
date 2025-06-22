@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { ComponentProps,useState } from "react";
+import { ComponentProps, useState } from "react";
 
 import { EmptyState } from "@/components/EmptyState";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -38,7 +38,9 @@ export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
       {isAddingGame && (
         <AddGameDialog
           user={user}
-          onAddGame={handleAddGame}
+          onAddGame={(game, expertiseLevel) =>
+            void handleAddGame(game, expertiseLevel)
+          }
           onClose={() => setIsAddingGame(false)}
         />
       )}
@@ -48,7 +50,9 @@ export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
           <GameLibraryItem
             key={game.gameId}
             game={game}
-            onUpdateExpertise={(gameId, level) => void updateExpertise(gameId, level)}
+            onUpdateExpertise={(gameId, level) =>
+              void updateExpertise(gameId, level)
+            }
             onRemove={(gameId) => void removeGame(gameId)}
           />
         ))}
@@ -66,3 +70,4 @@ export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
 };
 
 export type GameLibraryProps = ComponentProps<typeof GameLibrary>;
+
