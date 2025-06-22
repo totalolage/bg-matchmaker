@@ -32,6 +32,9 @@ bun dev
 # Run Convex backend
 bunx convex dev
 
+# Publish Convex changes (one-time deployment)
+bunx convex dev --once
+
 # Task management
 task-master next              # Get next task to work on
 task-master show <id>         # View task details
@@ -52,6 +55,7 @@ task-master set-status --id=<id> --status=done  # Complete task
 - To check that the server is running, use curl to ping the url
 - Always validate your changes using Playwright MCP
 - Use Task Master to track progress instead of manual TODO lists
+- When making Convex backend changes, run `bunx convex dev --once` to publish them
 
 ---
 
