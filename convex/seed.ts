@@ -262,8 +262,14 @@ export const clearTestSessions = mutation({
       await ctx.db.delete(swipe._id);
     }
 
+    // Clear all session interactions
+    const interactions = await ctx.db.query("sessionInteractions").collect();
+    for (const interaction of interactions) {
+      await ctx.db.delete(interaction._id);
+    }
+
     return {
-      message: `Cleared ${sessions.length} sessions and ${swipes.length} swipes`,
+      message: `Cleared ${sessions.length} sessions, ${swipes.length} swipes, and ${interactions.length} interactions`,
     };
   },
 });

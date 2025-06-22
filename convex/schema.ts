@@ -17,33 +17,42 @@ const applicationTables = {
     profilePic: v.optional(v.string()),
     discordId: v.string(),
     role: v.optional(v.union(v.literal("User"), v.literal("Admin"))),
-    gameLibrary: v.array(v.object({
-      gameId: v.string(),
-      gameName: v.string(),
-      gameImage: v.optional(v.string()),
-      expertiseLevel: v.union(
-        v.literal("novice"),
-        v.literal("beginner"),
-        v.literal("intermediate"),
-        v.literal("advanced"),
-        v.literal("expert")
-      )
-    })),
-    availability: v.array(v.object({
-      date: v.string(), // ISO date string "YYYY-MM-DD"
-      intervals: v.array(v.object({
-        start: v.number(), // minutes since midnight (0-1439)
-        end: v.number(),   // minutes since midnight (0-1439)
-      }))
-    })),
-    pushSubscription: v.optional(v.object({
-      endpoint: v.string(),
-      keys: v.object({
-        p256dh: v.string(),
-        auth: v.string(),
+    gameLibrary: v.array(
+      v.object({
+        gameId: v.string(),
+        gameName: v.string(),
+        gameImage: v.optional(v.string()),
+        expertiseLevel: v.union(
+          v.literal("novice"),
+          v.literal("beginner"),
+          v.literal("intermediate"),
+          v.literal("advanced"),
+          v.literal("expert"),
+        ),
       }),
-    })),
-  }).index("by_discord_id", ["discordId"])
+    ),
+    availability: v.array(
+      v.object({
+        date: v.string(), // ISO date string "YYYY-MM-DD"
+        intervals: v.array(
+          v.object({
+            start: v.number(), // minutes since midnight (0-1439)
+            end: v.number(), // minutes since midnight (0-1439)
+          }),
+        ),
+      }),
+    ),
+    pushSubscription: v.optional(
+      v.object({
+        endpoint: v.string(),
+        keys: v.object({
+          p256dh: v.string(),
+          auth: v.string(),
+        }),
+      }),
+    ),
+  })
+    .index("by_discord_id", ["discordId"])
     .index("email", ["email"]),
 
   sessions: defineTable({
@@ -58,7 +67,7 @@ const applicationTables = {
       v.literal("established"),
       v.literal("confirmed"),
       v.literal("completed"),
-      v.literal("cancelled")
+      v.literal("cancelled"),
     ),
     scheduledTime: v.optional(v.number()), // timestamp
     minPlayers: v.number(),
@@ -66,7 +75,8 @@ const applicationTables = {
     discordChannelId: v.optional(v.string()),
     description: v.optional(v.string()),
     location: v.optional(v.string()),
-  }).index("by_status", ["status"])
+  })
+    .index("by_status", ["status"])
     .index("by_host", ["hostId"])
     .index("by_scheduled_time", ["scheduledTime"]),
 
@@ -77,7 +87,8 @@ const applicationTables = {
     selfAttended: v.boolean(),
     presentPlayers: v.array(v.id("users")),
     comments: v.optional(v.string()),
-  }).index("by_session", ["sessionId"])
+  })
+    .index("by_session", ["sessionId"])
     .index("by_user", ["userId"]),
 
   gameData: defineTable({
@@ -96,7 +107,8 @@ const applicationTables = {
     lastUpdated: v.number(), // Timestamp for cache freshness
     popularity: v.optional(v.number()), // For sorting search results
     averageRating: v.optional(v.number()), // BGG average rating
-  }).index("by_bgg_id", ["bggId"])
+  })
+    .index("by_bgg_id", ["bggId"])
     .searchIndex("search_all_names", {
       searchField: "searchText",
     }),
@@ -105,9 +117,32 @@ const applicationTables = {
     userId: v.id("users"),
     sessionId: v.id("sessions"),
     action: v.union(v.literal("like"), v.literal("pass")),
-  }).index("by_user", ["userId"])
+  })
+    .index("by_user", ["userId"])
     .index("by_session", ["sessionId"])
     .index("by_user_session", ["userId", "sessionId"]),
+
+  sessionInteractions: defineTable({
+    userId: v.id("users"),
+    sessionId: v.id("sessions"),
+    interactionType: v.union(
+      v.literal("interested"),
+      v.literal("declined"),
+      v.literal("accepted"),
+    ),
+    createdAt: v.number(),
+    metadata: v.optional(
+      v.object({
+        swipeDirection: v.optional(v.string()),
+        deviceType: v.optional(v.string()),
+      }),
+    ),
+  })
+    .index("by_user", ["userId"])
+    .index("by_session", ["sessionId"])
+    .index("by_user_session", ["userId", "sessionId"])
+    .index("by_interaction_type", ["interactionType"])
+    .index("by_created_at", ["createdAt"]),
 
   jobs: defineTable({
     name: v.string(), // Unique job identifier (e.g., "bgg_seed")
@@ -117,7 +152,7 @@ const applicationTables = {
       v.literal("stopping"),
       v.literal("stopped"),
       v.literal("completed"),
-      v.literal("failed")
+      v.literal("failed"),
     ),
     progress: v.object({
       current: v.number(), // Current progress value
@@ -129,7 +164,8 @@ const applicationTables = {
     lastUpdatedAt: v.number(), // Timestamp of last update
     completedAt: v.optional(v.number()), // Timestamp when completed
     scheduledFunctionId: v.optional(v.id("_scheduled_functions")), // ID of scheduled continuation
-  }).index("by_name", ["name"])
+  })
+    .index("by_name", ["name"])
     .index("by_type", ["type"])
     .index("by_status", ["status"]),
 };
@@ -138,4 +174,3 @@ export default defineSchema({
   ...authTables,
   ...applicationTables,
 });
-
