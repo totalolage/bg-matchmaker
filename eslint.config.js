@@ -6,6 +6,7 @@ import tseslint from "typescript-eslint";
 import unusedImports from "eslint-plugin-unused-imports";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import boundaries from "eslint-plugin-boundaries";
+import reactCompiler from "eslint-plugin-react-compiler";
 
 export default tseslint.config(
   {
@@ -32,25 +33,23 @@ export default tseslint.config(
         ...globals.node,
       },
       parserOptions: {
-        project: [
-          "./tsconfig.json",
-          "./convex/tsconfig.json",
-        ],
+        project: ["./tsconfig.json", "./convex/tsconfig.json"],
       },
     },
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      "react-compiler": reactCompiler,
       "unused-imports": unusedImports,
       "simple-import-sort": simpleImportSort,
-      "boundaries": boundaries,
+      boundaries: boundaries,
     },
     settings: {
       "boundaries/elements": [
         {
-          "type": "component",
-          "pattern": "src/components/**/index.ts",
-          "mode": "folder",
+          type: "component",
+          pattern: "src/components/**/index.ts",
+          mode: "folder",
         },
       ],
     },
@@ -60,6 +59,9 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+
+      // React Compiler rules
+      "react-compiler/react-compiler": "error",
       // All of these overrides ease getting into
       // TypeScript, and can be removed for stricter
       // linting down the line.
@@ -92,7 +94,7 @@ export default tseslint.config(
       "simple-import-sort/imports": [
         "error",
         {
-          "groups": [
+          groups: [
             // Node.js builtins
             ["^node:"],
             // External packages
@@ -106,9 +108,9 @@ export default tseslint.config(
             // Other relative imports
             ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
             // Style imports
-            ["^.+\\.s?css$"]
-          ]
-        }
+            ["^.+\\.s?css$"],
+          ],
+        },
       ],
       "simple-import-sort/exports": "error",
 
@@ -118,28 +120,51 @@ export default tseslint.config(
       "unused-imports/no-unused-vars": [
         "warn",
         {
-          "vars": "all",
-          "varsIgnorePattern": "^_",
-          "args": "after-used",
-          "argsIgnorePattern": "^_"
-        }
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
       ],
 
       // Module boundary rules
       "boundaries/element-types": [
         "error",
         {
-          "default": "disallow",
-          "rules": [
+          default: "disallow",
+          rules: [
             {
-              "from": ["component"],
-              "allow": ["component"],
+              from: ["component"],
+              allow: ["component"],
             },
           ],
         },
       ],
       "boundaries/no-private": ["error"],
       "boundaries/no-unknown": ["error"],
+
+      // Disallow React optimization hooks since React Compiler handles these
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react",
+              importNames: ["memo", "useMemo", "useCallback"],
+              message:
+                "React Compiler handles memoization automatically. These hooks are not needed.",
+            },
+          ],
+          patterns: [
+            {
+              group: ["react"],
+              importNames: ["memo", "useMemo", "useCallback"],
+              message:
+                "React Compiler handles memoization automatically. These hooks are not needed.",
+            },
+          ],
+        },
+      ],
     },
   },
 );

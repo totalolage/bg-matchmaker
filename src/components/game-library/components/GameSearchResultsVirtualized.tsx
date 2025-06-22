@@ -1,6 +1,6 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { memo, useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   Select,
@@ -31,7 +31,7 @@ const ITEM_HEIGHT = 76; // Height of each game item in pixels
 const LOADER_HEIGHT = 280; // Height of the loader section (3 skeleton items + loading text)
 const OVERSCAN = 5; // Number of items to render outside the visible area
 
-const GameRow = memo(({
+const GameRow = ({
   game,
   isInLibrary,
   onAddGame,
@@ -73,7 +73,7 @@ const GameRow = memo(({
       </SelectContent>
     </Select>
   </div>
-));
+);
 
 export function GameSearchResultsVirtualized({
   searchResults,
@@ -93,14 +93,11 @@ export function GameSearchResultsVirtualized({
   const virtualizer = useVirtualizer({
     count: searchResults.length + (hasMore ? 1 : 0), // Add 1 for loader row
     getScrollElement: () => parentRef.current,
-    estimateSize: useCallback(
-      (index) => {
-        // Use different height for loader row
-        const isLoaderRow = index >= searchResults.length;
-        return isLoaderRow ? LOADER_HEIGHT : ITEM_HEIGHT;
-      },
-      [searchResults.length],
-    ),
+    estimateSize: (index) => {
+      // Use different height for loader row
+      const isLoaderRow = index >= searchResults.length;
+      return isLoaderRow ? LOADER_HEIGHT : ITEM_HEIGHT;
+    },
     overscan: OVERSCAN,
   });
 
@@ -266,4 +263,3 @@ export function GameSearchResultsVirtualized({
     </div>
   );
 }
-
