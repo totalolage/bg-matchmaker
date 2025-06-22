@@ -5,14 +5,14 @@ import {
   useNavigate,
 } from "@tanstack/react-router";
 import { type } from "arktype";
-import { AnimatePresence,motion } from "framer-motion";
-import { Edit,LogOut } from "lucide-react";
-import { useEffect,useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Edit, LogOut } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { AvailabilitySchedule } from "../components/availability";
 import { GameLibrary } from "../components/game-library";
 import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
-import { PageHeader,PageLayout } from "../components/PageLayout";
+import { PageHeader, PageLayout } from "../components/PageLayout";
 import { Button } from "../components/ui/button";
 import {
   Tabs,
@@ -154,7 +154,9 @@ function Profile() {
                   className="overflow-y-auto p-4"
                 >
                   {activeTab === "games" && <GameLibrary user={user} />}
-                  {activeTab === "availability" && <AvailabilitySchedule user={user} />}
+                  {activeTab === "availability" && (
+                    <AvailabilitySchedule user={user} />
+                  )}
                 </motion.div>
               </TabsContent>
             </AnimatePresence>
@@ -166,3 +168,4 @@ function Profile() {
     </>
   );
 }
+

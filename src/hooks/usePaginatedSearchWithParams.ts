@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+
 import type { GameSearchResult } from "@/components/game-library/types";
 import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -40,7 +41,7 @@ export function usePaginatedSearchWithParams({
   enableUrlParams = true,
 }: UsePaginatedSearchWithParamsOptions = {}): UsePaginatedSearchWithParamsReturn {
   const navigate = useNavigate();
-  const urlParams = useSearch({ strict: false }) as SearchParams;
+  const urlParams = useSearch({ strict: false });
   
   // Initialize state from URL params if enabled
   const [searchQuery, setSearchQueryState] = useState(

@@ -29,6 +29,8 @@ import type * as lib_utils from "../lib/utils.js";
 import type * as migrations_populateAlternateNames from "../migrations/populateAlternateNames.js";
 import type * as migrations_populateSearchText from "../migrations/populateSearchText.js";
 import type * as router from "../router.js";
+import type * as seed from "../seed.js";
+import type * as sessionInteractions from "../sessionInteractions.js";
 import type * as sessions from "../sessions.js";
 import type * as users from "../users.js";
 
@@ -68,6 +70,8 @@ declare const fullApi: ApiFromModules<{
   "migrations/populateAlternateNames": typeof migrations_populateAlternateNames;
   "migrations/populateSearchText": typeof migrations_populateSearchText;
   router: typeof router;
+  seed: typeof seed;
+  sessionInteractions: typeof sessionInteractions;
   sessions: typeof sessions;
   users: typeof users;
 }>;

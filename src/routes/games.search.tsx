@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@tanstack/react-pacer";
 import { createFileRoute } from "@tanstack/react-router";
 import { type } from "arktype";
 import { motion } from "framer-motion";
@@ -9,7 +10,6 @@ import { PageHeader, PageLayout } from "@/components/PageLayout";
 import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { usePaginatedSearchWithParams } from "@/hooks/usePaginatedSearchWithParams";
-import { useDebouncedValue } from "@tanstack/react-pacer";
 
 const searchSchema = type({
   "q?": "string",
