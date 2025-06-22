@@ -1,6 +1,7 @@
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
 import * as React from "react"
+import type { ComponentProps } from "react"
 import {
   Controller,
   ControllerProps,
@@ -49,24 +50,20 @@ export const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue
 )
 
-const FormItem = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+const FormItem = (props: React.HTMLAttributes<HTMLDivElement> & { ref?: React.Ref<HTMLDivElement> }) => {
+  const { className, ref, ...rest } = props
   const id = React.useId()
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn("space-y-2", className)} {...props} />
+      <div ref={ref} className={cn("space-y-2", className)} {...rest} />
     </FormItemContext.Provider>
   )
-})
-FormItem.displayName = "FormItem"
+}
+export type FormItemProps = ComponentProps<typeof FormItem>
 
-const FormLabel = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => {
+const FormLabel = (props: React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & { ref?: React.Ref<React.ElementRef<typeof LabelPrimitive.Root>> }) => {
+  const { className, ref, ...rest } = props
   const { error, formItemId } = useFormField()
 
   return (
@@ -74,16 +71,14 @@ const FormLabel = React.forwardRef<
       ref={ref}
       className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
-      {...props}
+      {...rest}
     />
   )
-})
-FormLabel.displayName = "FormLabel"
+}
+export type FormLabelProps = ComponentProps<typeof FormLabel>
 
-const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
->(({ ...props }, ref) => {
+const FormControl = (props: React.ComponentPropsWithoutRef<typeof Slot> & { ref?: React.Ref<React.ElementRef<typeof Slot>> }) => {
+  const { ref, ...rest } = props
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
@@ -96,16 +91,14 @@ const FormControl = React.forwardRef<
           : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={!!error}
-      {...props}
+      {...rest}
     />
   )
-})
-FormControl.displayName = "FormControl"
+}
+export type FormControlProps = ComponentProps<typeof FormControl>
 
-const FormDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => {
+const FormDescription = (props: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.Ref<HTMLParagraphElement> }) => {
+  const { className, ref, ...rest } = props
   const { formDescriptionId } = useFormField()
 
   return (
@@ -113,16 +106,14 @@ const FormDescription = React.forwardRef<
       ref={ref}
       id={formDescriptionId}
       className={cn("text-sm text-muted-foreground", className)}
-      {...props}
+      {...rest}
     />
   )
-})
-FormDescription.displayName = "FormDescription"
+}
+export type FormDescriptionProps = ComponentProps<typeof FormDescription>
 
-const FormMessage = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, ...props }, ref) => {
+const FormMessage = (props: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.Ref<HTMLParagraphElement> }) => {
+  const { className, children, ref, ...rest } = props
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message) : children
 
@@ -135,13 +126,13 @@ const FormMessage = React.forwardRef<
       ref={ref}
       id={formMessageId}
       className={cn("text-sm font-medium text-destructive", className)}
-      {...props}
+      {...rest}
     >
       {body}
     </p>
   )
-})
-FormMessage.displayName = "FormMessage"
+}
+export type FormMessageProps = ComponentProps<typeof FormMessage>
 
 export {
   Form,
@@ -152,3 +143,6 @@ export {
   FormLabel,
   FormMessage,
 }
+
+export type FormProps = ComponentProps<typeof Form>
+export type FormFieldProps = ComponentProps<typeof FormField>

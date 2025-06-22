@@ -6,4 +6,11 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
+  type FormControlProps,
+  type FormDescriptionProps,
+  type FormFieldProps,
+  type FormItemProps,
+  type FormLabelProps,
+  type FormMessageProps,
+  type FormProps,
 } from "./Form";
