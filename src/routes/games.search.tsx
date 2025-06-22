@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import { GameSearchResultsWithPagination } from "@/components/game-library/components/GameSearchResultsWithPagination";
+import { GameSearchResultsVirtualized } from "@/components/game-library/components/GameSearchResultsVirtualized";
 import { PageHeader, PageLayout } from "@/components/PageLayout";
 import { Input } from "@/components/ui/input";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -49,7 +49,7 @@ function GamesSearch() {
     totalLoaded,
     currentPage,
   } = usePaginatedSearchWithParams({
-    itemsPerPage: 20,
+    itemsPerPage: 50, // Increased for smoother virtual scrolling
     enableUrlParams: true,
   });
 
@@ -108,7 +108,7 @@ function GamesSearch() {
               )}
             </div>
 
-            <GameSearchResultsWithPagination
+            <GameSearchResultsVirtualized
               searchResults={results}
               isLoading={isLoading}
               hasMore={hasMore}

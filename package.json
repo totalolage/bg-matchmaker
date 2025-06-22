@@ -36,6 +36,7 @@
     "@tanstack/react-pacer": "^0.8.0",
     "@tanstack/react-query": "^5.59.20",
     "@tanstack/react-router": "^1.82.1",
+    "@tanstack/react-virtual": "^3.13.10",
     "@types/cli-progress": "^3.11.6",
     "@types/papaparse": "^5.3.16",
     "arktype": "^2.1.20",

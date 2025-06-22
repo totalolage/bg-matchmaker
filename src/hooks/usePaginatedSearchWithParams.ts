@@ -41,7 +41,7 @@ export function usePaginatedSearchWithParams({
   enableUrlParams = true,
 }: UsePaginatedSearchWithParamsOptions = {}): UsePaginatedSearchWithParamsReturn {
   const navigate = useNavigate();
-  const urlParams = useSearch({ strict: false });
+  const urlParams = useSearch({ strict: false }) as SearchParams;
   
   // Initialize state from URL params if enabled
   const [searchQuery, setSearchQueryState] = useState(
@@ -51,7 +51,7 @@ export function usePaginatedSearchWithParams({
     enableUrlParams && urlParams.cursor ? urlParams.cursor : null,
   );
   const [currentPage, setCurrentPage] = useState(
-    enableUrlParams && urlParams.page ? urlParams.page : 1,
+    enableUrlParams && urlParams.page ? Number(urlParams.page) : 1,
   );
   const [allResults, setAllResults] = useState<GameSearchResult[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
