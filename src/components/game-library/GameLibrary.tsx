@@ -9,12 +9,13 @@ import { Doc } from "@convex/_generated/dataModel";
 import { AddGameDialog } from "./components/AddGameDialog";
 import { GameLibraryItem } from "./components/GameLibraryItem";
 import { useGameLibrary } from "./hooks/useGameLibrary";
+import type { GameSearchResult } from "./types";
 
 export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
   const [isAddingGame, setIsAddingGame] = useState(false);
   const { addGame, removeGame, updateExpertise } = useGameLibrary(user);
 
-  const handleAddGame = async (game: any, expertiseLevel: string) => {
+  const handleAddGame = async (game: GameSearchResult, expertiseLevel: string) => {
     await addGame(game, expertiseLevel);
     setIsAddingGame(false);
   };
