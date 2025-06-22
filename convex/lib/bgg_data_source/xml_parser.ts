@@ -20,6 +20,8 @@ const parserOptions = {
   attributeNamePrefix: "",
   textNodeName: "text",
   parseAttributeValue: true,
+  processEntities: true,
+  htmlEntities: true,
 };
 
 const parser = new XMLParser(parserOptions);
