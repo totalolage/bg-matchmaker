@@ -43,7 +43,10 @@ interface ParsedGameData {
 
 export function CSVUpload() {
   const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [parseProgress, setParseProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [currentStage, setCurrentStage] = useState<"parsing" | "uploading" | null>(null);
+  const [gamesToUpload, setGamesToUpload] = useState(0);
   const [stats, setStats] = useState<{
     total: number;
     processed: number;
@@ -87,7 +90,9 @@ export function CSVUpload() {
     if (!file) return;
 
     setIsUploading(true);
-    setProgress(0);
+    setParseProgress(0);
+    setUploadProgress(0);
+    setCurrentStage("parsing");
     setStats(null);
 
     const localStats = {
@@ -98,7 +103,6 @@ export function CSVUpload() {
       errors: 0,
     };
 
-    const BATCH_SIZE = 50;
     const allGames: ParsedGameData[] = [];
 
     // First, parse the entire file
@@ -121,37 +125,40 @@ export function CSVUpload() {
             }
 
             localStats.processed++;
-            setProgress((localStats.processed / localStats.total) * 100);
+            setParseProgress((localStats.processed / localStats.total) * 100);
           } catch (error) {
             localStats.errors++;
             console.error("Error processing row:", error);
           }
         }
 
-        // Process batches asynchronously without making the callback async
+        // Process all games at once asynchronously
+        setGamesToUpload(allGames.length);
+        
         void (async () => {
-          // Now process in batches
-          for (let i = 0; i < allGames.length; i += BATCH_SIZE) {
-            const batch = allGames.slice(i, i + BATCH_SIZE);
-            
-            try {
-              await uploadMutation.mutateAsync(batch);
-              localStats.imported += batch.length;
-              setStats({ ...localStats });
-            } catch (error) {
-              console.error("Error importing batch:", error);
-              localStats.errors += batch.length;
-              toast.error(`Failed to import batch of ${batch.length} games`);
-            }
+          setCurrentStage("uploading");
+          setUploadProgress(0);
+          
+          try {
+            // Upload all games in a single request
+            await uploadMutation.mutateAsync(allGames);
+            localStats.imported = allGames.length;
+            setUploadProgress(100);
+            setStats({ ...localStats });
+
+            toast.success(
+              `Import complete! Imported ${localStats.imported} games out of ${localStats.total} total.`
+            );
+          } catch (error) {
+            console.error("Error importing games:", error);
+            localStats.errors = allGames.length;
+            toast.error(`Failed to import ${allGames.length} games`);
+            setStats({ ...localStats });
           }
 
           setIsUploading(false);
-          setProgress(100);
-          setStats({ ...localStats });
-
-          toast.success(
-            `Import complete! Imported ${localStats.imported} games out of ${localStats.total} total.`
-          );
+          setCurrentStage(null);
+          setGamesToUpload(0);
 
           // Reset file input
           if (fileInputRef.current) {
@@ -208,17 +215,31 @@ export function CSVUpload() {
 
         {isUploading && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Import Progress</span>
-                <span>{progress.toFixed(1)}%</span>
+            {currentStage === "parsing" && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Parsing CSV File</span>
+                  <span>{parseProgress.toFixed(1)}%</span>
+                </div>
+                <Progress value={parseProgress} />
+                <div className="text-sm text-muted-foreground text-center">
+                  Reading and validating game data...
+                </div>
               </div>
-              <Progress value={progress} />
-            </div>
+            )}
 
-            <div className="text-sm text-muted-foreground text-center">
-              Processing CSV file...
-            </div>
+            {currentStage === "uploading" && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Uploading to Database</span>
+                  <span>{uploadProgress.toFixed(1)}%</span>
+                </div>
+                <Progress value={uploadProgress} className="transition-all duration-500" />
+                <div className="text-sm text-muted-foreground text-center">
+                  Saving {gamesToUpload.toLocaleString()} games to database...
+                </div>
+              </div>
+            )}
           </div>
         )}
 
