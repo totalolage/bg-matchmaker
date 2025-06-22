@@ -5,6 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import unusedImports from "eslint-plugin-unused-imports";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
+import boundaries from "eslint-plugin-boundaries";
 
 export default tseslint.config(
   {
@@ -41,6 +42,16 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       "unused-imports": unusedImports,
       "simple-import-sort": simpleImportSort,
+      "boundaries": boundaries,
+    },
+    settings: {
+      "boundaries/elements": [
+        {
+          "type": "component",
+          "pattern": "src/components/**/index.ts",
+          "mode": "folder",
+        },
+      ],
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -113,6 +124,22 @@ export default tseslint.config(
           "argsIgnorePattern": "^_"
         }
       ],
+
+      // Module boundary rules
+      "boundaries/element-types": [
+        "error",
+        {
+          "default": "disallow",
+          "rules": [
+            {
+              "from": ["component"],
+              "allow": ["component"],
+            },
+          ],
+        },
+      ],
+      "boundaries/no-private": ["error"],
+      "boundaries/no-unknown": ["error"],
     },
   },
 );

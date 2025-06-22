@@ -166,7 +166,7 @@ export async function getGameDetailsWithErrorHandling(
       id,
       error: new Error("Game not found in bulk response"),
     }));
-  } catch (error) {
+  } catch {
     // If bulk fetch fails entirely, try individual fetches
     for (const bggId of bggIds) {
       try {

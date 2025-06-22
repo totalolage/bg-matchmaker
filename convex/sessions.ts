@@ -61,7 +61,6 @@ export const getDiscoverySessions = query({
       if (session.scheduledTime) {
         const sessionDate = new Date(session.scheduledTime);
         const sessionDateISO = sessionDate.toISOString().split('T')[0];
-        const timeStr = sessionDate.toTimeString().slice(0, 5);
         
         // Convert session time to minutes since midnight
         const sessionMinutes = sessionDate.getHours() * 60 + sessionDate.getMinutes();

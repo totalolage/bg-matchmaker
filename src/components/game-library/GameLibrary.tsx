@@ -48,8 +48,8 @@ export const GameLibrary = ({ user }: { user: Doc<"users"> }) => {
           <GameLibraryItem
             key={game.gameId}
             game={game}
-            onUpdateExpertise={updateExpertise}
-            onRemove={removeGame}
+            onUpdateExpertise={(gameId, level) => void updateExpertise(gameId, level)}
+            onRemove={(gameId) => void removeGame(gameId)}
           />
         ))}
       </div>
