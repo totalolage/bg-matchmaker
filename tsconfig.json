@@ -12,5 +12,6 @@
       "@/*": ["./src/*"],
       "@convex/*": ["./convex/*"]
     }
-  }
+  },
+  "exclude": ["scripts/**/*"]
 }

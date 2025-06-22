@@ -16,6 +16,7 @@ export default tseslint.config(
       "postcss.config.js",
       "tailwind.config.js",
       "vite.config.ts",
+      "scripts/**/*.ts", // Scripts have their own tsconfig
     ],
   },
   {
@@ -72,8 +73,8 @@ export default tseslint.config(
       // Allow escaping the compiler
       "@typescript-eslint/ban-ts-comment": "error",
 
-      // Allow explicit `any`s
-      "@typescript-eslint/no-explicit-any": "off",
+      // Ban explicit `any`s
+      "@typescript-eslint/no-explicit-any": "error",
 
       // START: Allow implicit `any`s
       "@typescript-eslint/no-unsafe-argument": "off",
