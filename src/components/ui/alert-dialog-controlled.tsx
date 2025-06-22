@@ -1,4 +1,4 @@
-import { ReactNode, Ref,useImperativeHandle, useState } from "react";
+import { PropsWithChildren, Ref,useImperativeHandle, useState } from "react";
 
 import {
   AlertDialog,
@@ -19,7 +19,7 @@ export interface AlertDialogControlledRef {
   close: () => void;
 }
 
-interface AlertDialogControlledProps {
+type AlertDialogControlledProps = PropsWithChildren<{
   ref?: Ref<AlertDialogControlledRef>;
   title: string;
   description?: string;
@@ -27,8 +27,7 @@ interface AlertDialogControlledProps {
   cancelLabel?: string;
   onAction?: () => void | Promise<void>;
   variant?: "default" | "destructive";
-  children?: ReactNode;
-}
+}>
 
 export const AlertDialogControlled = ({
   ref,

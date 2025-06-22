@@ -1,14 +1,15 @@
+import { PropsWithChildren } from "react";
+
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 import { formatDateToISO, getShortDate, getShortDayName, isDateInPast } from "../utils";
 
-interface WeekTabsProps {
+type WeekTabsProps = PropsWithChildren<{
   weekDates: Date[];
   selectedDayIndex: number;
   onDayChange: (dayIndex: number) => void;
-  children: React.ReactNode;
-}
+}>
 
 export const WeekTabs = ({
   weekDates,

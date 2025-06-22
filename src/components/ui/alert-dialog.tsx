@@ -1,6 +1,5 @@
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
-import type { ComponentProps } from "react"
-import * as React from "react"
+import type { ComponentProps, ComponentPropsWithoutRef, ElementRef } from "react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -11,8 +10,8 @@ const AlertDialogTrigger = AlertDialogPrimitive.Trigger
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal
 
-export const AlertDialogOverlay = (props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> & {
-  ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Overlay>>
+export const AlertDialogOverlay = (props: ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> & {
+  ref?: React.Ref<ElementRef<typeof AlertDialogPrimitive.Overlay>>
 }) => {
   const { className, ref, ...rest } = props
   return (

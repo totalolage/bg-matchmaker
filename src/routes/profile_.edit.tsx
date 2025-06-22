@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { type } from "arktype";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -54,23 +54,19 @@ function EditProfile() {
     },
   });
 
-  const handleSave = useMemo(
-    () =>
-      form.handleSubmit(async ({ displayName }) => {
-        if (updateDisplayName.isPending) return false;
-        if (
-          displayName.trim() === user.displayName ||
-          (!displayName.trim() && user.name === user.displayName)
-        )
-          return false;
+  const handleSave = form.handleSubmit(async ({ displayName }) => {
+    if (updateDisplayName.isPending) return false;
+    if (
+      displayName.trim() === user.displayName ||
+      (!displayName.trim() && user.name === user.displayName)
+    )
+      return false;
 
-        await updateDisplayName.mutateAsync({ displayName });
+    await updateDisplayName.mutateAsync({ displayName });
 
-        toast.success("Profile updated");
-        return true; // Successfully saved
-      }),
-    [form, updateDisplayName, user.displayName, user.name],
-  );
+    toast.success("Profile updated");
+    return true; // Successfully saved
+  });
 
   useEffect(
     () =>

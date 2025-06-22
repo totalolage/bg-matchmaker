@@ -5,11 +5,7 @@ import type { GameSearchResult } from "@/components/game-library/types";
 import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
 
-interface SearchParams {
-  q?: string;
-  cursor?: string;
-  page?: number;
-}
+// Removed unused interface - SearchParams
 
 interface UsePaginatedSearchWithParamsOptions {
   itemsPerPage?: number;
@@ -41,7 +37,7 @@ export function usePaginatedSearchWithParams({
   enableUrlParams = true,
 }: UsePaginatedSearchWithParamsOptions = {}): UsePaginatedSearchWithParamsReturn {
   const navigate = useNavigate();
-  const urlParams = useSearch({ strict: false }) as SearchParams;
+  const urlParams = useSearch({ strict: false });
   
   // Initialize state from URL params if enabled
   const [searchQuery, setSearchQueryState] = useState(
@@ -83,7 +79,8 @@ export function usePaginatedSearchWithParams({
     if (currentPage > 1) params.page = currentPage.toString();
 
     void navigate({
-      search: params as any,
+      to: ".",
+      search: params,
       replace: true,
     });
   }, [searchQuery, cursor, currentPage, enableUrlParams, navigate]);
@@ -157,7 +154,7 @@ export function usePaginatedSearchWithParams({
     setCurrentPage(1);
     setIsLoadingMore(false);
     if (enableUrlParams) {
-      void navigate({ search: {} as any });
+      void navigate({ to: ".", search: {} });
     }
   };
 

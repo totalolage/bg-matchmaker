@@ -1,7 +1,6 @@
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
-import type { ComponentProps } from "react"
-import * as React from "react"
+import type { ComponentProps, ComponentPropsWithoutRef, ElementRef,Ref } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -11,8 +10,8 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
-export const SelectTrigger = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Trigger>>
+export const SelectTrigger = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.Trigger>>
 }) => {
   const { className, children, ref, ...rest } = props
   return (
@@ -33,8 +32,8 @@ export const SelectTrigger = (props: React.ComponentPropsWithoutRef<typeof Selec
 }
 export type SelectTriggerProps = ComponentProps<typeof SelectTrigger>
 
-export const SelectScrollUpButton = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.ScrollUpButton>>
+export const SelectScrollUpButton = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.ScrollUpButton>>
 }) => {
   const { className, ref, ...rest } = props
   return (
@@ -52,8 +51,8 @@ export const SelectScrollUpButton = (props: React.ComponentPropsWithoutRef<typeo
 }
 export type SelectScrollUpButtonProps = ComponentProps<typeof SelectScrollUpButton>
 
-export const SelectScrollDownButton = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.ScrollDownButton>>
+export const SelectScrollDownButton = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.ScrollDownButton>>
 }) => {
   const { className, ref, ...rest } = props
   return (
@@ -71,8 +70,8 @@ export const SelectScrollDownButton = (props: React.ComponentPropsWithoutRef<typ
 }
 export type SelectScrollDownButtonProps = ComponentProps<typeof SelectScrollDownButton>
 
-export const SelectContent = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Content>>
+export const SelectContent = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.Content>>
 }) => {
   const { className, children, position = "popper", ref, ...rest } = props
   return (
@@ -105,8 +104,8 @@ export const SelectContent = (props: React.ComponentPropsWithoutRef<typeof Selec
 }
 export type SelectContentProps = ComponentProps<typeof SelectContent>
 
-export const SelectLabel = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Label>>
+export const SelectLabel = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.Label> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.Label>>
 }) => {
   const { className, ref, ...rest } = props
   return (
@@ -119,8 +118,8 @@ export const SelectLabel = (props: React.ComponentPropsWithoutRef<typeof SelectP
 }
 export type SelectLabelProps = ComponentProps<typeof SelectLabel>
 
-export const SelectItem = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Item>>
+export const SelectItem = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.Item>>
 }) => {
   const { className, children, ref, ...rest } = props
   return (
@@ -143,8 +142,8 @@ export const SelectItem = (props: React.ComponentPropsWithoutRef<typeof SelectPr
 }
 export type SelectItemProps = ComponentProps<typeof SelectItem>
 
-export const SelectSeparator = (props: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator> & {
-  ref?: React.Ref<React.ElementRef<typeof SelectPrimitive.Separator>>
+export const SelectSeparator = (props: ComponentPropsWithoutRef<typeof SelectPrimitive.Separator> & {
+  ref?: Ref<ElementRef<typeof SelectPrimitive.Separator>>
 }) => {
   const { className, ref, ...rest } = props
   return (

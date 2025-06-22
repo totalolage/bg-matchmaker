@@ -1,13 +1,13 @@
-import type { ComponentProps } from "react"
-import * as React from "react"
+import type { ComponentProps, HTMLAttributes, Ref } from "react"
+import { useId } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { FormItemContext } from "./types"
 
-export const FormItem = (props: React.HTMLAttributes<HTMLDivElement> & { ref?: React.Ref<HTMLDivElement> }) => {
+export const FormItem = (props: HTMLAttributes<HTMLDivElement> & { ref?: Ref<HTMLDivElement> }) => {
   const { className, ref, ...rest } = props
-  const id = React.useId()
+  const id = useId()
 
   return (
     <FormItemContext.Provider value={{ id }}>

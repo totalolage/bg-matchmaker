@@ -23,7 +23,7 @@ export function AddGameDialogWithPagination({
   user,
   onAddGame,
   onClose,
-  enableUrlParams = false,
+  enableUrlParams: _enableUrlParams = false,
 }: AddGameDialogWithPaginationProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebouncedValue(searchQuery, {

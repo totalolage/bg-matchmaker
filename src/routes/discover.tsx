@@ -1,7 +1,7 @@
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -24,12 +24,9 @@ function Discover() {
   );
   
   // Filter out sessions that have been optimistically interacted with
-  const visibleSessions = useMemo(
-    () => sessions.filter((session) => !interactedSessionIds.has(session._id)),
-    [sessions, interactedSessionIds]
-  );
+  const visibleSessions = sessions.filter((session) => !interactedSessionIds.has(session._id));
 
-  const handleDecline = useCallback((sessionId: string) => {
+  const handleDecline = (sessionId: string) => {
     // Optimistically update UI immediately
     setInteractedSessionIds((prev) => new Set(prev).add(sessionId));
     
@@ -46,9 +43,9 @@ function Discover() {
         return next;
       });
     });
-  }, [swipeSession]);
+  };
 
-  const handleInterest = useCallback((sessionId: string) => {
+  const handleInterest = (sessionId: string) => {
     // Optimistically update UI immediately
     setInteractedSessionIds((prev) => new Set(prev).add(sessionId));
     
@@ -65,7 +62,7 @@ function Discover() {
         return next;
       });
     });
-  }, [swipeSession]);
+  };
 
   return (
     <PageLayout>

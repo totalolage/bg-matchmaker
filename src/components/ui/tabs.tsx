@@ -1,13 +1,12 @@
 import * as TabsPrimitive from "@radix-ui/react-tabs"
-import type { ComponentProps } from "react"
-import * as React from "react"
+import type { ComponentProps, ComponentPropsWithoutRef, ElementRef,Ref } from "react"
 
 import { cn } from "@/lib/utils"
 
 const Tabs = TabsPrimitive.Root
 
-export const TabsList = (props: React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
-  ref?: React.Ref<React.ElementRef<typeof TabsPrimitive.List>>
+export const TabsList = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
+  ref?: Ref<ElementRef<typeof TabsPrimitive.List>>
 }) => {
   const { className, ref, ...rest } = props
   return (
@@ -23,8 +22,8 @@ export const TabsList = (props: React.ComponentPropsWithoutRef<typeof TabsPrimit
 }
 export type TabsListProps = ComponentProps<typeof TabsList>
 
-export const TabsTrigger = (props: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
-  ref?: React.Ref<React.ElementRef<typeof TabsPrimitive.Trigger>>
+export const TabsTrigger = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
+  ref?: Ref<ElementRef<typeof TabsPrimitive.Trigger>>
 }) => {
   const { className, ref, ...rest } = props
   return (
@@ -40,8 +39,8 @@ export const TabsTrigger = (props: React.ComponentPropsWithoutRef<typeof TabsPri
 }
 export type TabsTriggerProps = ComponentProps<typeof TabsTrigger>
 
-export const TabsContent = (props: React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content> & {
-  ref?: React.Ref<React.ElementRef<typeof TabsPrimitive.Content>>
+export const TabsContent = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.Content> & {
+  ref?: Ref<ElementRef<typeof TabsPrimitive.Content>>
 }) => {
   const { className, ref, ...rest } = props
   return (

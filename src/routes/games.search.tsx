@@ -114,7 +114,7 @@ function GamesSearch() {
               hasMore={hasMore}
               onLoadMore={loadMore}
               userLibrary={user.gameLibrary}
-              onAddGame={(game, expertiseLevel) => {
+              onAddGame={(_game, _expertiseLevel) => {
                 // Navigate to profile after adding game
                 window.location.href = "/profile#games";
               }}

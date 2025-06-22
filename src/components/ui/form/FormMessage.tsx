@@ -1,11 +1,10 @@
-import type { ComponentProps } from "react"
-import * as React from "react"
+import type { ComponentProps, HTMLAttributes, Ref } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { useFormField } from "./hooks"
 
-export const FormMessage = (props: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.Ref<HTMLParagraphElement> }) => {
+export const FormMessage = (props: HTMLAttributes<HTMLParagraphElement> & { ref?: Ref<HTMLParagraphElement> }) => {
   const { className, children, ref, ...rest } = props
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message) : children

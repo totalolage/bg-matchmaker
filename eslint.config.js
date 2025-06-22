@@ -150,21 +150,22 @@ export default tseslint.config(
           paths: [
             {
               name: "react",
-              importNames: ["memo", "useMemo", "useCallback"],
+              importNames: ["memo", "useMemo", "useCallback", "forwardRef"],
               message:
-                "React Compiler handles memoization automatically. These hooks are not needed.",
+                "React Compiler handles memoization automatically. forwardRef is not needed - use ref as a normal prop instead.",
             },
           ],
           patterns: [
             {
               group: ["react"],
-              importNames: ["memo", "useMemo", "useCallback"],
+              importNames: ["memo", "useMemo", "useCallback", "forwardRef"],
               message:
-                "React Compiler handles memoization automatically. These hooks are not needed.",
+                "React Compiler handles memoization automatically. forwardRef is not needed - use ref as a normal prop instead.",
             },
           ],
         },
       ],
+
     },
   },
 );

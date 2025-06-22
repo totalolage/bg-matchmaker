@@ -1,4 +1,4 @@
-import * as React from "react"
+import { createContext } from "react"
 import { FieldPath, FieldValues } from "react-hook-form"
 
 export type FormFieldContextValue<
@@ -12,10 +12,10 @@ export type FormItemContextValue = {
   id: string
 }
 
-export const FormFieldContext = React.createContext<FormFieldContextValue>(
+export const FormFieldContext = createContext<FormFieldContextValue>(
   {} as FormFieldContextValue
 )
 
-export const FormItemContext = React.createContext<FormItemContextValue>(
+export const FormItemContext = createContext<FormItemContextValue>(
   {} as FormItemContextValue
 )

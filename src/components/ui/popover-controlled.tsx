@@ -1,4 +1,4 @@
-import { ReactNode, Ref,useImperativeHandle, useState } from "react";
+import { PropsWithChildren, ReactNode, Ref,useImperativeHandle, useState } from "react";
 
 import {
   Popover,
@@ -14,15 +14,14 @@ export interface PopoverControlledRef {
   close: () => void;
 }
 
-interface PopoverControlledProps {
+type PopoverControlledProps = PropsWithChildren<{
   ref?: Ref<PopoverControlledRef>;
   trigger: ReactNode;
-  children: ReactNode;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
   className?: string;
-}
+}>
 
 export const PopoverControlled = ({
   ref,

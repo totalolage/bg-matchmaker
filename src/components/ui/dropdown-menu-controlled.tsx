@@ -1,4 +1,4 @@
-import { ReactNode, Ref,useImperativeHandle, useState } from "react";
+import { PropsWithChildren, ReactNode, Ref,useImperativeHandle, useState } from "react";
 
 import {
   DropdownMenu,
@@ -14,15 +14,14 @@ export interface DropdownMenuControlledRef {
   close: () => void;
 }
 
-interface DropdownMenuControlledProps {
+type DropdownMenuControlledProps = PropsWithChildren<{
   ref?: Ref<DropdownMenuControlledRef>;
   trigger: ReactNode;
-  children: ReactNode;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
   className?: string;
-}
+}>
 
 export const DropdownMenuControlled = ({
   ref,
