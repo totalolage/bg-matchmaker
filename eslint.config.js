@@ -3,6 +3,8 @@ import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+import unusedImports from "eslint-plugin-unused-imports";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 export default tseslint.config(
   {
@@ -37,6 +39,8 @@ export default tseslint.config(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      "unused-imports": unusedImports,
+      "simple-import-sort": simpleImportSort,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -71,6 +75,44 @@ export default tseslint.config(
       // Allow async functions without await
       // for consistency (esp. Convex `handler`s)
       "@typescript-eslint/require-await": "off",
+
+      // Import sorting rules
+      "simple-import-sort/imports": [
+        "error",
+        {
+          "groups": [
+            // Node.js builtins
+            ["^node:"],
+            // External packages
+            ["^@?\\w"],
+            // Internal packages
+            ["^(@|@convex|convex|src)(/.*|$)"],
+            // Side effect imports
+            ["^\\u0000"],
+            // Parent imports
+            ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+            // Other relative imports
+            ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+            // Style imports
+            ["^.+\\.s?css$"]
+          ]
+        }
+      ],
+      "simple-import-sort/exports": "error",
+
+      // No unused imports/exports
+      "no-unused-vars": "off", // must turn off the base rule as it can report incorrect errors
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          "vars": "all",
+          "varsIgnorePattern": "^_",
+          "args": "after-used",
+          "argsIgnorePattern": "^_"
+        }
+      ],
     },
   },
 );
