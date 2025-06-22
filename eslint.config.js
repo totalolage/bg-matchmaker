@@ -113,7 +113,6 @@ export default tseslint.config(
 
       // No unused imports/exports
       "no-unused-vars": "off", // must turn off the base rule as it can report incorrect errors
-      "@typescript-eslint/no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",
