@@ -15,6 +15,7 @@ import { Route as CreateRouteImport } from './routes/create'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileEditRouteImport } from './routes/profile_.edit'
+import { Route as GamesSearchRouteImport } from './routes/games.search'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -46,6 +47,11 @@ const ProfileEditRoute = ProfileEditRouteImport.update({
   path: '/profile/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesSearchRoute = GamesSearchRouteImport.update({
+  id: '/games/search',
+  path: '/games/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/games/search': typeof GamesSearchRoute
   '/profile/edit': typeof ProfileEditRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/games/search': typeof GamesSearchRoute
   '/profile/edit': typeof ProfileEditRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/games/search': typeof GamesSearchRoute
   '/profile_/edit': typeof ProfileEditRoute
 }
 export interface FileRouteTypes {
@@ -80,9 +89,17 @@ export interface FileRouteTypes {
     | '/create'
     | '/discover'
     | '/profile'
+    | '/games/search'
     | '/profile/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/create' | '/discover' | '/profile' | '/profile/edit'
+  to:
+    | '/'
+    | '/admin'
+    | '/create'
+    | '/discover'
+    | '/profile'
+    | '/games/search'
+    | '/profile/edit'
   id:
     | '__root__'
     | '/'
@@ -90,6 +107,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/discover'
     | '/profile'
+    | '/games/search'
     | '/profile_/edit'
   fileRoutesById: FileRoutesById
 }
@@ -99,6 +117,7 @@ export interface RootRouteChildren {
   CreateRoute: typeof CreateRoute
   DiscoverRoute: typeof DiscoverRoute
   ProfileRoute: typeof ProfileRoute
+  GamesSearchRoute: typeof GamesSearchRoute
   ProfileEditRoute: typeof ProfileEditRoute
 }
 
@@ -146,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileEditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/search': {
+      id: '/games/search'
+      path: '/games/search'
+      fullPath: '/games/search'
+      preLoaderRoute: typeof GamesSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -155,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateRoute: CreateRoute,
   DiscoverRoute: DiscoverRoute,
   ProfileRoute: ProfileRoute,
+  GamesSearchRoute: GamesSearchRoute,
   ProfileEditRoute: ProfileEditRoute,
 }
 export const routeTree = rootRouteImport

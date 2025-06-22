@@ -16,19 +16,21 @@ interface AddGameDialogWithPaginationProps {
   user: Doc<"users">;
   onAddGame: (game: GameSearchResult, expertiseLevel: string) => void;
   onClose: () => void;
+  enableUrlParams?: boolean;
 }
 
 export function AddGameDialogWithPagination({
   user,
   onAddGame,
   onClose,
+  enableUrlParams = false,
 }: AddGameDialogWithPaginationProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebouncedValue(searchQuery, {
     wait: SEARCH_DEBOUNCE_MS,
   });
 
-  const { results, isLoading, hasMore, loadMore, totalLoaded } =
+  const { results, isLoading, hasMore, loadMore, totalLoaded, error, retry } =
     usePaginatedSearch({
       searchQuery: debouncedSearchQuery.trim(),
       itemsPerPage: 10,
@@ -80,6 +82,8 @@ export function AddGameDialogWithPagination({
           userLibrary={user.gameLibrary}
           onAddGame={onAddGame}
           totalLoaded={totalLoaded}
+          error={error}
+          onRetry={retry}
         />
       )}
     </div>

@@ -16,6 +16,8 @@ interface UsePaginatedSearchReturn {
   loadMore: () => void;
   reset: () => void;
   totalLoaded: number;
+  retry: () => void;
+  error?: Error;
 }
 
 export function usePaginatedSearch({
@@ -83,6 +85,15 @@ export function usePaginatedSearch({
     setIsLoadingMore(false);
   };
 
+  const retry = () => {
+    // Force re-query by updating cursor
+    if (cursor) {
+      const tempCursor = cursor;
+      setCursor(null);
+      setTimeout(() => setCursor(tempCursor), 0);
+    }
+  };
+
   const isLoading = !paginatedResults && searchQuery.trim().length >= 2;
   const hasMore = !!paginatedResults && !paginatedResults.isDone;
 
@@ -93,5 +104,7 @@ export function usePaginatedSearch({
     loadMore,
     reset,
     totalLoaded: allResults.length,
+    retry,
+    error: undefined,
   };
 }

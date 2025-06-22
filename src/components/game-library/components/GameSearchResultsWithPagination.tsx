@@ -11,6 +11,7 @@ import {
 
 import { EXPERTISE_LEVELS } from "../constants";
 import type { GameLibraryItem, GameSearchResult } from "../types";
+import { PaginationError } from "./PaginationError";
 
 interface GameSearchResultsWithPaginationProps {
   searchResults: GameSearchResult[];
@@ -20,6 +21,8 @@ interface GameSearchResultsWithPaginationProps {
   userLibrary: GameLibraryItem[];
   onAddGame: (game: GameSearchResult, expertiseLevel: string) => void;
   totalLoaded: number;
+  error?: Error | null;
+  onRetry?: () => void;
 }
 
 export function GameSearchResultsWithPagination({
@@ -30,7 +33,14 @@ export function GameSearchResultsWithPagination({
   userLibrary,
   onAddGame,
   totalLoaded,
+  error,
+  onRetry,
 }: GameSearchResultsWithPaginationProps) {
+  // Error state
+  if (error && onRetry) {
+    return <PaginationError onRetry={onRetry} message="Failed to load search results" />;
+  }
+
   // Loading state for initial load
   if (isLoading && searchResults.length === 0) {
     return (
