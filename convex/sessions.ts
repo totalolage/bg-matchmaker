@@ -290,6 +290,109 @@ export const getUserSessions = query({
   },
 });
 
+export const cancelSession = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Only the host can cancel the session
+    if (session.hostId !== userId) {
+      throw new Error("Only the host can cancel the session");
+    }
+
+    // Cannot cancel completed or already cancelled sessions
+    if (session.status === "completed" || session.status === "cancelled") {
+      throw new Error("Cannot cancel a completed or already cancelled session");
+    }
+
+    // Update session status
+    await ctx.db.patch(args.sessionId, {
+      status: "cancelled",
+    });
+
+    // TODO: In the future, send notifications to interested/accepted players
+  },
+});
+
+export const getUserProposals = query({
+  args: {},
+  handler: async ctx => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+
+    // Get all sessions where user is the host
+    const proposals = await ctx.db
+      .query("sessions")
+      .filter(q => q.eq(q.field("hostId"), userId))
+      .collect();
+
+    // Get interaction counts for each proposal
+    const proposalsWithStats = await Promise.all(
+      proposals.map(async proposal => {
+        // Get all interactions for this session
+        const interactions = await ctx.db
+          .query("sessionInteractions")
+          .withIndex("by_session", q => q.eq("sessionId", proposal._id))
+          .collect();
+
+        // Count by type
+        const interestedCount = interactions.filter(
+          i => i.interactionType === "interested"
+        ).length;
+        const declinedCount = interactions.filter(
+          i => i.interactionType === "declined"
+        ).length;
+        const acceptedCount = interactions.filter(
+          i => i.interactionType === "accepted"
+        ).length;
+
+        // Get user details for interested/accepted users
+        const interestedUsers = await Promise.all(
+          interactions
+            .filter(
+              i =>
+                i.interactionType === "interested" ||
+                i.interactionType === "accepted"
+            )
+            .map(async i => {
+              const user = await ctx.db.get(i.userId);
+              return user
+                ? {
+                    _id: user._id,
+                    name: user.name,
+                    profilePic: user.profilePic,
+                    interactionType: i.interactionType,
+                  }
+                : null;
+            })
+        );
+
+        return {
+          ...proposal,
+          stats: {
+            interestedCount,
+            declinedCount,
+            acceptedCount,
+            totalInteractions: interactions.length,
+          },
+          interestedUsers: interestedUsers.filter(u => u !== null),
+        };
+      })
+    );
+
+    // Sort by creation date (newest first)
+    return proposalsWithStats.sort(
+      (a, b) => (b._creationTime || 0) - (a._creationTime || 0)
+    );
+  },
+});
+
 export const getSessionHistory = query({
   args: {
     interactionType: v.optional(

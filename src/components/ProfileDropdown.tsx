@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { Calendar, ChevronDown, LogOut, User } from "lucide-react";
 import { ComponentProps, useRef } from "react";
 
 import { useCurrentUser } from "../hooks/useCurrentUser";
@@ -33,6 +33,12 @@ export const ProfileDropdown = () => {
             <Link to="/profile" className="flex items-center cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/proposals" className="flex items-center cursor-pointer">
+              <Calendar className="mr-2 h-4 w-4" />
+              <span>My Proposals</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

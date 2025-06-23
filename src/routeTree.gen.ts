@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProposalsRouteImport } from './routes/proposals'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -17,6 +18,11 @@ import { Route as SessionsCreateRouteImport } from './routes/sessions/create'
 import { Route as SessionsSessionIdRouteImport } from './routes/sessions/$sessionId'
 import { Route as ProfileEditRouteImport } from './routes/profile_.edit'
 
+const ProposalsRoute = ProposalsRouteImport.update({
+  id: '/proposals',
+  path: '/proposals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/proposals': typeof ProposalsRoute
   '/profile/edit': typeof ProfileEditRoute
   '/sessions/$sessionId': typeof SessionsSessionIdRoute
   '/sessions/create': typeof SessionsCreateRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/proposals': typeof ProposalsRoute
   '/profile/edit': typeof ProfileEditRoute
   '/sessions/$sessionId': typeof SessionsSessionIdRoute
   '/sessions/create': typeof SessionsCreateRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/proposals': typeof ProposalsRoute
   '/profile_/edit': typeof ProfileEditRoute
   '/sessions/$sessionId': typeof SessionsSessionIdRoute
   '/sessions/create': typeof SessionsCreateRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/discover'
     | '/profile'
+    | '/proposals'
     | '/profile/edit'
     | '/sessions/$sessionId'
     | '/sessions/create'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/discover'
     | '/profile'
+    | '/proposals'
     | '/profile/edit'
     | '/sessions/$sessionId'
     | '/sessions/create'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/discover'
     | '/profile'
+    | '/proposals'
     | '/profile_/edit'
     | '/sessions/$sessionId'
     | '/sessions/create'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   DiscoverRoute: typeof DiscoverRoute
   ProfileRoute: typeof ProfileRoute
+  ProposalsRoute: typeof ProposalsRoute
   ProfileEditRoute: typeof ProfileEditRoute
   SessionsSessionIdRoute: typeof SessionsSessionIdRoute
   SessionsCreateRoute: typeof SessionsCreateRoute
@@ -123,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/proposals': {
+      id: '/proposals'
+      path: '/proposals'
+      fullPath: '/proposals'
+      preLoaderRoute: typeof ProposalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   DiscoverRoute: DiscoverRoute,
   ProfileRoute: ProfileRoute,
+  ProposalsRoute: ProposalsRoute,
   ProfileEditRoute: ProfileEditRoute,
   SessionsSessionIdRoute: SessionsSessionIdRoute,
   SessionsCreateRoute: SessionsCreateRoute,
