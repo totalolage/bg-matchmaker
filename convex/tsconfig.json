@@ -3,22 +3,23 @@
    * Convex functions run in and is used to typecheck them.
    * You can modify it, but some settings required to use Convex.
    */
+  "extends": "../tsconfig.json",
   "compilerOptions": {
     /* These settings are not required by Convex and can be modified. */
     "allowJs": true,
     "strict": true,
-    "moduleResolution": "Bundler",
-    "jsx": "react-jsx",
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
-
+    "resolveJsonModule": true,
     /* These compiler options are required by Convex */
     "target": "ESNext",
     "lib": ["ES2022", "dom"],
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
     "module": "ESNext",
+    "moduleResolution": "Node",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    /* Match root tsconfig settings */
+    "noUncheckedIndexedAccess": true
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]

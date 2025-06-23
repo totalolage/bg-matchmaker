@@ -15,7 +15,7 @@ export function Navigation() {
 
   return (
     <nav
-      className="sticky bottom-0 bg-white border-t border-gray-200"
+      className="sticky bottom-0 bg-white border-t border-gray-200 safe-bottom"
       style={{ viewTransitionName: "navigation" }}
     >
       <div className="flex">
@@ -27,7 +27,7 @@ export function Navigation() {
             return (
               <div
                 key={to}
-                className="flex-1 flex flex-col items-center py-2 px-1 text-purple-600 cursor-default"
+                className="flex-1 flex flex-col items-center py-2 px-1 text-purple-600 cursor-default tap-target"
               >
                 <Icon size={24} />
                 <span className="text-xs mt-1">{label}</span>
@@ -39,7 +39,7 @@ export function Navigation() {
             <Link
               key={to}
               to={to}
-              className="flex-1 flex flex-col items-center py-2 px-1 text-gray-400 hover:text-gray-600"
+              className="flex-1 flex flex-col items-center py-2 px-1 text-gray-400 hover:text-gray-600 tap-target"
             >
               <Icon size={24} />
               <span className="text-xs mt-1">{label}</span>

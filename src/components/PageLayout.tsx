@@ -21,7 +21,7 @@ export const PageHeader = ({
 }>) => (
   <header
     className={cn(
-      "bg-white border-b border-gray-200 p-4 sticky top-0 z-10",
+      "bg-white border-b border-gray-200 p-4 sticky top-0 z-10 safe-top",
       className,
     )}
   >
@@ -38,7 +38,11 @@ export const PageContent = ({
   noPadding?: boolean;
 }>) => (
   <main
-    className={cn("flex-1 overflow-y-auto", !noPadding && "p-4", className)}
+    className={cn(
+      "flex-1 overflow-y-auto scroll-smooth-mobile overscroll-contain",
+      !noPadding && "p-4",
+      className,
+    )}
   >
     {children}
   </main>

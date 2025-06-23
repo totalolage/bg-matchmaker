@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile viewport and safe area support */
+@supports (padding: max(0px)) {
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-right: env(safe-area-inset-right);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+    --safe-area-inset-left: env(safe-area-inset-left);
+  }
+}
+
+/* Dynamic viewport units for mobile browsers */
+:root {
+  /* Fallback for browsers that don't support dvh */
+  --vh: 1vh;
+  --vw: 1vw;
+
+  /* Dynamic viewport units */
+  --dvh: 100dvh;
+  --dvw: 100dvw;
+  --svh: 100svh;
+  --svw: 100svw;
+  --lvh: 100lvh;
+  --lvw: 100lvw;
+}
+
+/* Update vh unit dynamically for mobile browsers */
+@supports (height: 100dvh) {
+  :root {
+    --vh: 1dvh;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -302,5 +334,115 @@ body {
   /* Smooth transitions for non-swiping interactions */
   .swipe-card-transition {
     @apply transition-all duration-300 ease-out;
+  }
+}
+
+/* Mobile-specific utility classes */
+@layer utilities {
+  /* Safe area padding utilities */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .safe-y {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Dynamic height utilities */
+  .h-screen-safe {
+    height: calc(var(--dvh, 100vh) * 100);
+    height: calc(
+      100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+  }
+
+  .min-h-screen-safe {
+    min-height: calc(var(--dvh, 100vh) * 100);
+    min-height: calc(
+      100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+  }
+
+  .h-dvh {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .min-h-dvh {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Touch-optimized tap targets */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent iOS rubber band scrolling */
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+
+  /* Smooth scrolling with momentum */
+  .scroll-smooth-mobile {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar on mobile */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 640px) {
+  /* Adjust font sizes for better mobile readability */
+  html {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  /* Ensure inputs don't zoom on iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Optimize touch interactions */
+  button,
+  a,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }

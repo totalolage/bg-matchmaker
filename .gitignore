@@ -54,3 +54,6 @@ dev-debug.log
 .taskmaster/reports/
 .taskmaster/state.json
 .taskmaster/config.local.json 
+
+# Certificates
+certs/
