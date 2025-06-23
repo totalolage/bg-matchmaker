@@ -4,6 +4,12 @@ import { useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Doc } from "@convex/_generated/dataModel";
 
 import { AddGameDialog } from "./components/AddGameDialog";
@@ -43,15 +49,20 @@ export const GameLibrary = ({ user }: GameLibraryProps) => {
         }
       />
 
-      {isAddingGame && (
-        <AddGameDialog
-          user={user}
-          onAddGame={(game, expertiseLevel) =>
-            void handleAddGame(game, expertiseLevel)
-          }
-          onClose={() => setIsAddingGame(false)}
-        />
-      )}
+      <Dialog open={isAddingGame} onOpenChange={setIsAddingGame}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Add New Game</DialogTitle>
+          </DialogHeader>
+          <AddGameDialog
+            user={user}
+            onAddGame={(game, expertiseLevel) =>
+              void handleAddGame(game, expertiseLevel)
+            }
+            onClose={() => setIsAddingGame(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-3">
         {user.gameLibrary.map(game => (
