@@ -37,7 +37,7 @@ function Home() {
                   key={session._id}
                   className="animate-in fade-in slide-in-from-bottom-5 duration-200"
                 >
-                  <SessionCard session={session} />
+                  <SessionCard session={session} clickable />
                 </div>
               ))}
             </div>

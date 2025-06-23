@@ -953,11 +953,39 @@
         ],
         "priority": "low",
         "subtasks": []
+      },
+      {
+        "id": 35,
+        "title": "Implement View Transitions API for Page Navigation",
+        "description": "Integrate the View Transitions API throughout the application to create smooth, native page transitions with proper fallbacks for unsupported browsers, replacing existing animation implementations.",
+        "details": "1. Add View Transitions API support to the main application layout:\n```typescript\n// src/components/Layout.tsx\nfunction Layout({ children }) {\n  useEffect(() => {\n    if (!document.startViewTransition) return;\n    \n    const handleNavigation = () => {\n      document.startViewTransition(async () => {\n        // Update DOM during transition\n        await router.navigate(nextPath);\n      });\n    };\n    \n    // Attach navigation listeners\n  }, []);\n}\n```\n\n2. Create transition styles in global CSS:\n```css\n::view-transition-old(root),\n::view-transition-new(root) {\n  animation-duration: 300ms;\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n/* Define custom animations for specific page types */\n::view-transition-old(game-details),\n::view-transition-new(game-details) {\n  mix-blend-mode: normal;\n}\n```\n\n3. Implement fallback animations using CSS classes:\n```typescript\nfunction useFallbackTransition() {\n  if (document.startViewTransition) return null;\n  \n  return {\n    className: 'page-transition',\n    onAnimationEnd: () => {\n      // Clean up\n    }\n  };\n}\n```\n\n4. Add named transition groups for different content types:\n```typescript\nfunction GameCard({ game }) {\n  return (\n    <div style={{ viewTransitionName: `game-${game.id}` }}>\n      {/* Card content */}\n    </div>\n  );\n}\n```\n\n5. Handle transition interruption and cleanup:\n- Implement abort controller for ongoing transitions\n- Clean up event listeners\n- Handle back/forward navigation edge cases\n\n6. Add transition preferences to user settings:\n- Enable/disable transitions\n- Adjust transition duration\n- Select transition style (slide/fade)",
+        "testStrategy": "1. Browser Compatibility Testing:\n- Test in browsers with View Transitions API support (Chrome 111+)\n- Verify fallback animations work in unsupported browsers\n- Ensure smooth degradation in older browsers\n\n2. Unit Tests:\n- Test transition initialization logic\n- Verify fallback animation system\n- Test user preference handling\n- Validate cleanup functions\n\n3. Integration Tests:\n- Test transitions between different page types\n- Verify proper handling of rapid navigation\n- Test back/forward navigation\n- Validate transition naming consistency\n\n4. Performance Testing:\n- Measure frame rate during transitions\n- Test memory usage during rapid transitions\n- Verify no layout shifts during animation\n- Profile CPU usage during transitions\n\n5. Visual Regression Tests:\n- Capture and compare transition screenshots\n- Verify consistent animation timing\n- Test transition appearance across viewports\n- Validate transition styling matches design\n\n6. Accessibility Testing:\n- Verify reduced motion preferences are respected\n- Test screen reader announcements during transitions\n- Ensure keyboard navigation works during transitions",
+        "status": "pending",
+        "dependencies": [
+          22,
+          25
+        ],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 36,
+        "title": "Implement View Transitions for Session Details Navigation",
+        "description": "Replace existing animations with View Transitions API to create smooth, native transitions when navigating between session lists/cards and the session details page, with seamless transitions for game images, titles, and other shared elements.",
+        "details": "1. Update SessionDetailsModal/Page component to support View Transitions:\n```typescript\n// components/sessions/SessionDetailsPage.tsx\nconst SessionDetailsPage = ({ sessionId }) => {\n  useEffect(() => {\n    if (!document.startViewTransition) return;\n    \n    // Add view transition names to shared elements\n    const gameImage = document.querySelector('.game-image');\n    gameImage?.setAttribute('style', 'view-transition-name: game-image-' + sessionId);\n    \n    const title = document.querySelector('.session-title');\n    title?.setAttribute('style', 'view-transition-name: session-title-' + sessionId);\n  }, [sessionId]);\n};\n```\n\n2. Modify session list/card components to add corresponding transition names:\n```typescript\nconst SessionCard = ({ session }) => {\n  return (\n    <div>\n      <img \n        className=\"game-image\"\n        style={{ viewTransitionName: `game-image-${session.id}` }}\n        src={session.gameImage} \n      />\n      <h3 \n        className=\"session-title\"\n        style={{ viewTransitionName: `session-title-${session.id}` }}\n      >\n        {session.title}\n      </h3>\n    </div>\n  );\n};\n```\n\n3. Add CSS transitions in global stylesheet:\n```css\n@keyframes fade-in {\n  from { opacity: 0; }\n}\n\n@keyframes fade-out {\n  to { opacity: 0; }\n}\n\n@keyframes slide-from-right {\n  from { transform: translateX(100%); }\n}\n\n@keyframes slide-to-left {\n  to { transform: translateX(-100%); }\n}\n\n::view-transition-old(root) {\n  animation: 90ms cubic-bezier(0.4, 0, 1, 1) both fade-out,\n    300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;\n}\n\n::view-transition-new(root) {\n  animation: 210ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,\n    300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;\n}\n```\n\n4. Implement fallback animations for unsupported browsers:\n```typescript\nconst navigateWithTransition = (to: string) => {\n  if (document.startViewTransition) {\n    document.startViewTransition(() => router.push(to));\n  } else {\n    // Use CSS animation fallback\n    router.push(to);\n  }\n};\n```\n\n5. Add proper cleanup and error handling:\n```typescript\nuseEffect(() => {\n  return () => {\n    // Clean up transition names on unmount\n    const elements = document.querySelectorAll('[style*=\"view-transition-name\"]');\n    elements.forEach(el => el.removeAttribute('style'));\n  };\n}, []);",
+        "testStrategy": "1. Browser Compatibility Testing:\n- Test transitions in Chrome 111+ and other browsers with View Transitions API support\n- Verify fallback animations work correctly in unsupported browsers\n- Ensure smooth degradation in older browsers\n\n2. Visual Regression Tests:\n- Capture and compare screenshots/recordings of transitions\n- Verify smooth animation of game images between views\n- Check title and other shared element transitions\n- Validate transition timing and easing\n\n3. Integration Tests:\n- Test navigation between session list and details views\n- Verify correct handling of back/forward navigation\n- Test transitions with different session card layouts\n- Validate proper cleanup of transition names\n\n4. Performance Testing:\n- Measure transition frame rates and smoothness\n- Test with different network conditions\n- Verify memory usage during rapid transitions\n- Profile CPU usage during animations\n\n5. Edge Cases:\n- Test transitions with missing images\n- Verify behavior when session data is loading\n- Test rapid navigation between multiple sessions\n- Validate transitions during error states",
+        "status": "pending",
+        "dependencies": [
+          15,
+          35
+        ],
+        "priority": "low",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T15:15:17.697Z",
+      "updated": "2025-06-23T16:05:33.910Z",
       "description": "Tasks for master context"
     }
   }

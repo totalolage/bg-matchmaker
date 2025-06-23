@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { ComponentProps } from "react";
 
 import { Doc } from "../../convex/_generated/dataModel";
@@ -16,9 +17,11 @@ import { SessionInfo } from "./SessionInfo";
 export const SessionCard = ({
   session,
   className,
+  clickable = false,
 }: {
   session: Doc<"sessions">;
   className?: string;
+  clickable?: boolean;
 }) => {
   const getStatusVariant = (
     status: string
@@ -37,8 +40,10 @@ export const SessionCard = ({
     }
   };
 
-  return (
-    <Card className={className}>
+  const cardContent = (
+    <Card
+      className={`${className} ${clickable ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-3">
           <GameImage src={session.gameImage} alt={session.gameName} size="md" />
@@ -65,6 +70,16 @@ export const SessionCard = ({
       </CardContent>
     </Card>
   );
+
+  if (clickable) {
+    return (
+      <Link to="/sessions/$sessionId" params={{ sessionId: session._id }}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 };
 
 export type SessionCardProps = ComponentProps<typeof SessionCard>;

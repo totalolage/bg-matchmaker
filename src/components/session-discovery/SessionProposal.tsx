@@ -1,4 +1,5 @@
-import { Check, Info, RotateCcw, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Check, Eye, Info, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 
 import { Doc } from "../../../convex/_generated/dataModel";
@@ -45,6 +46,20 @@ export const SessionProposal = ({
           </Button>
         </div>
 
+        {/* View details button */}
+        <div className="absolute bottom-4 right-20 z-20">
+          <Link to="/sessions/$sessionId" params={{ sessionId: session._id }}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-full w-14 h-14 p-0 hover:bg-gray-50 bg-white shadow-lg"
+              title="View session details"
+            >
+              <Eye className="w-5 h-5" />
+            </Button>
+          </Link>
+        </div>
+
         {/* Game info button */}
         <div className="absolute bottom-4 right-4 z-20">
           <Button
@@ -52,6 +67,7 @@ export const SessionProposal = ({
             variant="outline"
             className="rounded-full w-14 h-14 p-0 hover:bg-gray-50 bg-white shadow-lg"
             onClick={handleGameDetails}
+            title="View game details"
           >
             <Info className="w-5 h-5" />
           </Button>
