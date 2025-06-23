@@ -53,15 +53,6 @@
             "details": "- Create unit tests for the EntityResolver class\n- Add integration tests for the updated XMLParser\n- Develop performance tests to ensure parsing speed is not significantly impacted\n- Test with a comprehensive set of entity examples\n- Validate migrated data against expected outputs\n- Document any edge cases or limitations\n- Acceptance criteria: All tests pass, performance benchmarks meet targets, and no regressions in existing functionality\n<info added on 2025-06-22T11:49:12.104Z>\n## Test Results Summary\n\nTesting completed successfully!\n\nCreated comprehensive test suite:\n1. Unit tests in htmlEntityDecoding.test.ts covering:\n   - Basic HTML entity decoding (&#039; &amp; &quot; etc)\n   - Numeric entities (&#8364; for €)\n   - Hex entities (&#x2665; for ♥)\n   - Text without entities (no changes)\n   - Malformed entities (graceful handling)\n\n2. Integration test in verifyEntityDecoding.ts for end-to-end verification\n\nAll 6 tests passed successfully. The HTML entity decoding is working correctly with no performance regressions. The fix handles all standard HTML entities properly.\n</info added on 2025-06-22T11:49:12.104Z>",
             "status": "done",
             "testStrategy": ""
-          },
-          {
-            "id": 5,
-            "title": "Execute Database Migration for HTML Entities",
-            "description": "Run the fixGameHtmlEntities migration to decode HTML entities in existing game records. Migration hit 16MB limit, needs pagination implementation.",
-            "details": "Current status:\n- Migration script created with internal mutation\n- Added common HTML entities including &mdash;, &ndash;, &ouml;, etc.\n- Attempted to run via CLI: bunx convex run \"migrations/fixGameHtmlEntities:fixGameHtmlEntities\"\n- Hit 16MB execution limit - too many games to process in one batch\n- Need to implement pagination to process games in smaller batches\n\nNext steps:\n1. Update migration to use pagination (.paginate() instead of .collect())\n2. Process games in batches of ~100-200 at a time\n3. Track progress across batches\n4. Run the paginated migration\n5. Verify all HTML entities are decoded in the database\n<info added on 2025-06-22T12:41:19.878Z>\nRemembering...Alternative approach implemented: Created a CSV-based game seeding script as a more efficient alternative to API-based seeding. The script features a progress bar for visual feedback, accepts CSV file paths as arguments, and performs batch imports of games. Additionally, implemented strict TypeScript configuration by adding ESLint rule to ban 'any' types and resolved all resulting TypeScript issues throughout the codebase. Script is ready for use with command: bun run seed:csv <csv-file-path>\n</info added on 2025-06-22T12:41:19.878Z>",
-            "status": "in-progress",
-            "dependencies": [],
-            "parentTaskId": 1
           }
         ]
       },
@@ -525,7 +516,7 @@
         "id": 14,
         "title": "Add game details modal/page",
         "description": "Allow users to click on a game card to view detailed information about the board game including description, player count, complexity, playing time, and BGG rating. Additionally, the Info button in the SessionCard component should navigate to the game details modal.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           8
         ],
@@ -682,7 +673,7 @@
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T09:35:18.908Z",
+      "updated": "2025-06-23T10:30:38.029Z",
       "description": "Tasks for master context"
     }
   }

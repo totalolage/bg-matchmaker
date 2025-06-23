@@ -270,6 +270,40 @@ export const searchGamesPaginated = query({
   },
 });
 
+export const getGameDetails = query({
+  args: { gameId: v.string() },
+  handler: async (ctx, args) => {
+    const game = await ctx.db
+      .query("gameData")
+      .withIndex("by_bgg_id", q => q.eq("bggId", args.gameId))
+      .unique();
+
+    if (!game) return null;
+
+    return {
+      id: game._id,
+      bggId: game.bggId,
+      name: game.name,
+      image: game.image,
+      thumbnail: game.thumbnail,
+      description: game.description,
+      yearPublished: game.yearPublished,
+      minPlayers: game.minPlayers,
+      maxPlayers: game.maxPlayers,
+      minPlayTime: game.playingTime, // Note: We might need to add separate min/max play times
+      maxPlayTime: game.playingTime,
+      complexity: game.complexity,
+      bggRating: game.averageRating,
+      bggRank: game.popularity, // Using popularity as a proxy for rank
+      // These fields are not currently in our schema but might be added later
+      categories: [],
+      mechanics: [],
+      designer: undefined,
+      minAge: undefined,
+    };
+  },
+});
+
 export const getPopularGames = query({
   args: {},
   handler: async ctx => {

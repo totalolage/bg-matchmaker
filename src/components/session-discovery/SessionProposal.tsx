@@ -1,6 +1,8 @@
 import { Check, Info, RotateCcw, X } from "lucide-react";
+import { useState } from "react";
 
 import { Doc } from "../../../convex/_generated/dataModel";
+import { GameDetailsModal } from "../games/GameDetailsModal";
 import { SessionCard } from "../SessionCard";
 import { Button } from "../ui/button";
 
@@ -19,10 +21,10 @@ export const SessionProposal = ({
   onUndo,
   canUndo = false,
 }: SessionCardProps) => {
+  const [showGameDetails, setShowGameDetails] = useState(false);
+
   const handleGameDetails = () => {
-    // TODO: Navigate to game details page when Task #14 is implemented
-    // This should open a modal or navigate to a page showing detailed game information
-    console.log("Game details for:", session.gameName);
+    setShowGameDetails(true);
   };
 
   return (
@@ -77,6 +79,12 @@ export const SessionProposal = ({
           Interested
         </Button>
       </div>
+
+      <GameDetailsModal
+        gameId={session.gameId}
+        isOpen={showGameDetails}
+        onClose={() => setShowGameDetails(false)}
+      />
     </div>
   );
 };
