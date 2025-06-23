@@ -1,6 +1,6 @@
 import { useDebouncedValue } from "@tanstack/react-pacer";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import {
@@ -51,7 +51,7 @@ export function VirtualizedGameSearchResults({
           query: debouncedSearchQuery.trim(),
         }
       : "skip",
-    { initialNumItems: ITEMS_PER_PAGE },
+    { initialNumItems: ITEMS_PER_PAGE }
   );
 
   const allItems = results || [];
@@ -89,8 +89,8 @@ export function VirtualizedGameSearchResults({
     }
   }, [debouncedSearchQuery]);
 
-  // Show initial loading state
-  if (isInitialLoading) {
+  // Show initial loading state only when searching
+  if (isInitialLoading && shouldSearch) {
     return <GameSearchSkeleton count={5} />;
   }
 
@@ -136,13 +136,11 @@ export function VirtualizedGameSearchResults({
             position: "relative",
           }}
         >
-          {items.map((virtualItem) => {
+          {items.map(virtualItem => {
             const game = allItems[virtualItem.index];
             if (!game) return null;
 
-            const isInLibrary = userLibrary.some(
-              (g) => g.gameId === game.bggId,
-            );
+            const isInLibrary = userLibrary.some(g => g.gameId === game.bggId);
 
             return (
               <div
@@ -181,7 +179,7 @@ export function VirtualizedGameSearchResults({
                   </div>
 
                   <Select
-                    onValueChange={(value) => void onAddGame(game, value)}
+                    onValueChange={value => void onAddGame(game, value)}
                     disabled={isInLibrary}
                   >
                     <SelectTrigger className="w-32">
@@ -192,7 +190,7 @@ export function VirtualizedGameSearchResults({
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {EXPERTISE_LEVELS.map((level) => (
+                      {EXPERTISE_LEVELS.map(level => (
                         <SelectItem key={level.value} value={level.value}>
                           {level.label}
                         </SelectItem>
@@ -204,7 +202,7 @@ export function VirtualizedGameSearchResults({
             );
           })}
 
-          {/* Loading more indicator */}
+          {/* Loading more skeletons */}
           {isLoadingMore && (
             <div
               style={{
@@ -212,13 +210,10 @@ export function VirtualizedGameSearchResults({
                 top: `${virtualizer.getTotalSize()}px`,
                 left: 0,
                 width: "100%",
-                padding: "1rem",
+                padding: "0 8px",
               }}
             >
-              <div className="flex items-center justify-center gap-2 text-gray-500">
-                <Loader2 className="animate-spin" size={16} />
-                Loading more games...
-              </div>
+              <GameSearchSkeleton count={3} />
             </div>
           )}
         </div>
