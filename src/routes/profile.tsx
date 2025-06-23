@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { AvailabilitySchedule } from "../components/availability";
 import { GameLibrary } from "../components/game-library";
 import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
+import { SessionHistory } from "../components/session-history";
 import { PageHeader, PageLayout } from "../components/PageLayout";
 import { Button } from "../components/ui/button";
 import {
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/profile")({
   },
 });
 
-const TABS = ["games", "availability"] as const;
+const TABS = ["games", "availability", "history"] as const;
 type Tab = (typeof TABS)[number];
 
 function Profile() {
@@ -129,6 +130,12 @@ function Profile() {
             >
               Availability
             </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="flex-1 data-[state=active]:text-purple-600 data-[state=active]:border-b-2 data-[state=active]:border-purple-600 data-[state=active]:shadow-none rounded-none"
+            >
+              History
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex-1 relative overflow-hidden">
@@ -137,7 +144,7 @@ function Profile() {
                 key={activeTab}
                 value={activeTab}
                 forceMount
-                className="absolute inset-0"
+                className="absolute inset-0 mt-0"
                 asChild
               >
                 <motion.div
@@ -157,6 +164,7 @@ function Profile() {
                   {activeTab === "availability" && (
                     <AvailabilitySchedule user={user} />
                   )}
+                  {activeTab === "history" && <SessionHistory />}
                 </motion.div>
               </TabsContent>
             </AnimatePresence>
