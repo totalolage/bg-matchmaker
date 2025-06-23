@@ -82,12 +82,13 @@ export function VirtualizedGameSearchResults({
     }
   }, [items, allItems.length, canLoadMore, isLoadingMore, loadMore]);
 
-  // Reset scroll when search query changes
+  // Reset scroll and virtualizer when search query changes
   useEffect(() => {
     if (parentRef.current) {
       parentRef.current.scrollTop = 0;
     }
-  }, [debouncedSearchQuery]);
+    virtualizer.scrollToOffset(0);
+  }, [debouncedSearchQuery, virtualizer]);
 
   // Show initial loading state only when searching
   if (isInitialLoading && shouldSearch) {
