@@ -1,6 +1,6 @@
 export function GameSearchSkeleton({ count = 3 }: { count?: number }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {Array.from({ length: count }, (_, i) => (
         <div
           key={i}

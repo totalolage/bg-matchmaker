@@ -30,6 +30,7 @@ interface VirtualizedGameSearchResultsProps {
 
 const ITEMS_PER_PAGE = 20;
 const ITEM_HEIGHT = 64; // Height of each game item in pixels
+const ITEM_GAP = 6; // Gap between game items in pixels
 
 export function VirtualizedGameSearchResults({
   searchQuery,
@@ -65,6 +66,7 @@ export function VirtualizedGameSearchResults({
     getScrollElement: () => parentRef.current,
     estimateSize: () => ITEM_HEIGHT,
     overscan: 5,
+    gap: ITEM_GAP,
   });
 
   const items = virtualizer.getVirtualItems();
@@ -128,14 +130,13 @@ export function VirtualizedGameSearchResults({
       {/* Virtualized scrollable container */}
       <div
         ref={parentRef}
-        className="h-[400px] overflow-auto rounded-lg border bg-gray-50"
+        className="h-[400px] overflow-auto"
         style={{ contain: "strict" }}
       >
         <div
+          className="relative w-full"
           style={{
             height: `${virtualizer.getTotalSize()}px`,
-            width: "100%",
-            position: "relative",
           }}
         >
           {items.map(virtualItem => {
@@ -147,16 +148,13 @@ export function VirtualizedGameSearchResults({
             return (
               <div
                 key={virtualItem.key}
+                className="absolute top-0 left-0 w-full"
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
                   height: `${virtualItem.size}px`,
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <div className="flex items-center space-x-3 p-2 bg-white rounded border mx-2 h-full">
+                <div className="flex items-center space-x-3 p-2 bg-white rounded border h-full">
                   {game.image ? (
                     <img
                       src={game.image}
@@ -209,10 +207,9 @@ export function VirtualizedGameSearchResults({
             <div
               style={{
                 position: "absolute",
-                top: `${virtualizer.getTotalSize()}px`,
+                top: `${virtualizer.getTotalSize() + ITEM_GAP}px`,
                 left: 0,
                 width: "100%",
-                padding: "0 8px",
               }}
             >
               <GameSearchSkeleton count={3} />
