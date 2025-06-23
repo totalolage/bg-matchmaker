@@ -75,7 +75,7 @@ function Discover() {
           <h1 className="text-2xl font-bold text-gray-900">
             Discover Sessions
           </h1>
-          <Link to="/create">
+          <Link to="/sessions/create">
             <Button size="sm">
               <Plus className="h-4 w-4 mr-1" />
               Create Session

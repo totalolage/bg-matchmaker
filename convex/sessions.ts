@@ -7,6 +7,18 @@ import { Id } from "./_generated/dataModel";
 import { action, mutation, query } from "./_generated/server";
 import { SessionProposalEngine } from "./lib/SessionProposalEngine";
 
+export const getSession = query({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) return null;
+
+    return session;
+  },
+});
+
 export const getDiscoverySessions = query({
   args: {},
   handler: async ctx => {

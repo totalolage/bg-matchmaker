@@ -924,11 +924,40 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 33,
+        "title": "Implement Session Details Page with Author Edit Functionality",
+        "description": "Create an enhanced session details page at /sessions/{session_id} that displays comprehensive game and session information while providing session authors with the ability to edit session details. Include role-based actions and real-time updates.",
+        "details": "1. Create new SessionDetailsPage component with edit capabilities:\n```typescript\n// pages/sessions/[sessionId].tsx\nconst SessionDetailsPage = () => {\n  const { sessionId } = useParams();\n  const session = useQuery(api.sessions.getSessionDetails, { sessionId });\n  const [isEditing, setIsEditing] = useState(false);\n  const isAuthor = session?.authorId === currentUser.id;\n\n  // Edit form state management\n  const [formState, setFormState] = useState(session);\n  const mutation = useMutation(api.sessions.updateSession);\n};\n```\n\n2. Implement comprehensive session information display sections:\n```typescript\n// components/sessions/SessionInfoSection.tsx\nconst SessionInfoSection = ({ session, isEditing, onEdit }) => {\n  return (\n    <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n      <GameInfoCard game={session.game} />\n      <SchedulingDetails \n        datetime={session.datetime}\n        duration={session.duration}\n        isEditing={isEditing}\n      />\n      <ParticipantsList participants={session.participants} />\n      <LocationDetails location={session.location} />\n    </div>\n  );\n};\n```\n\n3. Add role-based action buttons and edit functionality:\n```typescript\nconst ActionButtons = ({ isAuthor, onEdit, onCancel }) => {\n  if (isAuthor) {\n    return (\n      <div className=\"flex gap-4\">\n        <Button onClick={onEdit}>Edit Session</Button>\n        <Button variant=\"destructive\">Cancel Session</Button>\n      </div>\n    );\n  }\n  return <JoinSessionButton />;\n};\n```\n\n4. Implement edit form validation and submission:\n```typescript\nconst handleSubmit = async (formData) => {\n  try {\n    await mutation.mutate({\n      sessionId,\n      updates: formData,\n    });\n    setIsEditing(false);\n    toast.success(\"Session updated successfully\");\n  } catch (error) {\n    toast.error(\"Failed to update session\");\n  }\n};\n```\n\n5. Add real-time updates using Convex subscriptions:\n```typescript\nconst sessionSubscription = useSubscription(\n  api.sessions.subscribeToSessionUpdates,\n  { sessionId }\n);\n```\n\n6. Implement responsive layout with proper spacing and typography:\n```css\n.session-details-container {\n  @apply max-w-7xl mx-auto px-4 py-8;\n  @apply grid gap-8;\n  @apply bg-white rounded-lg shadow-sm;\n}",
+        "testStrategy": "1. Unit Tests:\n- Verify session details rendering with different session states (scheduled, canceled, completed)\n- Test edit form validation rules and error handling\n- Verify role-based action button visibility and functionality\n- Test real-time update subscription handling\n- Validate form submission and error states\n\n2. Integration Tests:\n- Complete edit flow from button click through form submission\n- Test authorization rules for edit functionality\n- Verify real-time updates appear correctly\n- Test navigation between session details and related pages\n\n3. E2E Tests:\n- Complete session edit workflow with actual API calls\n- Verify proper handling of concurrent edits\n- Test session cancellation flow\n- Validate all interactive elements work as expected\n\n4. Accessibility Testing:\n- Verify ARIA labels and roles\n- Test keyboard navigation\n- Check color contrast ratios\n- Validate form accessibility\n\n5. Visual Regression Tests:\n- Capture screenshots of different session states\n- Test responsive layout breakpoints\n- Verify edit mode visual transitions",
+        "status": "pending",
+        "dependencies": [
+          15,
+          9,
+          31
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": 34,
+        "title": "Implement Session Modification Voting System",
+        "description": "Create a voting system that allows session participants to vote on proposed modifications, with automatic resolution based on majority consensus and configurable timeout periods, including session splitting functionality.",
+        "details": "1. Create voting system data structures and endpoints:\n```typescript\n// convex/types.ts\ninterface VoteStatus {\n  agree: string[];    // array of user IDs\n  oppose: string[];   // array of user IDs\n  deadline: number;   // timestamp for vote expiration\n  proposedChanges: SessionModification;\n}\n\n// convex/sessions.ts\nexport const initiateVote = mutation({\n  args: {\n    sessionId: v.id('sessions'),\n    changes: v.object({\n      // session modification fields\n    }),\n    timeoutMinutes: v.optional(v.number())\n  },\n  handler: async (ctx, args) => {\n    const DEFAULT_TIMEOUT = 24 * 60; // 24 hours in minutes\n    // Create vote record with deadline\n  }\n});\n```\n\n2. Implement vote processing logic:\n- Add mutations for casting votes (`castVote`)\n- Create scheduled function to process expired votes\n- Implement session splitting algorithm for divided groups\n- Handle automatic status changes for opposed voters\n\n3. Add frontend components:\n```typescript\nconst VotingInterface: React.FC<{\n  sessionId: Id<'sessions'>,\n  voteStatus: VoteStatus\n}> = ({ sessionId, voteStatus }) => {\n  // Render voting UI with countdown timer\n  // Show current vote distribution\n  // Display proposed changes\n};\n```\n\n4. Implement vote resolution logic:\n- Calculate vote percentages\n- Apply threshold checks for majority\n- Handle session splitting when votes are sufficiently divided\n- Update participant statuses based on vote outcome\n\n5. Add notification integration:\n- Notify all participants when vote starts\n- Send reminders before deadline\n- Announce vote results",
+        "testStrategy": "1. Unit Tests:\n- Test vote calculation logic with various scenarios\n- Verify timeout handling and deadline calculations\n- Test session splitting algorithm with different group sizes\n- Validate participant status updates\n- Test vote resolution logic for all possible outcomes\n\n2. Integration Tests:\n- Verify complete voting flow from initiation to resolution\n- Test notification delivery for all voting events\n- Validate concurrent voting handling\n- Test session splitting implementation\n- Verify proper cleanup of expired votes\n\n3. E2E Tests:\n- Complete vote lifecycle testing\n- Verify UI updates in real-time\n- Test timeout functionality\n- Validate all notification delivery\n- Test edge cases (tie votes, minimum participant thresholds)\n\n4. Performance Tests:\n- Test system with multiple concurrent votes\n- Verify notification performance with large participant groups\n- Measure database query performance for vote status checks",
+        "status": "pending",
+        "dependencies": [
+          23,
+          26
+        ],
+        "priority": "low",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T13:02:31.312Z",
+      "updated": "2025-06-23T15:15:17.697Z",
       "description": "Tasks for master context"
     }
   }

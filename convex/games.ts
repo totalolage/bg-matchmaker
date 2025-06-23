@@ -291,16 +291,18 @@ export const getUserLibraryGames = query({
     const games = await Promise.all(gamePromises);
 
     // Filter out null results and map to the expected format
-    return games.filter(Boolean).map(game => ({
-      _id: game._id,
-      boardGameAtlasId: game.bggId,
-      name: game.name,
-      imageUrl: game.image,
-      alternateNames: game.alternateNames || [],
-      minPlayers: game.minPlayers || 1,
-      maxPlayers: game.maxPlayers || 1,
-      playTime: game.playingTime || 0,
-    }));
+    return games
+      .filter((game): game is NonNullable<typeof game> => game !== null)
+      .map(game => ({
+        _id: game._id,
+        boardGameAtlasId: game.bggId,
+        name: game.name,
+        imageUrl: game.image,
+        alternateNames: game.alternateNames || [],
+        minPlayers: game.minPlayers || 1,
+        maxPlayers: game.maxPlayers || 1,
+        playTime: game.playingTime || 0,
+      }));
   },
 });
 

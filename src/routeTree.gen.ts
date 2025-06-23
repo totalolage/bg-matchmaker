@@ -11,9 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as DiscoverRouteImport } from './routes/discover'
-import { Route as CreateRouteImport } from './routes/create'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SessionsCreateRouteImport } from './routes/sessions/create'
+import { Route as SessionsSessionIdRouteImport } from './routes/sessions/$sessionId'
 import { Route as ProfileEditRouteImport } from './routes/profile_.edit'
 
 const ProfileRoute = ProfileRouteImport.update({
@@ -26,11 +27,6 @@ const DiscoverRoute = DiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreateRoute = CreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -39,6 +35,16 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsCreateRoute = SessionsCreateRouteImport.update({
+  id: '/sessions/create',
+  path: '/sessions/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsSessionIdRoute = SessionsSessionIdRouteImport.update({
+  id: '/sessions/$sessionId',
+  path: '/sessions/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileEditRoute = ProfileEditRouteImport.update({
@@ -50,56 +56,69 @@ const ProfileEditRoute = ProfileEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/sessions/$sessionId': typeof SessionsSessionIdRoute
+  '/sessions/create': typeof SessionsCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/sessions/$sessionId': typeof SessionsSessionIdRoute
+  '/sessions/create': typeof SessionsCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/create': typeof CreateRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
   '/profile_/edit': typeof ProfileEditRoute
+  '/sessions/$sessionId': typeof SessionsSessionIdRoute
+  '/sessions/create': typeof SessionsCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
-    | '/create'
     | '/discover'
     | '/profile'
     | '/profile/edit'
+    | '/sessions/$sessionId'
+    | '/sessions/create'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/create' | '/discover' | '/profile' | '/profile/edit'
+  to:
+    | '/'
+    | '/admin'
+    | '/discover'
+    | '/profile'
+    | '/profile/edit'
+    | '/sessions/$sessionId'
+    | '/sessions/create'
   id:
     | '__root__'
     | '/'
     | '/admin'
-    | '/create'
     | '/discover'
     | '/profile'
     | '/profile_/edit'
+    | '/sessions/$sessionId'
+    | '/sessions/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  CreateRoute: typeof CreateRoute
   DiscoverRoute: typeof DiscoverRoute
   ProfileRoute: typeof ProfileRoute
   ProfileEditRoute: typeof ProfileEditRoute
+  SessionsSessionIdRoute: typeof SessionsSessionIdRoute
+  SessionsCreateRoute: typeof SessionsCreateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -118,13 +137,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/create': {
-      id: '/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof CreateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -137,6 +149,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/create': {
+      id: '/sessions/create'
+      path: '/sessions/create'
+      fullPath: '/sessions/create'
+      preLoaderRoute: typeof SessionsCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/$sessionId': {
+      id: '/sessions/$sessionId'
+      path: '/sessions/$sessionId'
+      fullPath: '/sessions/$sessionId'
+      preLoaderRoute: typeof SessionsSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile_/edit': {
@@ -152,10 +178,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  CreateRoute: CreateRoute,
   DiscoverRoute: DiscoverRoute,
   ProfileRoute: ProfileRoute,
   ProfileEditRoute: ProfileEditRoute,
+  SessionsSessionIdRoute: SessionsSessionIdRoute,
+  SessionsCreateRoute: SessionsCreateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -10,7 +10,7 @@ export interface NavItem {
 export const navigationItems: NavItem[] = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/discover", icon: Search, label: "Discover" },
-  { to: "/create", icon: Plus, label: "Create" },
+  { to: "/sessions/create", icon: Plus, label: "Create" },
   { to: "/profile", icon: User, label: "Profile" },
   { to: "/admin", icon: Shield, label: "Admin", requiresAdmin: true },
 ];
