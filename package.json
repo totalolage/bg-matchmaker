@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run dev:frontend & bun run dev:backend",
+    "dev:host": "bun run dev:frontend:host & bun run dev:backend",
     "dev:frontend": "bunx vite",
     "dev:frontend:host": "bunx vite --host",
     "dev:backend": "bunx convex dev",
@@ -67,6 +68,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-basic-ssl": "^2.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "~10",
     "cli-progress": "^3.12.0",
