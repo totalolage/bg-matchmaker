@@ -778,11 +778,72 @@
         ],
         "priority": "low",
         "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Implement Manual Session Creation UI",
+        "description": "Create a user interface that allows users to manually create game sessions by selecting games from their library and configuring session details like time, date, location, player count, and description.",
+        "details": "1. Create new React components for the session creation flow:\n```typescript\nconst CreateSessionForm: React.FC = () => {\n  const [selectedGame, setSelectedGame] = useState<Game | null>(null);\n  const [sessionDetails, setSessionDetails] = useState({\n    datetime: new Date(),\n    location: '',\n    playerCount: 2,\n    description: ''\n  });\n};\n```\n\n2. Implement game selection component with search integration:\n- Use existing search functionality from Task 18\n- Add virtual scrolling for game list using TanStack Virtual (Task 4)\n- Display game details including alternate names (Task 2)\n\n3. Create form fields for session details:\n- DateTime picker component with timezone handling\n- Location input with optional map integration\n- Player count selector with min/max validation\n- Rich text description field\n- Form validation using react-hook-form\n\n4. Implement session creation mutation:\n```typescript\n// convex/sessions.ts\nexport const createSession = mutation({\n  args: {\n    gameId: v.string(),\n    datetime: v.number(),\n    location: v.string(),\n    playerCount: v.number(),\n    description: v.string()\n  },\n  handler: async (ctx, args) => {\n    const userId = await ctx.auth.getUserId();\n    // Validate game ownership\n    // Create session record\n    // Return session ID\n  }\n});\n```\n\n5. Add success/error handling and loading states:\n- Display loading spinner during submission\n- Show success confirmation with link to created session\n- Error handling with user-friendly messages\n- Redirect to discovery feed after successful creation\n\n6. Style components following existing design system:\n- Responsive layout for mobile and desktop\n- Accessible form controls with proper ARIA attributes\n- Consistent spacing and typography\n- Smooth transitions and animations",
+        "testStrategy": "1. Unit tests:\n- Validate form validation rules and error messages\n- Test datetime handling across timezones\n- Verify game selection and search integration\n- Test player count validation logic\n- Check form submission handling\n\n2. Integration tests:\n- Complete form submission flow with mock data\n- Verify session appears in discovery feed after creation\n- Test interaction with game search functionality\n- Validate proper error handling scenarios\n\n3. End-to-end tests:\n- Complete session creation flow in multiple browsers\n- Test mobile responsiveness and touch interactions\n- Verify proper data persistence in Convex\n- Check discovery feed integration\n\n4. Accessibility testing:\n- Verify ARIA attributes and roles\n- Test keyboard navigation\n- Check screen reader compatibility\n- Validate color contrast ratios\n\n5. Performance testing:\n- Measure form rendering and submission times\n- Test with large game libraries\n- Verify search response times\n- Monitor Convex mutation performance",
+        "status": "done",
+        "dependencies": [
+          2,
+          4,
+          18
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Game Selection Component",
+            "description": "Implement the game selection component that allows users to search and select games from their library",
+            "dependencies": [],
+            "details": "1. Create GameSelector component using React\n2. Integrate existing search functionality from Task 18\n3. Implement virtual scrolling using TanStack Virtual\n4. Display game cards with title, cover image, and alternate names\n5. Add selection state management using useState\n6. Style component following design system\n<info added on 2025-06-23T12:22:58.148Z>\nCompleted GameSelector implementation:\n- Integrated with user's game library to filter available games\n- Added player count and expertise level to game card display\n- Implemented game selection/deselection state handling\n- Created useDebounce hook to optimize search performance\n- Enhanced API integration to fetch complete game details\n- Verified component functionality and integration readiness\n\nNote: Original requirements for virtual scrolling, cover images, and alternate names were maintained in the implementation.\n</info added on 2025-06-23T12:22:58.148Z>",
+            "status": "done",
+            "testStrategy": "1. Unit test search integration\n2. Test virtual scrolling with large game lists\n3. Verify correct game selection state updates"
+          },
+          {
+            "id": 2,
+            "title": "Implement Session Details Form Fields",
+            "description": "Create and configure all form fields for session details with validation",
+            "dependencies": [],
+            "details": "1. Set up react-hook-form\n2. Implement DateTime picker with timezone support\n3. Create location input field\n4. Add player count selector with validation\n5. Implement rich text description field\n6. Add form validation rules\n7. Style form elements according to design system\n<info added on 2025-06-23T12:23:31.873Z>\nForm implementation completed:\n- Integrated react-hook-form with Arktype schema validation\n- Added Calendar date picker component with past date restriction\n- Implemented time input defaulting to 19:00\n- Created location field with MapPin icon integration\n- Added player count selector with dynamic min/max validation\n- Implemented optional description field using new Textarea component\n- All form fields connected to validation system\n- Applied design system styling with proper spacing and icon alignment\n</info added on 2025-06-23T12:23:31.873Z>",
+            "status": "done",
+            "testStrategy": "1. Test form validation rules\n2. Verify datetime handling across timezones\n3. Test min/max player count validation"
+          },
+          {
+            "id": 3,
+            "title": "Create Session Creation API Integration",
+            "description": "Implement the API integration for creating new sessions using Convex mutation",
+            "dependencies": [],
+            "details": "1. Implement createSession mutation handler\n2. Add game ownership validation\n3. Create session record in database\n4. Handle API error cases\n5. Add type definitions for session creation payload\n<info added on 2025-06-23T12:23:53.816Z>\nSession creation API integration is complete:\n- Form submission handler properly converts date/time inputs to timestamps\n- CreateSessionForm component successfully calls createSession mutation\n- Game selection restricted to user's library (ownership validation)\n- Error handling implemented with toast notifications\n- Successful session creation redirects to discovery page\n- Mutation handler and database operations working as expected\n\nNote: All originally planned API integration tasks have been completed and verified in CreateSessionForm component and sessions.ts handler.\n</info added on 2025-06-23T12:23:53.816Z>",
+            "status": "done",
+            "testStrategy": "1. Test successful session creation\n2. Verify error handling\n3. Test game ownership validation"
+          },
+          {
+            "id": 4,
+            "title": "Add Loading and Error States",
+            "description": "Implement loading indicators and error handling UI components",
+            "dependencies": [],
+            "details": "1. Create loading spinner component\n2. Implement error message display\n3. Add success confirmation modal\n4. Handle API error responses\n5. Implement redirect logic after successful creation\n<info added on 2025-06-23T12:24:16.667Z>\nCurrent implementation details:\n- Submit button shows loading state (\"Creating...\") and disables during submission\n- Error handling implemented via try/catch with toast notifications\n- Success flow: displays toast notification and redirects to discovery page\n- Form resets automatically after successful creation\n- State management handled within CreateSessionForm component\n- Loading states and success modals simplified to use toast notifications instead of separate components\n</info added on 2025-06-23T12:24:16.667Z>",
+            "status": "done",
+            "testStrategy": "1. Test loading state transitions\n2. Verify error message display\n3. Test success flow and redirect"
+          },
+          {
+            "id": 5,
+            "title": "Implement Responsive Layout and Styling",
+            "description": "Style all components and implement responsive layout following design system",
+            "dependencies": [],
+            "details": "1. Create responsive grid layout\n2. Style form controls following design system\n3. Add ARIA attributes for accessibility\n4. Implement transitions and animations\n5. Ensure mobile-friendly layout\n6. Add consistent spacing and typography\n<info added on 2025-06-23T12:24:38.754Z>\nForm implementation details:\n- Centered layout with max-w-2xl mx-auto\n- Two-column grid layout for date/time and player fields\n- Design system form controls with proper spacing\n- Visual icons: Calendar, Clock, MapPin, Users\n- Mobile-optimized touch targets\n- Consistent typography and component spacing\n- Transition animations via base components\n- Interactive button states and hover effects\n</info added on 2025-06-23T12:24:38.754Z>",
+            "status": "done",
+            "testStrategy": "1. Test responsive breakpoints\n2. Verify accessibility compliance\n3. Test touch interactions on mobile"
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T12:09:54.884Z",
+      "updated": "2025-06-23T12:26:34.174Z",
       "description": "Tasks for master context"
     }
   }

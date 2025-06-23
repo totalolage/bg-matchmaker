@@ -270,6 +270,24 @@ export const searchGamesPaginated = query({
   },
 });
 
+export const getAllGames = query({
+  args: {},
+  handler: async (ctx) => {
+    const games = await ctx.db.query("gameData").collect();
+    
+    return games.map(game => ({
+      _id: game._id,
+      boardGameAtlasId: game.bggId,
+      name: game.name,
+      imageUrl: game.image,
+      alternateNames: game.alternateNames || [],
+      minPlayers: game.minPlayers || 1,
+      maxPlayers: game.maxPlayers || 1,
+      playTime: game.playingTime || 0,
+    }));
+  },
+});
+
 export const getGameDetails = query({
   args: { gameId: v.string() },
   handler: async (ctx, args) => {

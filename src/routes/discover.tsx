@@ -1,12 +1,14 @@
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { PageContent, PageHeader, PageLayout } from "../components/PageLayout";
 import { SessionDiscovery } from "../components/session-discovery";
+import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/discover")({
   component: Discover,
@@ -69,9 +71,17 @@ function Discover() {
   return (
     <PageLayout>
       <PageHeader>
-        <h1 className="text-2xl font-bold text-gray-900 text-center">
-          Discover Sessions
-        </h1>
+        <div className="flex items-center justify-between w-full">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Discover Sessions
+          </h1>
+          <Link to="/create">
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              Create Session
+            </Button>
+          </Link>
+        </div>
       </PageHeader>
 
       <PageContent className="flex flex-col h-full p-0">
