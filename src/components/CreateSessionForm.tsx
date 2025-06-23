@@ -1,7 +1,6 @@
 import { arktypeResolver } from "@hookform/resolvers/arktype";
 import { useRouter } from "@tanstack/react-router";
 import { type } from "arktype";
-import { format } from "date-fns";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { ComponentProps, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -51,6 +50,44 @@ interface Game {
   playTime: number;
 }
 
+// Get the next weekend day (Saturday or Sunday) at 18:00
+function getNextWeekendAt18() {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+
+  // Calculate days until next Saturday (6) or Sunday (0)
+  let daysToAdd = 0;
+  if (dayOfWeek === 6) {
+    // It's Saturday - go to next Sunday
+    daysToAdd = 1;
+  } else if (dayOfWeek === 0) {
+    // It's Sunday - go to next Saturday
+    daysToAdd = 6;
+  } else {
+    // It's a weekday - find next Saturday
+    daysToAdd = 6 - dayOfWeek;
+  }
+
+  // Create the next weekend date
+  const nextWeekend = new Date(now);
+  nextWeekend.setDate(now.getDate() + daysToAdd);
+  nextWeekend.setHours(18, 0, 0, 0); // Set to 18:00
+  
+  return nextWeekend;
+}
+
+// Format date for datetime-local input
+function formatDateTimeLocal(date: Date): string {
+  // Format the date to match datetime-local input format
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export const CreateSessionForm = () => {
   const router = useRouter();
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
@@ -64,7 +101,7 @@ export const CreateSessionForm = () => {
       gameId: "",
       gameName: "",
       gameImage: undefined,
-      scheduledDateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+      scheduledDateTime: formatDateTimeLocal(getNextWeekendAt18()),
       location: "",
       minPlayers: 2,
       maxPlayers: 4,
@@ -149,7 +186,7 @@ export const CreateSessionForm = () => {
                     <Input
                       type="datetime-local"
                       className="pl-10"
-                      min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
+                      min={formatDateTimeLocal(new Date())}
                       {...field}
                     />
                   </div>

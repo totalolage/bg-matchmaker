@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { Calendar, MapPin, Users } from "lucide-react";
 
 import { api } from "@convex/_generated/api";
@@ -98,7 +97,10 @@ function SessionDetail() {
                 <div>
                   <p className="font-medium">Date & Time</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(session.scheduledTime), "PPP 'at' p")}
+                    {new Intl.DateTimeFormat("en-US", {
+                      dateStyle: "full",
+                      timeStyle: "short",
+                    }).format(new Date(session.scheduledTime))}
                   </p>
                 </div>
               </div>
