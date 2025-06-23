@@ -1,14 +1,21 @@
-import * as TabsPrimitive from "@radix-ui/react-tabs"
-import type { ComponentProps, ComponentPropsWithoutRef, ElementRef,Ref } from "react"
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ElementRef,
+  Ref,
+} from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-const Tabs = TabsPrimitive.Root
+const Tabs = TabsPrimitive.Root;
 
-export const TabsList = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
-  ref?: Ref<ElementRef<typeof TabsPrimitive.List>>
-}) => {
-  const { className, ref, ...rest } = props
+export const TabsList = (
+  props: ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
+    ref?: Ref<ElementRef<typeof TabsPrimitive.List>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <TabsPrimitive.List
       ref={ref}
@@ -18,14 +25,16 @@ export const TabsList = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.Li
       )}
       {...rest}
     />
-  )
-}
-export type TabsListProps = ComponentProps<typeof TabsList>
+  );
+};
+export type TabsListProps = ComponentProps<typeof TabsList>;
 
-export const TabsTrigger = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
-  ref?: Ref<ElementRef<typeof TabsPrimitive.Trigger>>
-}) => {
-  const { className, ref, ...rest } = props
+export const TabsTrigger = (
+  props: ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
+    ref?: Ref<ElementRef<typeof TabsPrimitive.Trigger>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <TabsPrimitive.Trigger
       ref={ref}
@@ -35,14 +44,16 @@ export const TabsTrigger = (props: ComponentPropsWithoutRef<typeof TabsPrimitive
       )}
       {...rest}
     />
-  )
-}
-export type TabsTriggerProps = ComponentProps<typeof TabsTrigger>
+  );
+};
+export type TabsTriggerProps = ComponentProps<typeof TabsTrigger>;
 
-export const TabsContent = (props: ComponentPropsWithoutRef<typeof TabsPrimitive.Content> & {
-  ref?: Ref<ElementRef<typeof TabsPrimitive.Content>>
-}) => {
-  const { className, ref, ...rest } = props
+export const TabsContent = (
+  props: ComponentPropsWithoutRef<typeof TabsPrimitive.Content> & {
+    ref?: Ref<ElementRef<typeof TabsPrimitive.Content>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <TabsPrimitive.Content
       ref={ref}
@@ -52,8 +63,8 @@ export const TabsContent = (props: ComponentPropsWithoutRef<typeof TabsPrimitive
       )}
       {...rest}
     />
-  )
-}
-export type TabsContentProps = ComponentProps<typeof TabsContent>
+  );
+};
+export type TabsContentProps = ComponentProps<typeof TabsContent>;
 
-export { Tabs }
+export { Tabs };
