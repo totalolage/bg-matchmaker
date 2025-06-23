@@ -25,9 +25,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { api } from "@convex/_generated/api";
 import { useMutation as useConvexMutation } from "convex/react";
-
-import { api } from "../../convex/_generated/api";
 
 const profileFormSchema = type({
   displayName: "string",

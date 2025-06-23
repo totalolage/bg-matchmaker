@@ -7,8 +7,7 @@ import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SessionCard } from "@/components/SessionCard";
-
-import { api } from "../../convex/_generated/api";
+import { api } from "@convex/_generated/api";
 
 export const Route = createFileRoute("/")({
   component: Home,

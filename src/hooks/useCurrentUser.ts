@@ -1,8 +1,8 @@
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { api } from "../../convex/_generated/api";
-import { Doc } from "../../convex/_generated/dataModel";
+import { api } from "@convex/_generated/api";
+import { Doc } from "@convex/_generated/dataModel";
 
 export function useCurrentUser(): Doc<"users"> {
   const { data: user } = useSuspenseQuery({

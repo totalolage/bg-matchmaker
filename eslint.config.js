@@ -5,7 +5,6 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import unusedImports from "eslint-plugin-unused-imports";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
-import boundaries from "eslint-plugin-boundaries";
 import reactCompiler from "eslint-plugin-react-compiler";
 import prettier from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
@@ -24,12 +23,13 @@ export default tseslint.config(
       "scripts/**/*.ts", // Scripts have their own tsconfig
     ],
   },
+  // Main configuration for src files
   {
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommendedTypeChecked,
     ],
-    files: ["**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
@@ -46,18 +46,8 @@ export default tseslint.config(
       "react-compiler": reactCompiler,
       "unused-imports": unusedImports,
       "simple-import-sort": simpleImportSort,
-      boundaries: boundaries,
       prettier: prettier,
       "no-relative-import-paths": noRelativeImportPaths,
-    },
-    settings: {
-      "boundaries/elements": [
-        {
-          type: "component",
-          pattern: "src/components/**/index.ts",
-          mode: "folder",
-        },
-      ],
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -133,21 +123,6 @@ export default tseslint.config(
         },
       ],
 
-      // Module boundary rules
-      "boundaries/element-types": [
-        "error",
-        {
-          default: "disallow",
-          rules: [
-            {
-              from: ["component"],
-              allow: ["component"],
-            },
-          ],
-        },
-      ],
-      "boundaries/no-private": ["error"],
-      "boundaries/no-unknown": ["error"],
 
       // Disallow React optimization hooks since React Compiler handles these
       "no-restricted-imports": [
@@ -167,6 +142,11 @@ export default tseslint.config(
               importNames: ["memo", "useMemo", "useCallback", "forwardRef"],
               message:
                 "React Compiler handles memoization automatically. forwardRef is not needed - use ref as a normal prop instead.",
+            },
+            // Prevent relative imports from going outside module boundaries
+            {
+              group: ["../*/**"],
+              message: "Use @/ imports when importing from outside your module. Relative imports should only be used within the same module.",
             },
           ],
         },
@@ -196,6 +176,88 @@ export default tseslint.config(
       ],
 
       // Allow void operator in arrow functions for event handlers
+      "@typescript-eslint/no-confusing-void-expression": "off",
+    },
+  },
+  // Convex files configuration (without module boundary restrictions)
+  {
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommendedTypeChecked,
+    ],
+    files: ["convex/**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+      parserOptions: {
+        project: ["./convex/tsconfig.json"],
+      },
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      "react-compiler": reactCompiler,
+      "unused-imports": unusedImports,
+      "simple-import-sort": simpleImportSort,
+      prettier: prettier,
+    },
+    rules: {
+      // Copy most rules from main config but exclude module boundary rules
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+      "react-compiler/react-compiler": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/ban-ts-comment": "error",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/require-await": "off",
+      "simple-import-sort/imports": [
+        "error",
+        {
+          groups: [
+            ["^node:"],
+            ["^@?\\w"],
+            ["^(@|@convex|convex|src)(/.*|$)"],
+            ["^\\u0000"],
+            ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+            ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+            ["^.+\\.s?css$"],
+          ],
+        },
+      ],
+      "simple-import-sort/exports": "error",
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
+      // Prettier integration
+      "prettier/prettier": "error",
+      curly: ["error", "multi-or-nest", "consistent"],
+      "arrow-body-style": [
+        "error",
+        "as-needed",
+        { requireReturnForObjectLiteral: false },
+      ],
       "@typescript-eslint/no-confusing-void-expression": "off",
     },
   },

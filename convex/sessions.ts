@@ -371,7 +371,7 @@ export const joinSession = mutation({
       // Commit the availability slot if session has a scheduled time
       if (session.scheduledTime) {
         const sessionDate = new Date(session.scheduledTime);
-        const dateStr = sessionDate.toISOString().split("T")[0] as string;
+        const dateStr = sessionDate.toISOString().split("T")[0];
         const startMinutes =
           sessionDate.getHours() * 60 + sessionDate.getMinutes();
 

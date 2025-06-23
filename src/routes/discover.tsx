@@ -7,9 +7,8 @@ import { useState } from "react";
 import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { SessionDiscovery } from "@/components/session-discovery";
 import { Button } from "@/components/ui/button";
-
-import { api } from "../../convex/_generated/api";
-import { Id } from "../../convex/_generated/dataModel";
+import { api } from "@convex/_generated/api";
+import { Id } from "@convex/_generated/dataModel";
 
 export const Route = createFileRoute("/discover")({
   component: Discover,

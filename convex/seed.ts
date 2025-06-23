@@ -29,7 +29,7 @@ export const seedTestUsers = mutation({
         ],
         availability: [
           {
-            date: new Date().toISOString().split("T")[0]!,
+            date: new Date().toISOString().split("T")[0],
             intervals: [{ start: 1080, end: 1320 }], // 6pm-10pm
           },
         ],
@@ -58,7 +58,7 @@ export const seedTestUsers = mutation({
         ],
         availability: [
           {
-            date: new Date().toISOString().split("T")[0]!,
+            date: new Date().toISOString().split("T")[0],
             intervals: [{ start: 780, end: 960 }], // 1pm-4pm
           },
         ],
@@ -87,7 +87,7 @@ export const seedTestUsers = mutation({
         ],
         availability: [
           {
-            date: new Date().toISOString().split("T")[0]!,
+            date: new Date().toISOString().split("T")[0],
             intervals: [{ start: 600, end: 840 }], // 10am-2pm
           },
         ],

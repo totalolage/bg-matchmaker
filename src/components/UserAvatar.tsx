@@ -2,8 +2,7 @@ import { ComponentProps } from "react";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
-
-import { Doc } from "../../convex/_generated/dataModel";
+import { Doc } from "@convex/_generated/dataModel";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 

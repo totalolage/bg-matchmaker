@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ComponentProps } from "react";
 
-import { Doc } from "../../convex/_generated/dataModel";
+import { Doc } from "@convex/_generated/dataModel";
 
 import { Badge } from "./ui/badge";
 import {

@@ -5,8 +5,7 @@ import { useState } from "react";
 import { GameDetailsModal } from "@/components/games/GameDetailsModal";
 import { SessionCard } from "@/components/SessionCard";
 import { Button } from "@/components/ui/button";
-
-import { Doc } from "../../../convex/_generated/dataModel";
+import { Doc } from "@convex/_generated/dataModel";
 
 interface SessionCardProps {
   session: Doc<"sessions"> & { matchScore?: number };
