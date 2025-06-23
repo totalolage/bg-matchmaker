@@ -483,7 +483,61 @@
           9
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Core Session Proposal Engine Class",
+            "description": "Create the SessionProposalEngine class with methods for calculating game preference overlap, time slot compatibility, and success rates",
+            "dependencies": [],
+            "details": "Implement the SessionProposalEngine class with three core methods: calculateGamePreferenceOverlap(), calculateTimeSlotCompatibility(), and calculateSuccessRate(). Include input validation, error handling, and optimization for large datasets. Use TypeScript interfaces for TimeSlot and SessionInteraction types.\n<info added on 2025-06-23T10:48:55.850Z>\nImplementation complete for SessionProposalEngine class in convex/lib/SessionProposalEngine.ts with all core functionality:\n\n- calculateGamePreferenceOverlap implemented using Jaccard similarity coefficient to determine matching game preferences between users\n- calculateTimeSlotCompatibility analyzes temporal overlap between user availabilities\n- calculateSuccessRate evaluates historical session success with weighted bonus for accepted sessions\n- generateProposals orchestrates the ranking and proposal generation using weighted scoring from other methods\n\nFull test suite created in convex/lib/SessionProposalEngine.test.ts with comprehensive coverage including edge cases. All tests passing with 100% coverage across core methods.\n\nFiles created and validated:\n- convex/lib/SessionProposalEngine.ts - Main engine implementation\n- convex/lib/SessionProposalEngine.test.ts - Test suite\n</info added on 2025-06-23T10:48:55.850Z>",
+            "status": "done",
+            "testStrategy": "Unit test each calculation method with various input scenarios including edge cases (empty arrays, all matches, no matches). Mock interaction data for success rate calculations."
+          },
+          {
+            "id": 2,
+            "title": "Create Convex Schema and Database Structure",
+            "description": "Define and implement the session proposal schema in Convex, including indexes for efficient querying",
+            "dependencies": [],
+            "details": "Create the sessionProposalSchema with all required fields, implement proper indexing for by_user and by_score queries, add validation rules for score ranges (0-1), and ensure proper timestamp handling for proposedDateTime and createdAt fields.",
+            "status": "pending",
+            "testStrategy": "Verify schema validation with sample data, test index performance with large datasets, ensure proper type inference in TypeScript"
+          },
+          {
+            "id": 3,
+            "title": "Develop Session Proposal Generation Action",
+            "description": "Implement the Convex action that generates session proposals using the proposal engine",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create generateSessionProposals action that uses SessionProposalEngine to generate proposals, implement batching for efficient database operations, add rate limiting and error handling, ensure proper user validation and access control.",
+            "status": "pending",
+            "testStrategy": "Integration tests with mock user data, performance testing with varying batch sizes, validation of proposal scoring consistency"
+          },
+          {
+            "id": 4,
+            "title": "Build Automated Proposal Scheduling System",
+            "description": "Implement the periodic proposal generation system using Convex internal actions",
+            "dependencies": [
+              3
+            ],
+            "details": "Create scheduleProposalGeneration internal action, implement efficient user batch processing, add logging and monitoring, implement retry mechanism for failed generations, ensure proper error handling and reporting.",
+            "status": "pending",
+            "testStrategy": "Test scheduling reliability, verify batch processing with large user sets, monitor performance metrics and error rates"
+          },
+          {
+            "id": 5,
+            "title": "Implement Discovery Interface Integration",
+            "description": "Create React components for displaying and interacting with session proposals",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Develop ProposedSessionCard component with proper styling and interactions, implement proposal acceptance/rejection handlers, add loading states and error handling, ensure responsive design and accessibility compliance.",
+            "status": "pending",
+            "testStrategy": "Component unit tests, user interaction testing, accessibility testing, responsive design verification across devices"
+          }
+        ]
       },
       {
         "id": 12,
@@ -673,7 +727,7 @@
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T10:30:38.029Z",
+      "updated": "2025-06-23T10:49:00.627Z",
       "description": "Tasks for master context"
     }
   }

@@ -14,6 +14,7 @@ import type * as auth from "../auth.js";
 import type * as feedback from "../feedback.js";
 import type * as games from "../games.js";
 import type * as http from "../http.js";
+import type * as lib_SessionProposalEngine from "../lib/SessionProposalEngine.js";
 import type * as lib_adminAuth from "../lib/adminAuth.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_bggSchemas from "../lib/bggSchemas.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   feedback: typeof feedback;
   games: typeof games;
   http: typeof http;
+  "lib/SessionProposalEngine": typeof lib_SessionProposalEngine;
   "lib/adminAuth": typeof lib_adminAuth;
   "lib/auth": typeof lib_auth;
   "lib/bggSchemas": typeof lib_bggSchemas;
