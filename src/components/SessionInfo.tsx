@@ -1,8 +1,9 @@
 import { Clock, MapPin, Users } from "lucide-react";
 import { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils";
 import { Doc } from "@convex/_generated/dataModel";
+
+import { cn } from "@/lib/utils";
 
 import { IconText } from "./IconText";
 

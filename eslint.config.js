@@ -95,8 +95,10 @@ export default tseslint.config(
             ["^node:"],
             // External packages
             ["^@?\\w"],
-            // Internal packages
-            ["^(@|@convex|convex|src)(/.*|$)"],
+            // Convex imports
+            ["^convex", "^@convex/"],
+            // @/ imports (our app)
+            ["^@/"],
             // Side effect imports
             ["^\\u0000"],
             // Parent imports
@@ -228,12 +230,21 @@ export default tseslint.config(
         "error",
         {
           groups: [
+            // Node.js builtins
             ["^node:"],
+            // External packages
             ["^@?\\w"],
-            ["^(@|@convex|convex|src)(/.*|$)"],
+            // Convex imports
+            ["^convex", "^@convex/"],
+            // @/ imports (our app)
+            ["^@/"],
+            // Side effect imports
             ["^\\u0000"],
+            // Parent imports
             ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+            // Other relative imports
             ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+            // Style imports
             ["^.+\\.s?css$"],
           ],
         },

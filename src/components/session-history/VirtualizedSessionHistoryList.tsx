@@ -1,9 +1,10 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState } from "react";
 
-import { EmptyState } from "@/components/EmptyState";
-import { api } from "@convex/_generated/api";
 import { usePaginatedQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+
+import { EmptyState } from "@/components/EmptyState";
 
 import { SessionHistoryFilter } from "./SessionHistoryFilter";
 import { SessionHistoryItem } from "./SessionHistoryItem";

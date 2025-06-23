@@ -5,11 +5,12 @@ import Papa from "papaparse";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { api } from "@convex/_generated/api";
+import { CSV_IMPORT } from "@convex/lib/constants";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { api } from "@convex/_generated/api";
-import { CSV_IMPORT } from "@convex/lib/constants";
 
 interface CSVRow {
   id: string;

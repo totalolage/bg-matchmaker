@@ -1,5 +1,8 @@
 import { Star } from "lucide-react";
 
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+
 import { GameImage } from "@/components/GameImage";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,8 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@convex/_generated/api";
-import { useQuery } from "convex/react";
 
 interface GameDetailsModalProps {
   gameId: string | null;

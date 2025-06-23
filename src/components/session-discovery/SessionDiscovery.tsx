@@ -2,9 +2,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Doc } from "@convex/_generated/dataModel";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Doc } from "@convex/_generated/dataModel";
 
 import { SessionProposal } from "./SessionProposal";
 

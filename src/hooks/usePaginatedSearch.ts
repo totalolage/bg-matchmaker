@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 
-import type { GameSearchResult } from "@/components/game-library/types";
-import { api } from "@convex/_generated/api";
 import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+
+import type { GameSearchResult } from "@/components/game-library/types";
 
 interface UsePaginatedSearchOptions {
   searchQuery: string;

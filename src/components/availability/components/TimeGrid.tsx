@@ -1,3 +1,5 @@
+import { Doc } from "@convex/_generated/dataModel";
+
 import { HOURS } from "@/components/availability/constants";
 import {
   findIntervalContainingHour,
@@ -9,7 +11,6 @@ import {
   AvailabilityInterval,
   getAvailabilityForDate,
 } from "@/lib/availability";
-import { Doc } from "@convex/_generated/dataModel";
 
 interface TimeGridProps {
   date: Date;

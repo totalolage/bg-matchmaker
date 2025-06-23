@@ -2,6 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { Calendar, MapPin, MoreVertical, Users } from "lucide-react";
 import { toast } from "sonner";
 
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { Id } from "@convex/_generated/dataModel";
+
 import { EmptyState } from "@/components/EmptyState";
 import { GameImage } from "@/components/GameImage";
 import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
@@ -15,9 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/UserAvatar";
-import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
 
 type ProposalWithStats = {
   _id: Id<"sessions">;

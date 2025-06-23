@@ -10,11 +10,12 @@ import {
   X,
 } from "lucide-react";
 
+import { Doc } from "@convex/_generated/dataModel";
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { UserAvatar } from "@/components/UserAvatar";
 import { cn } from "@/lib/utils";
-import { Doc } from "@convex/_generated/dataModel";
 
 interface SessionHistoryItemProps {
   interaction: Doc<"sessionInteractions">;

@@ -1,15 +1,16 @@
 import { Search } from "lucide-react";
 import { useState } from "react";
 
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { Id } from "@convex/_generated/dataModel";
+
 import { GameImage } from "@/components/GameImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
-import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 
 interface Game {
   _id: Id<"gameData">;

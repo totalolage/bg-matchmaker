@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { Doc } from "@convex/_generated/dataModel";
+
 import {
   findIntervalContainingHour,
   isDateInPast,
@@ -11,7 +13,6 @@ import {
   removeInterval,
   updateDayAvailability,
 } from "@/lib/availability";
-import { Doc } from "@convex/_generated/dataModel";
 
 interface SelectedTime {
   date: string;

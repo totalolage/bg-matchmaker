@@ -3,10 +3,11 @@ import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { Toaster } from "sonner";
 
+import { Authenticated, Unauthenticated } from "convex/react";
+
 import { Navigation } from "@/components/Navigation";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { SignInForm } from "@/SignInForm";
-import { Authenticated, Unauthenticated } from "convex/react";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;

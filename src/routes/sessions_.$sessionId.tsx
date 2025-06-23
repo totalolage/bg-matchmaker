@@ -12,6 +12,10 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { Id } from "@convex/_generated/dataModel";
+
 import { GameImage } from "@/components/GameImage";
 import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +26,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "@/components/UserAvatar";
-import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
 
 export const Route = createFileRoute("/sessions_/$sessionId")({
   component: SessionDetail,

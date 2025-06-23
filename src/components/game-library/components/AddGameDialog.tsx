@@ -1,9 +1,10 @@
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Doc } from "@convex/_generated/dataModel";
+
 import type { GameSearchResult } from "@/components/game-library/types";
 import { Input } from "@/components/ui/input";
-import { Doc } from "@convex/_generated/dataModel";
 
 import { VirtualizedGameSearchResults } from "./VirtualizedGameSearchResults";
 

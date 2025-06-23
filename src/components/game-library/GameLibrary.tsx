@@ -1,6 +1,8 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
+import { Doc } from "@convex/_generated/dataModel";
+
 import { EmptyState } from "@/components/EmptyState";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Doc } from "@convex/_generated/dataModel";
 
 import { AddGameDialog } from "./components/AddGameDialog";
 import { GameLibraryItem } from "./components/GameLibraryItem";

@@ -3,6 +3,9 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { AlertCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import { usePaginatedQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+
 import {
   EXPERTISE_LEVELS,
   MIN_SEARCH_LENGTH,
@@ -19,8 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { api } from "@convex/_generated/api";
-import { usePaginatedQuery } from "convex/react";
 
 import { GameSearchSkeleton } from "./GameSearchSkeleton";
 

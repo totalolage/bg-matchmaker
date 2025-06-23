@@ -2,12 +2,13 @@ import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { api } from "@convex/_generated/api";
+
 import { EmptyState } from "@/components/EmptyState";
 import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { ProfileDropdown } from "@/components/ProfileDropdown";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SessionCard } from "@/components/SessionCard";
-import { api } from "@convex/_generated/api";
 
 export const Route = createFileRoute("/")({
   component: Home,
