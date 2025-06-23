@@ -142,3 +142,23 @@ export const updateDisplayName = mutation({
     });
   },
 });
+
+export const getUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.userId);
+  },
+});
+
+export const getActiveUsers = query({
+  args: {},
+  handler: async ctx => {
+    // Get all users - in a real app, you might filter by last active date
+    const allUsers = await ctx.db.query("users").collect();
+
+    // Filter to only users with game library and availability set
+    return allUsers.filter(
+      user => user.gameLibrary.length > 0 && user.availability.length > 0
+    );
+  },
+});

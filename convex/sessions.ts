@@ -2,7 +2,10 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 
 import { v } from "convex/values";
 
-import { mutation, query } from "./_generated/server";
+import { api, internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
+import { action, mutation, query } from "./_generated/server";
+import { SessionProposalEngine } from "./lib/SessionProposalEngine";
 
 export const getDiscoverySessions = query({
   args: {},
@@ -323,5 +326,144 @@ export const getSessionHistory = query({
     return sessions
       .filter(s => s !== null)
       .sort((a, b) => b.interaction.createdAt - a.interaction.createdAt);
+  },
+});
+
+export const generateSessionProposals = action({
+  args: {
+    userId: v.id("users"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (
+    ctx,
+    args
+  ): Promise<{
+    proposalsGenerated: number;
+    proposals: Array<{
+      gameId: string;
+      gameName: string;
+      overallScore: number;
+      proposedParticipants: Array<Id<"users">>;
+    }>;
+  }> => {
+    const { userId, limit = 10 } = args;
+
+    // Fetch user data
+    const user = await ctx.runQuery(api.users.getUser, { userId });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Fetch user's past interactions
+    const userInteractions = await ctx.runQuery(
+      internal.sessionInteractions.getInteractionsByUser,
+      {
+        userId,
+      }
+    );
+
+    // Fetch all active users (excluding the current user)
+    const allUsers = await ctx.runQuery(api.users.getActiveUsers);
+    const potentialMatches = allUsers.filter(u => u._id !== userId);
+
+    // For each potential match, gather their interactions
+    const matchesWithInteractions = await Promise.all(
+      potentialMatches.map(async matchUser => ({
+        user: matchUser,
+        interactions: await ctx.runQuery(
+          internal.sessionInteractions.getInteractionsByUser,
+          {
+            userId: matchUser._id,
+          }
+        ),
+      }))
+    );
+
+    // Initialize the proposal engine
+    const engine = new SessionProposalEngine(user, userInteractions);
+
+    // Generate proposals
+    const proposals = await engine.generateProposals(
+      matchesWithInteractions,
+      limit
+    );
+
+    // Save proposals to database
+    for (const proposal of proposals) {
+      await ctx.runMutation(api.sessions.saveSessionProposal, proposal);
+    }
+
+    return {
+      proposalsGenerated: proposals.length,
+      proposals: proposals.map(p => ({
+        gameId: p.gameId,
+        gameName: p.gameName,
+        overallScore: p.overallScore,
+        proposedParticipants: p.proposedParticipants,
+      })),
+    };
+  },
+});
+
+export const saveSessionProposal = mutation({
+  args: {
+    proposedToUserId: v.id("users"),
+    proposedByAlgorithm: v.boolean(),
+    gameId: v.string(),
+    gameName: v.string(),
+    gameImage: v.optional(v.string()),
+    proposedParticipants: v.array(v.id("users")),
+    preferenceScore: v.number(),
+    timeCompatibilityScore: v.number(),
+    successRateScore: v.number(),
+    overallScore: v.number(),
+    proposedDateTime: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined"),
+      v.literal("expired")
+    ),
+    reason: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()),
+    metadata: v.optional(
+      v.object({
+        commonGames: v.optional(v.array(v.string())),
+        overlappingTimeSlots: v.optional(v.number()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Check for existing pending proposal to avoid duplicates
+    const existingProposal = await ctx.db
+      .query("sessionProposals")
+      .withIndex("by_user_status", q =>
+        q.eq("proposedToUserId", args.proposedToUserId).eq("status", "pending")
+      )
+      .filter(
+        q =>
+          q.eq(q.field("gameId"), args.gameId) &&
+          q.eq(q.field("proposedParticipants"), args.proposedParticipants)
+      )
+      .first();
+
+    if (existingProposal) {
+      // Update existing proposal with new scores
+      await ctx.db.patch(existingProposal._id, {
+        preferenceScore: args.preferenceScore,
+        timeCompatibilityScore: args.timeCompatibilityScore,
+        successRateScore: args.successRateScore,
+        overallScore: args.overallScore,
+        proposedDateTime: args.proposedDateTime,
+        reason: args.reason,
+        expiresAt: args.expiresAt,
+        metadata: args.metadata,
+      });
+      return existingProposal._id;
+    }
+
+    // Create new proposal
+    return await ctx.db.insert("sessionProposals", args);
   },
 });

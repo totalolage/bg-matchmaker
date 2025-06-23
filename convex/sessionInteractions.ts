@@ -3,7 +3,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { Id } from "./_generated/dataModel";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 
 export const recordInteraction = mutation({
   args: {
@@ -55,7 +55,6 @@ export const recordInteraction = mutation({
 
 export const getUserInteractions = query({
   args: {
-    userId: v.optional(v.id("users")),
     interactionType: v.optional(
       v.union(
         v.literal("interested"),
@@ -65,10 +64,7 @@ export const getUserInteractions = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId =
-      args.userId || (identity?.subject as Id<"users"> | undefined);
-
+    const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
     const query = ctx.db
@@ -85,6 +81,18 @@ export const getUserInteractions = query({
     }
 
     return interactions;
+  },
+});
+
+export const getInteractionsByUser = internalQuery({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("sessionInteractions")
+      .withIndex("by_user", q => q.eq("userId", args.userId))
+      .collect();
   },
 });
 
@@ -212,13 +220,9 @@ export const getUninteractedSessions = query({
 export const hasUserInteracted = query({
   args: {
     sessionId: v.id("sessions"),
-    userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    const userId =
-      args.userId || (identity?.subject as Id<"users"> | undefined);
-
+    const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
     const interaction = await ctx.db

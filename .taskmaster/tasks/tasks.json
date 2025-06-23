@@ -510,8 +510,8 @@
               1,
               2
             ],
-            "details": "Create generateSessionProposals action that uses SessionProposalEngine to generate proposals, implement batching for efficient database operations, add rate limiting and error handling, ensure proper user validation and access control.",
-            "status": "pending",
+            "details": "Create generateSessionProposals action that uses SessionProposalEngine to generate proposals, implement batching for efficient database operations, add rate limiting and error handling, ensure proper user validation and access control.\n<info added on 2025-06-23T11:50:42.558Z>\nSuccessfully implemented generateSessionProposals action with complete database integration:\n- Action accepts userId and optional limit parameter\n- Fetches user data and past interaction history\n- Filters active users excluding current user\n- Processes interaction data for potential matches\n- Integrates with SessionProposalEngine for proposal scoring\n- Implements saveSessionProposal mutation with duplicate detection\n- Added supporting query functions: getUser, getActiveUsers, getInteractionsByUser\n- Completed TypeScript implementation with proper type annotations\n- Deployed and verified on Convex backend\n</info added on 2025-06-23T11:50:42.558Z>",
+            "status": "done",
             "testStrategy": "Integration tests with mock user data, performance testing with varying batch sizes, validation of proposal scoring consistency"
           },
           {
@@ -723,11 +723,66 @@
         ],
         "priority": "low",
         "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Implement PWA Functionality",
+        "description": "Set up Progressive Web App features including a service worker for caching, offline support, web app manifest, and installability prompts.",
+        "details": "1. Add a web app manifest (public/manifest.json) with fields: name, short_name, description, icons (multiple sizes), start_url, display: \"standalone\", theme_color, background_color, and scope.\n2. Insert <link rel=\"manifest\" href=\"/manifest.json\"> and meta tags for theme-color into index.html.\n3. Create a service worker (e.g., src/service-worker.ts) using Workbox or vanilla APIs: \n   • Precache static assets (HTML, JS, CSS, images) and route-match patterns.\n   • Implement runtime caching strategies for API calls (e.g., stale-while-revalidate for game data).\n   • Provide an offline fallback page for navigations when network is unavailable.\n4. Integrate service worker registration in the app entry (src/index.tsx): detect support, register on window.load, log successful registration or errors.\n5. Handle the beforeinstallprompt event in a top-level component to show a custom “Install App” button; store the event and call prompt() on user action.\n6. Update build or deployment pipeline to copy manifest.json, service-worker.js, and offline assets to the public/dist directory and ensure proper MIME types.\n7. Document PWA behavior and environment variables (e.g., CACHE_VERSION) in the README.",
+        "testStrategy": "1. Manual verification in Chrome DevTools Application panel: \n   • Confirm manifest fields (name, icons, display, start_url) are correct.\n   • Verify the service worker is registered and controlling the page.\n2. Offline testing:\n   • Build and serve the production artifacts.\n   • Simulate offline mode; reload the app and ensure cached shell loads and offline fallback page displays for unknown routes.\n   • Confirm dynamic API data follows the defined runtime caching strategy when network toggles.\n3. Installability tests:\n   • Verify the beforeinstallprompt event fires and the custom “Install App” button triggers the browser install flow.\n   • Confirm the app launches in standalone mode (no browser chrome) when installed.\n4. Automated Lighthouse/PWABuilder audit:\n   • Achieve PWA score ≥ 90, with checks for manifest, service worker, and offline capabilities.",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Implement Push Notification System",
+        "description": "Set up and integrate a web push notification system including service worker support, user subscription management, and delivery of various notification types (session updates, new proposals, etc.).",
+        "details": "1. Choose and configure a push service (e.g., Firebase Cloud Messaging or Web Push with VAPID keys).\n2. Extend the existing service worker (from Task 22) to handle `push` and `notificationclick` events: display notifications with title, body, icon, and deep‐linking to the app.\n3. Create backend endpoints in the API for `POST /notifications/subscribe` and `POST /notifications/unsubscribe` that accept a subscription object (endpoint, keys) and store or remove it in a new `pushSubscriptions` Convex table indexed by `userId`.\n4. Define a `notifications` topic or queue: implement server‐side functions to enqueue notifications when events occur (session status change, new match proposal, session reminders). Attach metadata (type, sessionId, timestamp).\n5. Implement a worker or cron job that reads pending notifications, fetches subscriptions for each user, and sends push payloads via the chosen service, marking notifications as sent or failed in the database.\n6. On the client app, add a toggle in the user settings page to opt into push notifications. When enabled, call the subscribe endpoint and handle permission requests; when disabled, call unsubscribe and remove permission visuals.\n7. Ensure secure handling of subscription data and enforce authentication on subscription endpoints.",
+        "testStrategy": "1. Unit tests for subscription endpoints: verify valid subscriptions are saved, duplicates are handled, and removals delete records.\n2. Simulate push event in a headless browser or service worker test harness to verify notifications are displayed with correct payload and click behavior.\n3. Integration test against a staging push service: register a subscription in a test browser, trigger a test notification via the backend, and confirm receipt in the browser.\n4. End‐to‐end test: toggle subscription on/off in UI, trigger events (e.g., session update), and verify only subscribed users receive notifications.\n5. Error handling tests: invalid or expired subscription removal, network failures during send, and logging of failures.",
+        "status": "pending",
+        "dependencies": [
+          22
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Allow users to create and manage alternative session proposals",
+        "description": "Enable users to propose alternative sessions based on existing ones in the discovery feed—letting them adjust time, location, and mark interest—and automatically notify and reconcile user interactions between originals and alternatives.",
+        "details": "1. Database schema:\n   • Define a new `alternativeSessionProposals` table in `convex/schema.ts` with fields: `id`, `originalSessionId`, `proposerUserId`, `startTime`, `endTime`, `location`, `createdAt`, `status` (`open` | `accepted`), and optional metadata.\n   • Index by `originalSessionId` and `proposerUserId` for efficient lookups.\n2. Convex actions/mutations:\n   • `createAlternativeProposal(args)` – validates input, inserts into `alternativeSessionProposals`, records the proposer’s interaction via existing `sessionInteractions` mutation.\n   • `markAlternativeInterest(args)` – records an “interested” interaction on an alternative proposal.\n   • `acceptAlternativeProposal(args)` – atomically updates the alternative’s status to `accepted`, records an “accepted” interaction for the proposer and for the accepting user, and marks the original session as “declined” for that user in `sessionInteractions`.\n   • In `createAlternativeProposal`, after insert, fetch all users who interacted with the original session (interactionType=\"interested\") and enqueue push notifications via the existing push subscriptions table (from Task 23).\n3. Frontend/UI changes:\n   • In the discovery feed (`components/session-discovery/SessionCard.tsx`), add a “Suggest Alternative” button that opens an `AlternativeProposalModal` pre-filled with the original session’s details.\n   • In the modal, allow editing of time and location fields, preview the new proposal, and submit via `createAlternativeProposal` action. Show confirmation on success.\n   • In the main feed, surface new alternative proposals beneath the original session, with “I’m Interested” and “Accept Alternative” buttons wired to `markAlternativeInterest` and `acceptAlternativeProposal` actions.\n4. Notification handling:\n   • Use the push notification system (Task 23) to send a brief push to each original interested user, linking them to the alternative proposal in the feed.\n   • Ensure duplicate notifications are deduplicated per user per alternative.\n5. Interaction reconciliation:\n   • On accepting an alternative, automatically update the user’s interaction record for the original session to “declined” using the existing tracking system (Task 9).",
+        "testStrategy": "1. Unit tests for Convex actions:\n   • `createAlternativeProposal` validates schema, inserts the proposal, and enqueues notifications for correct users.\n   • `markAlternativeInterest` and `acceptAlternativeProposal` correctly record interactions and update statuses.\n2. Schema tests:\n   • Validate `alternativeSessionProposals` schema rejects malformed entries and accepts valid ones.\n3. Integration tests:\n   • End-to-end flow: user opens modal, edits and submits alternative, other users receive simulated push notifications, and interactions update in the DB.\n   • Acceptance flow: after accepting an alternative, the original session interactionType flips to “declined” for that user.\n4. UI/Component tests:\n   • Modal opens with correct initial values, form validations trigger on invalid input, and submission calls the correct Convex actions.\n   • Discovery feed renders alternative proposals under originals, and buttons trigger expected behaviors.\n5. Notification tests:\n   • Mock push service to verify payload content and recipient list.\n   • Ensure no notifications are sent if there are no interested users.",
+        "status": "pending",
+        "dependencies": [
+          8,
+          9,
+          11,
+          23
+        ],
+        "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Implement PWA Installation Dialog",
+        "description": "Create a fullscreen dialog that prompts browser users to install the application as a PWA, with clear installation instructions and a subtle option to continue using the browser version.",
+        "details": "1. Create a new React component for the installation dialog:\n```typescript\nconst PWAInstallDialog: React.FC = () => {\n  const [shouldShow, setShouldShow] = useState(true);\n  \n  useEffect(() => {\n    const skipInstall = sessionStorage.getItem('skipPWAInstall');\n    if (skipInstall) setShouldShow(false);\n  }, []);\n  \n  const handleSkip = () => {\n    sessionStorage.setItem('skipPWAInstall', 'true');\n    setShouldShow(false);\n  };\n};\n```\n\n2. Implement detection logic to determine if running in browser vs PWA:\n```typescript\nconst isPWA = window.matchMedia('(display-mode: standalone)').matches || \n              window.navigator.standalone === true;\n```\n\n3. Style the dialog using CSS modules or Tailwind:\n```css\n.dialog {\n  position: fixed;\n  inset: 0;\n  background: rgba(255,255,255,0.98);\n  z-index: 9999;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 2rem;\n}\n\n.skipButton {\n  position: absolute;\n  bottom: 1rem;\n  font-size: 0.75rem;\n  color: #999;\n  opacity: 0.6;\n}\n```\n\n4. Create platform-specific installation instructions:\n- Chrome/Edge (Windows/Mac/Linux)\n- Safari (iOS)\n- Android browsers\n\n5. Add appropriate icons and screenshots demonstrating the installation process\n\n6. Implement the dialog content with clear steps:\n```tsx\n<div className={styles.dialog}>\n  <h2>Install Our App</h2>\n  <div className={styles.instructions}>\n    {getPlatformSpecificInstructions()}\n  </div>\n  <button \n    className={styles.skipButton}\n    onClick={handleSkip}\n  >\n    stay in browser\n  </button>\n</div>\n```\n\n7. Add logic to show dialog only on supported browsers that can install PWAs",
+        "testStrategy": "1. Unit tests:\n- Verify dialog shows/hides based on PWA status\n- Test sessionStorage interaction for \"skip\" functionality\n- Validate platform detection logic\n- Test that correct instructions are shown for different browsers/platforms\n\n2. Integration tests:\n- Verify dialog appears on first visit in browser context\n- Confirm dialog doesn't show when already installed as PWA\n- Test that \"stay in browser\" persists through the session\n- Validate dialog styling and responsive behavior\n\n3. Manual testing:\n- Test actual installation flow on different browsers/devices\n- Verify visual appearance and accessibility\n- Check that dialog doesn't interfere with other UI elements\n- Confirm proper function of installation process\n\n4. Cross-browser testing:\n- Chrome\n- Safari\n- Firefox\n- Edge\n- Mobile browsers (iOS/Android)",
+        "status": "pending",
+        "dependencies": [
+          22
+        ],
+        "priority": "low",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T11:35:20.980Z",
+      "updated": "2025-06-23T12:09:54.884Z",
       "description": "Tasks for master context"
     }
   }
