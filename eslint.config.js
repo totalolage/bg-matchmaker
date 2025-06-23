@@ -7,6 +7,8 @@ import unusedImports from "eslint-plugin-unused-imports";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import boundaries from "eslint-plugin-boundaries";
 import reactCompiler from "eslint-plugin-react-compiler";
+import prettier from "eslint-plugin-prettier";
+import prettierConfig from "eslint-config-prettier";
 
 export default tseslint.config(
   {
@@ -43,6 +45,7 @@ export default tseslint.config(
       "unused-imports": unusedImports,
       "simple-import-sort": simpleImportSort,
       boundaries: boundaries,
+      prettier: prettier,
     },
     settings: {
       "boundaries/elements": [
@@ -166,6 +169,13 @@ export default tseslint.config(
         },
       ],
 
+      // Prettier integration
+      "prettier/prettier": "error",
+
+      // Allow omitting braces for single-line if statements
+      curly: ["error", "multi-or-nest"],
     },
   },
+  // Prettier config needs to be last to override conflicting rules
+  prettierConfig
 );

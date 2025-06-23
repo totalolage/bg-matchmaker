@@ -7,34 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Doc } from "@convex/_generated/dataModel";
 
 import { AddGameDialog } from "./components/AddGameDialog";
-import { AddGameDialogWithPagination } from "./components/AddGameDialogWithPagination";
 import { GameLibraryItem } from "./components/GameLibraryItem";
 import { useGameLibrary } from "./hooks/useGameLibrary";
 import type { GameSearchResult } from "./types";
 
 interface GameLibraryProps {
   user: Doc<"users">;
-  usePagination?: boolean;
 }
 
-export const GameLibrary = ({
-  user,
-  usePagination = true,
-}: GameLibraryProps) => {
+export const GameLibrary = ({ user }: GameLibraryProps) => {
   const [isAddingGame, setIsAddingGame] = useState(false);
   const { addGame, removeGame, updateExpertise } = useGameLibrary(user);
 
   const handleAddGame = async (
     game: GameSearchResult,
-    expertiseLevel: string,
+    expertiseLevel: string
   ) => {
     await addGame(game, expertiseLevel);
     setIsAddingGame(false);
   };
-
-  const AddGameComponent = usePagination
-    ? AddGameDialogWithPagination
-    : AddGameDialog;
 
   return (
     <div>
@@ -53,7 +44,7 @@ export const GameLibrary = ({
       />
 
       {isAddingGame && (
-        <AddGameComponent
+        <AddGameDialog
           user={user}
           onAddGame={(game, expertiseLevel) =>
             void handleAddGame(game, expertiseLevel)
@@ -63,14 +54,14 @@ export const GameLibrary = ({
       )}
 
       <div className="space-y-3">
-        {user.gameLibrary.map((game) => (
+        {user.gameLibrary.map(game => (
           <GameLibraryItem
             key={game.gameId}
             game={game}
             onUpdateExpertise={(gameId, level) =>
               void updateExpertise(gameId, level)
             }
-            onRemove={(gameId) => void removeGame(gameId)}
+            onRemove={gameId => void removeGame(gameId)}
           />
         ))}
       </div>

@@ -1,9 +1,9 @@
 {
   "models": {
     "main": {
-      "provider": "claude-code",
-      "modelId": "sonnet",
-      "maxTokens": 64000,
+      "provider": "anthropic",
+      "modelId": "claude-3-5-sonnet-20241022",
+      "maxTokens": 8192,
       "temperature": 0.2
     },
     "research": {

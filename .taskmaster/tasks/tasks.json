@@ -24,7 +24,9 @@
             "id": 2,
             "title": "Implement HTML Entity Decoding",
             "description": "Add HTML entity resolution functionality to the XML parser to properly decode entities like &amp;, &lt;, &gt;, etc. into their corresponding characters.",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "- Create a new EntityResolver utility class\n- Implement methods to handle numeric entities (&#123;) and named entities (&amp;)\n- Update the XMLParser to use the EntityResolver when processing text content\n- Handle edge cases like malformed entities\n- Add configuration option to enable/disable entity resolution\n- Acceptance criteria: Parser correctly converts all standard HTML entities to their character equivalents\n<info added on 2025-06-22T11:44:27.570Z>\nImplementation completed using fast-xml-parser configuration options instead of custom EntityResolver:\n\n- Added processEntities: true to parser configuration\n- Added htmlEntities: true to parser configuration\n- Successfully tested with game ID 21360 which contained &#039; (apostrophe) entity\n- Confirmed entities are now properly decoded to their character equivalents\n- Solution is simpler than originally planned custom EntityResolver approach\n- Fix is working for all new data imports\n- Next step: Create migration for existing records with encoded entities\n</info added on 2025-06-22T11:44:27.570Z>",
             "status": "done",
             "testStrategy": ""
@@ -33,7 +35,9 @@
             "id": 3,
             "title": "Create Database Migration for Existing Records",
             "description": "Develop a migration script to update existing XML data in the database to resolve HTML entities that were previously stored in encoded form.",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "- Create a database migration script that uses the new EntityResolver\n- Implement batched processing to handle large datasets efficiently\n- Add logging and error handling for the migration process\n- Include rollback capability in case of failures\n- Test the migration on a copy of production data\n- Acceptance criteria: Migration script successfully processes all existing records without data loss\n<info added on 2025-06-22T11:47:24.965Z>\nMigration script implementation completed:\n- Created fixGameHtmlEntities.ts migration script to fix existing records with HTML entities\n- Developed checkHtmlEntities.ts query tool to identify games containing HTML entities\n- Verified fix works by confirming game ID 21360 now correctly displays \"Rune Blade's Gulf War 1991\" instead of encoded entities\n- Migration scripts require Convex dev server to be recognized by the system\n- Initial testing indicates the parser fix is already working for new imports\n- Note: The migration may not find any games to update in the current database since the problematic records appear to be already fixed\n</info added on 2025-06-22T11:47:24.965Z>\n<info added on 2025-06-22T11:51:45.566Z>\nURGENT: Migration status update:\n- Migration scripts are ready but HAVE NOT BEEN RUN\n- Database still contains numerous HTML entities in game descriptions\n- Examples found: \"Dragonmaster: Coup d'&#195;&#137;tat\", \"Samurai: &mdash; and &quot;non-majority&quot;\", \"Tal der Könige: K&ouml;nige\", and many games with &quot; &mdash; &ndash; entities\n- Execution blocked: Convex dev server must be running for the system to recognize the migration functions\n- Important distinction: The parser fix is working correctly for NEW imports only, but existing data remains uncorrected\n- Action required: Schedule migration execution with Convex dev server running to process all existing records\n</info added on 2025-06-22T11:51:45.566Z>",
             "status": "done",
             "testStrategy": ""
@@ -42,7 +46,10 @@
             "id": 4,
             "title": "Testing and Validation",
             "description": "Thoroughly test the HTML entity resolution implementation and database migration to ensure correct functionality and performance.",
-            "dependencies": [2, 3],
+            "dependencies": [
+              2,
+              3
+            ],
             "details": "- Create unit tests for the EntityResolver class\n- Add integration tests for the updated XMLParser\n- Develop performance tests to ensure parsing speed is not significantly impacted\n- Test with a comprehensive set of entity examples\n- Validate migrated data against expected outputs\n- Document any edge cases or limitations\n- Acceptance criteria: All tests pass, performance benchmarks meet targets, and no regressions in existing functionality\n<info added on 2025-06-22T11:49:12.104Z>\n## Test Results Summary\n\nTesting completed successfully!\n\nCreated comprehensive test suite:\n1. Unit tests in htmlEntityDecoding.test.ts covering:\n   - Basic HTML entity decoding (&#039; &amp; &quot; etc)\n   - Numeric entities (&#8364; for €)\n   - Hex entities (&#x2665; for ♥)\n   - Text without entities (no changes)\n   - Malformed entities (graceful handling)\n\n2. Integration test in verifyEntityDecoding.ts for end-to-end verification\n\nAll 6 tests passed successfully. The HTML entity decoding is working correctly with no performance regressions. The fix handles all standard HTML entities properly.\n</info added on 2025-06-22T11:49:12.104Z>",
             "status": "done",
             "testStrategy": ""
@@ -65,7 +72,9 @@
         "details": "1. Update the game schema in convex/schema.ts to include alternateNames field:\n```typescript\nconst gameSchema = defineTable({\n  // existing fields\n  alternateNames: v.optional(v.array(v.string())),\n});\n```\n\n2. Modify the BGG data source to extract alternate names:\n```typescript\nfunction extractAlternateNames(gameXml: XMLDocument): string[] {\n  const alternateNames: string[] = [];\n  // Extract from name nodes with type='alternate'\n  const nameNodes = gameXml.querySelectorAll('name[type=\"alternate\"]');\n  for (const node of nameNodes) {\n    const name = decode(node.getAttribute('value') || '');\n    if (name) alternateNames.push(name);\n  }\n  return alternateNames;\n}\n```\n\n3. Update the game data insertion/update logic to include alternate names\n\n4. Modify the search function in convex/games.ts to include alternate names in the search:\n```typescript\nexport const searchGames = query({\n  args: { searchTerm: v.string() },\n  handler: async (ctx, args) => {\n    const { searchTerm } = args;\n    if (!searchTerm) return [];\n    \n    return await ctx.db\n      .query('games')\n      .filter(q =>\n        q.or(\n          q.text('title').search(searchTerm),\n          q.text('description').search(searchTerm),\n          // Add search on alternate names\n          q.field('alternateNames').includes(name => \n            q.text(name).search(searchTerm)\n          )\n        )\n      )\n      .collect();\n  },\n});\n```\n\n5. Create a migration script to populate alternate names for existing games by re-fetching data from BGG",
         "testStrategy": "1. Unit tests for the alternate names extraction function\n2. Integration tests with sample BGG API responses containing alternate names\n3. Test the search functionality with games that have known alternate names\n4. Verify that searching by alternate name returns the correct game\n5. Test edge cases like games with many alternate names or names with special characters\n6. Performance testing to ensure search speed isn't significantly impacted",
         "priority": "high",
-        "dependencies": [1],
+        "dependencies": [
+          1
+        ],
         "status": "done",
         "subtasks": [
           {
@@ -81,7 +90,9 @@
             "id": 2,
             "title": "Implement BGG Data Extraction for Alternate Names",
             "description": "Enhance the BGG data extraction process to capture and store alternate game names",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "1. Modify the BGG API client to extract alternate names from the XML response\n2. Process and clean alternate names data (handle HTML entities using the existing resolution system)\n3. Update the game import/update service to store alternate names in the database\n4. Add logging for alternate names extraction\n5. Handle edge cases (duplicates, empty names, etc.)\n\nAcceptance Criteria:\n- BGG API client successfully extracts alternate names\n- Alternate names are properly cleaned and stored in the database\n- Duplicate names are not stored\n- System correctly handles games with no alternate names\n- Logging provides visibility into the extraction process",
             "status": "done",
             "testStrategy": ""
@@ -90,7 +101,10 @@
             "id": 3,
             "title": "Enhance Search Functionality for Alternate Names",
             "description": "Modify the search functionality to include alternate game names in search results",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "details": "1. Update search queries to include the game_alternate_names table\n2. Modify relevance scoring to appropriately weight matches in alternate names\n3. Ensure search performance remains acceptable with the additional data\n4. Update search result formatting to indicate when a match was found in an alternate name\n5. Add unit and integration tests for the enhanced search functionality\n\nAcceptance Criteria:\n- Search results include games that match on alternate names\n- Search performance remains within acceptable limits\n- Search results indicate when a match was found in an alternate name\n- All tests pass for the enhanced search functionality",
             "status": "done",
             "testStrategy": ""
@@ -99,7 +113,10 @@
             "id": 4,
             "title": "Implement Data Migration for Existing Games",
             "description": "Create and execute a migration script to populate alternate names for existing games in the database",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "details": "1. Develop a migration script to fetch alternate names for all existing games in the database\n2. Implement batching to handle large numbers of games efficiently\n3. Add progress tracking and reporting\n4. Include error handling and retry logic\n5. Create a rollback plan in case of migration issues\n\nAcceptance Criteria:\n- Migration script successfully populates alternate names for all existing games\n- Script handles errors gracefully and can be safely rerun\n- Performance impact on the production system is minimized\n- Complete audit log of migration results is available\n- Verification process confirms data integrity after migration",
             "status": "done",
             "testStrategy": ""
@@ -108,7 +125,10 @@
             "id": 5,
             "title": "Update UI to Display Alternate Game Names",
             "description": "Enhance the user interface to display alternate game names where appropriate",
-            "dependencies": [1, 3],
+            "dependencies": [
+              1,
+              3
+            ],
             "details": "1. Update game detail page to show alternate names\n2. Modify search results to display matching alternate names\n3. Add tooltips or expandable sections for games with multiple alternate names\n4. Ensure responsive design works with the additional content\n5. Add appropriate styling for alternate names display\n6. Update UI tests to cover the new features\n\nAcceptance Criteria:\n- Game detail page clearly displays alternate names\n- Search results show which alternate name matched the query\n- UI remains responsive and accessible with the additional information\n- Design is consistent with the rest of the application\n- All UI tests pass with the new features",
             "status": "done",
             "testStrategy": ""
@@ -138,7 +158,9 @@
             "id": 2,
             "title": "Frontend Pagination UI Components",
             "description": "Develop UI components for displaying and navigating paginated search results",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "- Create pagination controls (next/previous buttons, page indicators)\n- Implement loading states for pagination transitions\n- Design responsive pagination UI that works on mobile and desktop\n- Add visual indicators for current page/position\n- Ensure accessibility compliance for pagination controls\n- Implement smooth scrolling to top when changing pages\n\nAcceptance Criteria:\n- Pagination controls render correctly on all supported devices\n- Visual indicators clearly show current position in results\n- UI handles edge cases (first/last page, single page of results)\n- All pagination controls are keyboard accessible and screen-reader friendly\n- Design matches approved mockups\n<info added on 2025-06-22T14:00:25.298Z>\nRemembering...IMPLEMENTATION COMPLETE: Successfully developed all required frontend pagination UI components with proper TypeScript types. Built reusable pagination primitives (Button, Next, Previous controls) that can be used across different parts of the application. Created usePaginatedSearch hook to centrally manage paginated search state and data fetching logic. Developed GameSearchResultsWithPagination component with Load More button functionality for smooth user experience. Created AddGameDialogWithPagination component that leverages the paginated search for game selection. Enhanced GameLibrary component with prop-based toggle between paginated and non-paginated modes for flexibility. All components follow established patterns and conventions, are fully type-safe, and integrate seamlessly with existing codebase architecture.\n</info added on 2025-06-22T14:00:25.298Z>",
             "status": "done",
             "testStrategy": ""
@@ -147,7 +169,10 @@
             "id": 3,
             "title": "State Management for Pagination",
             "description": "Implement state management for handling pagination across the application",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "details": "- Store pagination state (current cursor, limit, total count)\n- Handle URL parameters for deep linking to specific result pages\n- Implement caching strategy for previously loaded pages\n- Manage pagination state persistence during navigation\n- Handle pagination state reset when search parameters change\n- Implement error handling for pagination failures\n\nAcceptance Criteria:\n- Pagination state is correctly maintained during user session\n- URL reflects current pagination state for sharing/bookmarking\n- Previously visited pages load from cache when possible\n- Changing search parameters correctly resets pagination\n- Error states are handled gracefully with user feedback\n<info added on 2025-06-22T14:08:26.881Z>\nRemembering...Implementation successfully completed. Created comprehensive pagination state management solution with URL synchronization, caching, and error handling. Key deliverables include usePaginatedSearchWithParams hook for URL sync and caching with 5-minute TTL, dedicated /games/search page with parameter validation using arktype, PaginationError component for graceful error display, and SearchStateContext for app-wide state management. All features tested and working correctly with proper deep linking support, cache management, and user-friendly error recovery.\n</info added on 2025-06-22T14:08:26.881Z>",
             "status": "done",
             "testStrategy": ""
@@ -156,7 +181,11 @@
             "id": 4,
             "title": "Testing Pagination Functionality",
             "description": "Develop comprehensive tests for pagination implementation",
-            "dependencies": [1, 2, 3],
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
             "details": "- Write unit tests for backend pagination logic\n- Create integration tests for API pagination endpoints\n- Develop frontend component tests for pagination UI\n- Implement end-to-end tests for complete pagination flow\n- Test edge cases (empty results, last page, changing page size)\n- Performance testing for pagination with large result sets\n\nAcceptance Criteria:\n- All tests pass consistently in CI/CD pipeline\n- Edge cases are properly covered in test suite\n- Performance tests verify acceptable response times\n- Test coverage meets project standards (>80%)\n- Documentation includes examples of pagination usage\n<info added on 2025-06-22T14:14:12.085Z>\nRemembering...Testing implementation completed for pagination functionality. Comprehensive test suite created including unit tests for usePaginatedSearch hook and usePaginatedSearchWithParams with URL state management, component tests for GameSearchResultsWithPagination covering all UI states, performance tests validating sub-second response times for 1000+ items, and integration tests for complete search and pagination flow. Configured Vitest with React Testing Library and created test setup file with necessary mocks (matchMedia, IntersectionObserver, ResizeObserver). Added test scripts to package.json. Test coverage includes edge cases (empty results, exactly limit results, more than limit results), error handling with retry functionality, concurrent request handling, memory usage validation, URL parameter synchronization, debounced search input, and cache behavior with TTL. Created comprehensive pagination guide in docs/pagination.md with usage examples, performance considerations, best practices, and troubleshooting guide. All acceptance criteria met. Note: Test coverage calculation requires installing @vitest/coverage-v8, but all critical paths are tested.\n</info added on 2025-06-22T14:14:12.085Z>",
             "status": "done",
             "testStrategy": ""
@@ -170,7 +199,9 @@
         "details": "1. Install required dependencies:\n```bash\nnpm install @tanstack/react-virtual\n```\n\n2. Implement virtual scrolling in the GameSearchResults component:\n```typescript\nimport { useVirtualizer } from '@tanstack/react-virtual';\nimport { useRef, useEffect } from 'react';\n\nconst GameSearchResults = ({ searchTerm }) => {\n  const [cursor, setCursor] = useState(null);\n  const { results, hasMore, isLoading } = useQuery(api.games.searchGames, {\n    searchTerm,\n    cursor,\n    limit: 50, // Fetch more items at once for smoother scrolling\n  });\n  \n  const parentRef = useRef(null);\n  \n  // Set up virtualizer\n  const rowVirtualizer = useVirtualizer({\n    count: results.games.length + (hasMore ? 1 : 0),\n    getScrollElement: () => parentRef.current,\n    estimateSize: () => 150, // Estimated height of each game card\n    overscan: 5,\n  });\n  \n  // Load more when scrolling near the end\n  useEffect(() => {\n    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();\n    \n    if (\n      lastItem &&\n      lastItem.index >= results.games.length - 5 &&\n      hasMore &&\n      !isLoading\n    ) {\n      setCursor(results.cursor);\n    }\n  }, [rowVirtualizer.getVirtualItems(), results, hasMore, isLoading]);\n  \n  return (\n    <div\n      ref={parentRef}\n      style={{\n        height: '600px', // Fixed height container\n        overflow: 'auto',\n      }}\n    >\n      <div\n        style={{\n          height: `${rowVirtualizer.getTotalSize()}px`,\n          width: '100%',\n          position: 'relative',\n        }}\n      >\n        {rowVirtualizer.getVirtualItems().map(virtualRow => {\n          const isLoaderRow = virtualRow.index >= results.games.length;\n          const game = results.games[virtualRow.index];\n          \n          return (\n            <div\n              key={virtualRow.index}\n              style={{\n                position: 'absolute',\n                top: 0,\n                left: 0,\n                width: '100%',\n                height: `${virtualRow.size}px`,\n                transform: `translateY(${virtualRow.start}px)`,\n              }}\n            >\n              {isLoaderRow ? (\n                <LoadingIndicator />\n              ) : (\n                <GameCard game={game} />\n              )}\n            </div>\n          );\n        })}\n      </div>\n    </div>\n  );\n};\n```\n\n3. Create a LoadingIndicator component for when new pages are being fetched\n\n4. Optimize the GameCard component for virtualization (avoid expensive operations)\n\n5. Add debouncing to search input to prevent excessive API calls during typing",
         "testStrategy": "1. Performance testing with large datasets (100+ games)\n2. Test scrolling behavior on different devices and browsers\n3. Verify that new pages are loaded automatically when scrolling near the end\n4. Test with slow network conditions to ensure loading states display correctly\n5. Memory profiling to ensure there are no leaks during continuous scrolling\n6. Test keyboard navigation through the virtualized list\n7. Accessibility testing for screen readers and keyboard-only users",
         "priority": "medium",
-        "dependencies": [3],
+        "dependencies": [
+          3
+        ],
         "status": "done",
         "subtasks": [
           {
@@ -186,7 +217,9 @@
             "id": 2,
             "title": "Scroll-based Data Fetching",
             "description": "Implement the mechanism to fetch additional data when user scrolls near the end of the current content",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "- Create a scroll position tracking utility\n- Implement a threshold detection to trigger data loading (e.g., when user scrolls to 80% of loaded content)\n- Set up API integration to fetch the next page of data\n- Implement data merging logic to append new items to existing list\n- Handle edge cases like reaching the end of available data\n- Add debouncing to prevent multiple rapid fetch requests\n- Create unit tests for the scroll detection and fetch triggering logic",
             "status": "done",
             "testStrategy": ""
@@ -195,7 +228,10 @@
             "id": 3,
             "title": "Virtualized Rendering Optimization",
             "description": "Optimize the rendering performance of virtualized items to ensure smooth scrolling experience",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "details": "- Implement item memoization to prevent unnecessary re-renders\n- Configure overscan (buffer) items to render slightly more than visible viewport\n- Optimize the row height calculation for variable content\n- Implement efficient key management for list items\n- Add render profiling to identify and fix performance bottlenecks\n- Test scrolling performance with large datasets (10,000+ items)\n- Document performance optimization techniques used",
             "status": "done",
             "testStrategy": ""
@@ -204,7 +240,9 @@
             "id": 4,
             "title": "Loading State Management",
             "description": "Implement visual indicators and state management for loading additional data during scrolling",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "- Create a loading indicator component to display at the bottom of the list\n- Implement loading state in the data store/context\n- Add error handling for failed data fetches\n- Create retry mechanism for failed requests\n- Implement skeleton screens for initial load and subsequent fetches\n- Ensure loading states don't cause layout shifts or scrolling jumps\n- Test different network conditions to verify loading state behavior",
             "status": "done",
             "testStrategy": ""
@@ -213,7 +251,10 @@
             "id": 5,
             "title": "Performance Optimization",
             "description": "Implement advanced performance optimizations to ensure smooth scrolling and minimal memory usage",
-            "dependencies": [3, 4],
+            "dependencies": [
+              3,
+              4
+            ],
             "details": "- Implement windowing technique to limit DOM nodes\n- Add request cancellation for aborted scrolls\n- Optimize image loading with lazy loading and placeholders\n- Implement data caching strategy to prevent redundant fetches\n- Add memory management to prevent memory leaks during long sessions\n- Use Chrome DevTools to profile and optimize CPU and memory usage\n- Implement browser idle time detection for prefetching\n- Document performance metrics before and after optimizations",
             "status": "done",
             "testStrategy": ""
@@ -222,7 +263,9 @@
             "id": 6,
             "title": "Accessibility Improvements",
             "description": "Enhance the infinite scrolling implementation with accessibility features to ensure inclusive user experience",
-            "dependencies": [5],
+            "dependencies": [
+              5
+            ],
             "details": "- Add keyboard navigation support for the virtualized list\n- Implement proper ARIA attributes for dynamic content loading\n- Ensure focus management works correctly when new content loads\n- Add screen reader announcements for new content loading\n- Implement pause/resume functionality for auto-loading content\n- Test with screen readers (NVDA, VoiceOver, JAWS)\n- Create alternative navigation method (e.g., 'Load More' button) for users who prefer it\n- Document accessibility features and compliance with WCAG guidelines",
             "status": "done",
             "testStrategy": ""
@@ -236,7 +279,10 @@
         "details": "1. Add filter fields to the search index in convex/schema.ts:\n```typescript\nconst gameSchema = defineTable({\n  // existing fields\n  minPlayers: v.optional(v.number()),\n  maxPlayers: v.optional(v.number()),\n  complexity: v.optional(v.number()),\n  popularity: v.optional(v.number()), // For ranking\n}).index('by_players', ['minPlayers', 'maxPlayers'])\n  .index('by_complexity', ['complexity'])\n  .index('by_popularity', ['popularity']);\n```\n\n2. Implement server-side filtering in the search query:\n```typescript\nexport const searchGames = query({\n  args: {\n    searchTerm: v.string(),\n    cursor: v.optional(v.string()),\n    limit: v.optional(v.number()),\n    filters: v.optional(v.object({\n      minPlayers: v.optional(v.number()),\n      maxPlayers: v.optional(v.number()),\n      minComplexity: v.optional(v.number()),\n      maxComplexity: v.optional(v.number()),\n    })),\n  },\n  handler: async (ctx, args) => {\n    const { searchTerm, cursor, limit = 20, filters = {} } = args;\n    if (!searchTerm) return { games: [], cursor: null, hasMore: false };\n    \n    let query = ctx.db.query('games');\n    \n    // Apply text search\n    query = query.filter(q =>\n      q.or(\n        q.text('title').search(searchTerm),\n        q.text('description').search(searchTerm),\n        // Include alternate names search if implemented\n      )\n    );\n    \n    // Apply filters\n    if (filters.minPlayers) {\n      query = query.filter(q => q.gte(q.field('minPlayers'), filters.minPlayers));\n    }\n    if (filters.maxPlayers) {\n      query = query.filter(q => q.lte(q.field('maxPlayers'), filters.maxPlayers));\n    }\n    if (filters.minComplexity) {\n      query = query.filter(q => q.gte(q.field('complexity'), filters.minComplexity));\n    }\n    if (filters.maxComplexity) {\n      query = query.filter(q => q.lte(q.field('complexity'), filters.maxComplexity));\n    }\n    \n    // Apply ranking by popularity\n    query = query.order('desc', 'popularity');\n    \n    // Apply pagination\n    query = query.take(limit + 1);\n    if (cursor) {\n      query = query.startAfter(cursor);\n    }\n    \n    const results = await query.collect();\n    const hasMore = results.length > limit;\n    const games = hasMore ? results.slice(0, limit) : results;\n    const nextCursor = hasMore ? games[games.length - 1]._id : null;\n    \n    return {\n      games,\n      cursor: nextCursor,\n      hasMore,\n    };\n  },\n});\n```\n\n3. Implement search result caching for popular queries:\n```typescript\n// In a new file: convex/cache.ts\nexport const cacheSearchResults = mutation({\n  args: {\n    searchTerm: v.string(),\n    filters: v.optional(v.object({\n      // filter fields\n    })),\n    results: v.array(v.id('games')),\n    timestamp: v.number(),\n  },\n  handler: async (ctx, args) => {\n    const { searchTerm, filters, results, timestamp } = args;\n    const cacheKey = JSON.stringify({ searchTerm, filters });\n    \n    // Store in a new 'searchCache' table\n    await ctx.db.insert('searchCache', {\n      key: cacheKey,\n      results,\n      timestamp,\n      expiresAt: timestamp + 24 * 60 * 60 * 1000, // 24 hours\n    });\n  },\n});\n\n// Modify searchGames to check cache first\nexport const searchGames = query({\n  // args...\n  handler: async (ctx, args) => {\n    const { searchTerm, filters } = args;\n    const cacheKey = JSON.stringify({ searchTerm, filters });\n    \n    // Check cache\n    const cachedResult = await ctx.db\n      .query('searchCache')\n      .filter(q => q.eq(q.field('key'), cacheKey))\n      .filter(q => q.gt(q.field('expiresAt'), Date.now()))\n      .first();\n    \n    if (cachedResult) {\n      // Return cached results\n      // Apply pagination to cached results\n    }\n    \n    // Proceed with normal search if no cache hit\n    // ...\n    \n    // Cache results for popular searches\n    if (isPopularSearch(searchTerm)) {\n      await ctx.db.insert('searchCache', {\n        // cache data\n      });\n    }\n  },\n});\n```\n\n4. Add a filter UI component to the search interface to allow users to refine results\n\n5. Implement result ranking based on relevance score and popularity",
         "testStrategy": "1. Benchmark search performance before and after optimizations\n2. Test with various filter combinations to ensure correct results\n3. Verify cache hit/miss behavior for repeated searches\n4. Load testing to ensure the system handles concurrent searches efficiently\n5. Test with large datasets to verify pagination and filtering work correctly\n6. Verify that popular searches are cached and served from cache when appropriate\n7. Test edge cases like searches with no results or searches with many filters\n8. Verify that ranking produces intuitive and relevant results",
         "priority": "medium",
-        "dependencies": [2, 3],
+        "dependencies": [
+          2,
+          3
+        ],
         "status": "cancelled",
         "subtasks": [
           {
@@ -252,7 +298,9 @@
             "id": 2,
             "title": "Filter Implementation",
             "description": "Develop backend logic for filtering search results based on various criteria",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "1. Design filter parameter structure\n2. Implement filter logic in search queries\n3. Support multiple filter combinations\n4. Ensure filter parameters are validated\n5. Create filter-specific indexes if needed\n\nAcceptance Criteria:\n- All filters work correctly in isolation and combination\n- Filter parameters properly sanitized\n- Filter operations maintain performance standards\n- Support for range, categorical, and text-based filters\n- Documentation for all available filters",
             "status": "pending",
             "testStrategy": ""
@@ -261,7 +309,10 @@
             "id": 3,
             "title": "Search Result Caching System",
             "description": "Implement a caching layer to store and retrieve frequent search results",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "details": "1. Select appropriate caching technology (Redis/Memcached)\n2. Design cache key structure based on search parameters\n3. Implement cache invalidation strategy\n4. Add cache hit/miss metrics\n5. Configure appropriate TTL for cached results\n\nAcceptance Criteria:\n- Cache hit rate > 30% after implementation\n- Cache invalidation works correctly when data changes\n- Response time for cached queries reduced by 80%\n- Memory usage stays within allocated limits\n- Cache metrics are available for monitoring",
             "status": "pending",
             "testStrategy": ""
@@ -270,7 +321,9 @@
             "id": 4,
             "title": "Result Ranking Algorithm",
             "description": "Develop and implement an algorithm to rank search results by relevance",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "1. Research appropriate ranking algorithms (TF-IDF, BM25, etc.)\n2. Implement chosen algorithm\n3. Add weighting for different search fields\n4. Include recency and popularity factors\n5. Test algorithm with sample queries\n\nAcceptance Criteria:\n- Relevance scores correctly prioritize results\n- Algorithm performance meets latency requirements\n- Ranking factors are configurable\n- Documentation of ranking methodology\n- A/B test shows improved user engagement with search results",
             "status": "pending",
             "testStrategy": ""
@@ -279,7 +332,9 @@
             "id": 5,
             "title": "Filter UI Components",
             "description": "Design and implement user interface components for search filters",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "1. Design filter UI mockups\n2. Implement filter components (checkboxes, sliders, dropdowns)\n3. Add client-side validation\n4. Ensure responsive design for all devices\n5. Implement filter state management\n\nAcceptance Criteria:\n- All filter UI components render correctly\n- Filter state persists across page navigation\n- Components are accessible (WCAG AA compliant)\n- Filter changes trigger search updates with minimal delay\n- UI handles edge cases (no results, error states)",
             "status": "pending",
             "testStrategy": ""
@@ -288,7 +343,12 @@
             "id": 6,
             "title": "Performance Benchmarking",
             "description": "Establish baseline metrics and conduct performance testing for search functionality",
-            "dependencies": [1, 2, 3, 4],
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
             "details": "1. Define key performance metrics\n2. Create benchmark test suite\n3. Establish baseline performance\n4. Implement automated performance tests\n5. Create performance monitoring dashboard\n\nAcceptance Criteria:\n- Benchmark suite covers various search scenarios\n- Performance tests run in CI/CD pipeline\n- Dashboard shows key metrics (response time, throughput, error rate)\n- Documentation of performance testing methodology\n- Alerts configured for performance degradation",
             "status": "pending",
             "testStrategy": ""
@@ -297,7 +357,9 @@
             "id": 7,
             "title": "Optimization of Query Execution",
             "description": "Fine-tune query execution plans and database configuration for optimal search performance",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "1. Analyze query execution plans from benchmarking\n2. Optimize SQL queries\n3. Configure database parameters for search workload\n4. Implement query hints where beneficial\n5. Consider database-specific optimizations\n\nAcceptance Criteria:\n- Query execution time improved by at least 30% from baseline\n- Database CPU and memory usage optimized\n- All optimizations are documented\n- No regression in other database operations\n- Load testing confirms improvements at scale",
             "status": "pending",
             "testStrategy": ""
@@ -347,7 +409,10 @@
             "description": "Set up GitHub workflow to process version bumps on main branch",
             "details": "- Create .github/workflows/version-bump.yml\n- Trigger on push to main branch\n- Parse commit messages for version tags\n- Extract highest bump level from commits\n- Update package.json version without git tags\n- Commit version change back to repository",
             "status": "done",
-            "dependencies": [1, 2],
+            "dependencies": [
+              1,
+              2
+            ],
             "parentTaskId": 7
           },
           {
@@ -365,7 +430,13 @@
             "description": "Create comprehensive tests and documentation for the new versioning workflow",
             "details": "- Test prepare-commit-msg hook with various change types\n- Test Claude API integration with sample diffs\n- Test GitHub Action with different commit scenarios\n- Document the versioning workflow in README\n- Create troubleshooting guide for common issues\n- Test edge cases and error handling\n<info added on 2025-06-22T15:24:30.843Z>\nRemembering...Testing and documentation phase completed successfully. Created comprehensive documentation in docs/version-bumping.md that covers complete setup instructions, usage examples, troubleshooting section, and best practices. Developed and executed test script scripts/test-version-bump.js that validates all core functions including commit parsing, version calculation, and configuration reading. Updated all scripts from node to bun runtime for consistency with project standards. All automated tests pass, confirming system correctly identifies prerelease status from package.json and reads .versionrc.json configuration. The version bumping system is now fully implemented, tested, and documented.\n</info added on 2025-06-22T15:24:30.843Z>",
             "status": "done",
-            "dependencies": [1, 2, 3, 4, 5],
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
             "parentTaskId": 7
           }
         ]
@@ -377,7 +448,10 @@
         "details": "1. Install react-swipeable dependency:\n```bash\nnpm install react-swipeable\n```\n\n2. Create SessionCard component with swipe functionality:\n```typescript\n// components/session-discovery/SessionCard.tsx\nimport { useSwipeable } from 'react-swipeable';\n\nconst SessionCard = ({ session, onSwipeLeft, onSwipeRight }) => {\n  const handlers = useSwipeable({\n    onSwipedLeft: () => onSwipeLeft(session.id),\n    onSwipedRight: () => onSwipeRight(session.id),\n    trackMouse: true,\n    swipeDuration: 250,\n    preventScrollOnSwipe: true\n  });\n\n  return (\n    <div {...handlers} className=\"swipe-card\">\n      {/* Session details */}\n    </div>\n  );\n};\n```\n\n3. Implement SwipeDiscovery container component:\n```typescript\n// components/session-discovery/SwipeDiscovery.tsx\nconst SwipeDiscovery = () => {\n  const [currentSessions, setCurrentSessions] = useState([]);\n  \n  const handleDecline = (sessionId) => {\n    // Remove from current stack\n    // Track interaction\n  };\n  \n  const handleInterest = (sessionId) => {\n    // Remove from current stack\n    // Track interest\n    // Check for matches\n  };\n};\n```\n\n4. Add swipe animations and visual feedback using CSS transforms\n5. Implement touch-friendly interactions for mobile devices\n6. Add button alternatives for desktop users (decline/interest buttons)\n7. Create session card layout with game image, title, players, and timing",
         "testStrategy": "1. Unit tests for swipe gesture handling with different swipe directions and speeds\n2. Test touch interactions on mobile devices and mouse interactions on desktop\n3. Verify proper session state management when swiping through multiple sessions\n4. Test edge cases like rapid swiping and interrupted swipe gestures\n5. Validate that swipe animations complete properly and cards are removed from stack\n6. Test accessibility with keyboard navigation as alternative to swipe gestures\n7. Manual testing on different screen sizes to ensure responsive design",
         "status": "done",
-        "dependencies": [2, 3],
+        "dependencies": [
+          2,
+          3
+        ],
         "priority": "high",
         "subtasks": []
       },
@@ -388,7 +462,9 @@
         "details": "1. Define session interaction schema in convex/schema.ts:\n```typescript\nconst sessionInteractionSchema = defineTable({\n  userId: v.string(),\n  sessionId: v.string(),\n  interactionType: v.union(v.literal('interested'), v.literal('declined'), v.literal('accepted')),\n  createdAt: v.number(),\n  metadata: v.optional(v.object({\n    swipeDirection: v.optional(v.string()),\n    deviceType: v.optional(v.string())\n  }))\n})\n.index('by_user', ['userId'])\n.index('by_session', ['sessionId'])\n.index('by_user_session', ['userId', 'sessionId'])\n.index('by_interaction_type', ['interactionType'])\n.index('by_created_at', ['createdAt']);\n```\n\n2. Create mutation functions in convex/sessionInteractions.ts:\n```typescript\nexport const recordInteraction = mutation({\n  args: {\n    sessionId: v.string(),\n    interactionType: v.union(v.literal('interested'), v.literal('declined'), v.literal('accepted')),\n    metadata: v.optional(v.object({}))\n  },\n  handler: async (ctx, args) => {\n    const identity = await ctx.auth.getUserIdentity();\n    if (!identity) throw new Error('Not authenticated');\n    \n    // Check for existing interaction\n    const existing = await ctx.db\n      .query('sessionInteractions')\n      .withIndex('by_user_session', (q) => q.eq('userId', identity.subject).eq('sessionId', args.sessionId))\n      .unique();\n    \n    if (existing) {\n      // Update existing interaction\n      await ctx.db.patch(existing._id, {\n        interactionType: args.interactionType,\n        metadata: args.metadata\n      });\n    } else {\n      // Create new interaction\n      await ctx.db.insert('sessionInteractions', {\n        userId: identity.subject,\n        sessionId: args.sessionId,\n        interactionType: args.interactionType,\n        createdAt: Date.now(),\n        metadata: args.metadata\n      });\n    }\n  }\n});\n```\n\n3. Create query functions for retrieving interactions:\n```typescript\nexport const getUserInteractions = query({\n  args: { userId: v.optional(v.string()) },\n  handler: async (ctx, args) => {\n    const identity = await ctx.auth.getUserIdentity();\n    const userId = args.userId || identity?.subject;\n    if (!userId) return [];\n    \n    return await ctx.db\n      .query('sessionInteractions')\n      .withIndex('by_user', (q) => q.eq('userId', userId))\n      .collect();\n  }\n});\n\nexport const getSessionInteractions = query({\n  args: { sessionId: v.string() },\n  handler: async (ctx, args) => {\n    return await ctx.db\n      .query('sessionInteractions')\n      .withIndex('by_session', (q) => q.eq('sessionId', args.sessionId))\n      .collect();\n  }\n});\n```\n\n4. Add helper queries for filtering sessions based on interactions:\n```typescript\nexport const getUninteractedSessions = query({\n  handler: async (ctx) => {\n    const identity = await ctx.auth.getUserIdentity();\n    if (!identity) return [];\n    \n    const userInteractions = await ctx.db\n      .query('sessionInteractions')\n      .withIndex('by_user', (q) => q.eq('userId', identity.subject))\n      .collect();\n    \n    const interactedSessionIds = new Set(userInteractions.map(i => i.sessionId));\n    \n    const allSessions = await ctx.db.query('sessions').collect();\n    return allSessions.filter(session => !interactedSessionIds.has(session._id));\n  }\n});\n```",
         "testStrategy": "1. Unit tests for schema validation with valid and invalid interaction types\n2. Test mutation functions with authenticated and unauthenticated users\n3. Test duplicate interaction handling (update vs create new)\n4. Verify index performance with large datasets using Convex dashboard\n5. Test query functions return correct filtered results\n6. Integration tests with session discovery component to ensure interactions are properly recorded\n7. Test edge cases like rapid successive interactions and network failures\n8. Verify data consistency when updating existing interactions\n9. Performance testing for queries with various filter combinations",
         "status": "done",
-        "dependencies": [8],
+        "dependencies": [
+          8
+        ],
         "priority": "high",
         "subtasks": []
       },
@@ -399,7 +475,9 @@
         "details": "1. Create UserProfile page component with session history section:\n```typescript\n// components/profile/UserProfilePage.tsx\nimport { useQuery } from 'convex/react';\nimport { SessionHistoryFilter } from './SessionHistoryFilter';\nimport { SessionHistoryList } from './SessionHistoryList';\n\nconst UserProfilePage = () => {\n  const [selectedFilters, setSelectedFilters] = useState<string[]>(['all']);\n  const sessionHistory = useQuery(api.sessions.getUserSessionHistory, {\n    filters: selectedFilters\n  });\n};\n```\n\n2. Create SessionHistoryFilter component with filter buttons:\n```typescript\n// components/profile/SessionHistoryFilter.tsx\nconst filterOptions = [\n  { value: 'all', label: 'All Sessions', icon: List },\n  { value: 'declined', label: 'Declined', icon: X },\n  { value: 'interested', label: 'Interested', icon: Heart },\n  { value: 'accepted', label: 'Accepted', icon: Check },\n  { value: 'attended', label: 'Attended', icon: CheckCircle },\n  { value: 'missed', label: 'Missed', icon: XCircle }\n];\n```\n\n3. Create getUserSessionHistory query in convex/sessions.ts:\n```typescript\nexport const getUserSessionHistory = query({\n  args: {\n    filters: v.array(v.string())\n  },\n  handler: async (ctx, args) => {\n    const identity = await ctx.auth.getUserIdentity();\n    if (!identity) throw new Error('Not authenticated');\n    \n    let query = ctx.db\n      .query('sessionInteractions')\n      .withIndex('by_user', q => q.eq('userId', identity.subject));\n    \n    if (!args.filters.includes('all')) {\n      query = query.filter(q => \n        q.or(...args.filters.map(filter => \n          q.eq(q.field('interactionType'), filter)\n        ))\n      );\n    }\n    \n    return await query.collect();\n  }\n});\n```\n\n4. Create SessionHistoryList component to display filtered results with proper session details and interaction status.",
         "testStrategy": "1. Unit tests for filter logic with different combinations of selected filters\n2. Test query performance with large session history datasets\n3. Verify that filter state persists correctly when navigating between filters\n4. Test edge cases: users with no session history, users with only one interaction type\n5. Integration tests for the complete filter-to-display flow\n6. Test responsive design on mobile devices for filter buttons and session list\n7. Verify proper error handling when session data cannot be loaded\n8. Test accessibility features for filter buttons and session history navigation",
         "status": "pending",
-        "dependencies": [9],
+        "dependencies": [
+          9
+        ],
         "priority": "medium",
         "subtasks": []
       },
@@ -410,7 +488,9 @@
         "details": "1. Create Convex action for session proposal generation:\n```typescript\n// convex/sessions.ts\nexport const generateSessionProposals = action({\n  args: { userId: v.string(), limit: v.optional(v.number()) },\n  handler: async (ctx, args) => {\n    const { userId, limit = 10 } = args;\n    const user = await ctx.db.get(userId);\n    const userInteractions = await ctx.db.query('sessionInteractions')\n      .withIndex('by_user', q => q.eq('userId', userId))\n      .collect();\n    \n    // Calculate preference scores and success rates\n    const proposalAlgorithm = new SessionProposalEngine(user, userInteractions);\n    return await proposalAlgorithm.generateProposals(limit);\n  }\n});\n```\n\n2. Implement matching algorithm class:\n```typescript\n// convex/lib/SessionProposalEngine.ts\nclass SessionProposalEngine {\n  calculateGamePreferenceOverlap(user1Games: string[], user2Games: string[]): number {\n    const intersection = user1Games.filter(game => user2Games.includes(game));\n    return intersection.length / Math.max(user1Games.length, user2Games.length);\n  }\n  \n  calculateTimeSlotCompatibility(user1Schedule: TimeSlot[], user2Schedule: TimeSlot[]): number {\n    // Find overlapping available time slots\n  }\n  \n  calculateSuccessRate(userId: string, interactions: SessionInteraction[]): number {\n    const userInteractions = interactions.filter(i => i.participantIds.includes(userId));\n    const attended = userInteractions.filter(i => i.interactionType === 'attended').length;\n    return attended / Math.max(userInteractions.length, 1);\n  }\n}\n```\n\n3. Define proposal scoring schema:\n```typescript\nconst sessionProposalSchema = defineTable({\n  proposedToUserId: v.string(),\n  proposedByAlgorithm: v.boolean(),\n  gameId: v.string(),\n  proposedParticipants: v.array(v.string()),\n  preferenceScore: v.number(),\n  timeCompatibilityScore: v.number(),\n  successRateScore: v.number(),\n  overallScore: v.number(),\n  proposedDateTime: v.number(),\n  status: v.union(v.literal('pending'), v.literal('accepted'), v.literal('declined')),\n  createdAt: v.number()\n})\n.index('by_user', ['proposedToUserId'])\n.index('by_score', ['overallScore']);\n```\n\n4. Create discovery interface integration:\n```typescript\n// components/session-discovery/ProposedSessionCard.tsx\nconst ProposedSessionCard = ({ proposal, onAccept, onDecline }) => {\n  return (\n    <Card className=\"proposed-session\">\n      <div className=\"match-indicators\">\n        <Badge variant=\"success\">{Math.round(proposal.preferenceScore * 100)}% game match</Badge>\n        <Badge variant=\"info\">{Math.round(proposal.timeCompatibilityScore * 100)}% time compatibility</Badge>\n      </div>\n      {/* Session details and participant info */}\n    </Card>\n  );\n};\n```\n\n5. Implement periodic proposal generation:\n```typescript\nexport const scheduleProposalGeneration = internalAction({\n  handler: async (ctx) => {\n    const activeUsers = await ctx.db.query('users')\n      .filter(q => q.eq('isActive', true))\n      .collect();\n    \n    for (const user of activeUsers) {\n      await ctx.runAction(internal.sessions.generateSessionProposals, {\n        userId: user._id\n      });\n    }\n  }\n});\n```",
         "testStrategy": "1. Unit tests for matching algorithm components with mock user data containing various preference overlaps and success rates\n2. Test proposal scoring accuracy by comparing algorithm outputs with expected matches for known user pairs\n3. Integration tests for Convex action execution with realistic user datasets and interaction histories\n4. Performance testing with large user bases (100+ users) to ensure proposal generation completes within acceptable time limits\n5. Test edge cases: users with no previous interactions, users with identical preferences, users with no time slot overlaps\n6. Verify proposal quality by testing with real user scenarios and measuring engagement rates with generated proposals\n7. Test periodic generation scheduling and ensure proposals are refreshed appropriately without overwhelming users",
         "status": "pending",
-        "dependencies": [9],
+        "dependencies": [
+          9
+        ],
         "priority": "medium",
         "subtasks": []
       },
@@ -421,7 +501,9 @@
         "details": "1. Update availability schema in convex/schema.ts to support committed slots:\n```typescript\nconst availabilitySchema = defineTable({\n  userId: v.string(),\n  date: v.string(), // YYYY-MM-DD format\n  intervals: v.array(v.object({\n    start: v.number(), // minutes since midnight\n    end: v.number(),\n    type: v.union(v.literal('available'), v.literal('committed')),\n    sessionId: v.optional(v.string()) // for committed slots\n  }))\n}).index('by_user_date', ['userId', 'date']);\n```\n\n2. Create mutation to commit availability when session is accepted:\n```typescript\nexport const commitAvailabilitySlot = mutation({\n  args: {\n    userId: v.string(),\n    sessionId: v.string(),\n    date: v.string(),\n    startTime: v.number(),\n    endTime: v.number()\n  },\n  handler: async (ctx, args) => {\n    // Find existing availability record\n    // Split overlapping intervals to insert committed slot\n    // Update database with new interval structure\n  }\n});\n```\n\n3. Update availability component to visually distinguish committed slots with different styling (e.g., striped pattern, different color)\n\n4. Modify session acceptance flow to automatically commit the time slot:\n```typescript\nconst handleAcceptSession = async (sessionId: string) => {\n  await acceptSession({ sessionId });\n  await commitAvailabilitySlot({\n    userId: currentUser.id,\n    sessionId,\n    date: session.date,\n    startTime: session.startTime,\n    endTime: session.endTime\n  });\n};\n```\n\n5. Update availability queries to exclude committed slots from matchmaking algorithm",
         "testStrategy": "1. Unit tests for availability schema validation with committed slot types and optional sessionId field\n2. Test mutation functions for committing availability slots with overlapping interval handling\n3. Integration tests for session acceptance flow that verify availability is automatically committed\n4. Test visual distinction of committed slots in the availability component\n5. Verify that committed slots are excluded from availability matching queries\n6. Test edge cases: accepting sessions with partial overlap, canceling sessions to restore availability\n7. Test performance with large availability datasets containing mixed available/committed intervals\n8. Verify that committed slots prevent double booking by attempting to accept overlapping sessions",
         "status": "pending",
-        "dependencies": [9],
+        "dependencies": [
+          9
+        ],
         "priority": "medium",
         "subtasks": []
       },
@@ -432,7 +514,10 @@
         "details": "1. Install PostHog JavaScript SDK:\n```bash\nnpm install posthog-js\n```\n\n2. Create PostHog configuration and provider:\n```typescript\n// lib/analytics/posthog.ts\nimport posthog from 'posthog-js';\n\nexport const initPostHog = () => {\n  if (typeof window !== 'undefined') {\n    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {\n      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',\n      capture_pageviews: true,\n      capture_pageleaves: true,\n      persistence: 'localStorage+cookie'\n    });\n  }\n};\n```\n\n3. Create analytics hooks for session discovery events:\n```typescript\n// hooks/useSessionAnalytics.ts\nimport posthog from 'posthog-js';\n\nexport const useSessionAnalytics = () => {\n  const trackSwipeAction = (sessionId: string, direction: 'left' | 'right', gameTitle: string) => {\n    posthog.capture('session_swipe', {\n      session_id: sessionId,\n      swipe_direction: direction,\n      game_title: gameTitle,\n      timestamp: Date.now()\n    });\n  };\n\n  const trackSessionAccept = (sessionId: string, proposalId: string) => {\n    posthog.capture('session_accepted', {\n      session_id: sessionId,\n      proposal_id: proposalId\n    });\n  };\n\n  const trackProposalGeneration = (userId: string, proposalCount: number) => {\n    posthog.capture('proposals_generated', {\n      user_id: userId,\n      proposal_count: proposalCount\n    });\n  };\n\n  return { trackSwipeAction, trackSessionAccept, trackProposalGeneration };\n};\n```\n\n4. Integrate analytics into existing swipe interface and session management components.\n\n5. Implement user privacy controls with opt-out functionality and ensure GDPR compliance by anonymizing user data appropriately.",
         "testStrategy": "1. Unit tests for analytics hooks to verify correct event tracking with proper parameters. 2. Integration tests to ensure PostHog events are fired during swipe actions in the discovery interface. 3. Test privacy controls and data anonymization functionality. 4. Verify PostHog dashboard receives events correctly by performing test swipes and checking event logs. 5. Test analytics initialization across different browser environments and ensure graceful fallback when PostHog is unavailable. 6. Validate that sensitive user data is not included in tracking events.",
         "status": "pending",
-        "dependencies": [8, 9],
+        "dependencies": [
+          8,
+          9
+        ],
         "priority": "low",
         "subtasks": []
       },
@@ -441,7 +526,9 @@
         "title": "Add game details modal/page",
         "description": "Allow users to click on a game card to view detailed information about the board game including description, player count, complexity, playing time, and BGG rating. Additionally, the Info button in the SessionCard component should navigate to the game details modal.",
         "status": "pending",
-        "dependencies": [8],
+        "dependencies": [
+          8
+        ],
         "priority": "medium",
         "details": "1. Create GameDetailsModal component with comprehensive game information display:\n```typescript\n// components/games/GameDetailsModal.tsx\ninterface GameDetailsModalProps {\n  gameId: string;\n  isOpen: boolean;\n  onClose: () => void;\n}\n\nconst GameDetailsModal = ({ gameId, isOpen, onClose }: GameDetailsModalProps) => {\n  const gameDetails = useQuery(api.games.getGameDetails, { gameId });\n  \n  return (\n    <Dialog open={isOpen} onOpenChange={onClose}>\n      <DialogContent className=\"max-w-2xl max-h-[80vh] overflow-y-auto\">\n        <div className=\"space-y-6\">\n          <div className=\"flex items-start gap-4\">\n            <img src={gameDetails?.image} alt={gameDetails?.name} className=\"w-32 h-32 object-cover rounded\" />\n            <div className=\"flex-1\">\n              <h2 className=\"text-2xl font-bold\">{gameDetails?.name}</h2>\n              <p className=\"text-muted-foreground\">{gameDetails?.yearPublished}</p>\n            </div>\n          </div>\n          \n          <div className=\"grid grid-cols-2 gap-4\">\n            <div className=\"space-y-2\">\n              <h3 className=\"font-semibold\">Player Count</h3>\n              <p>{gameDetails?.minPlayers}-{gameDetails?.maxPlayers} players</p>\n            </div>\n            <div className=\"space-y-2\">\n              <h3 className=\"font-semibold\">Playing Time</h3>\n              <p>{gameDetails?.playingTime} minutes</p>\n            </div>\n            <div className=\"space-y-2\">\n              <h3 className=\"font-semibold\">Complexity</h3>\n              <div className=\"flex items-center gap-2\">\n                <span>{gameDetails?.complexity}/5</span>\n                <div className=\"flex\">\n                  {Array.from({ length: 5 }).map((_, i) => (\n                    <Star key={i} className={`w-4 h-4 ${i < Math.round(gameDetails?.complexity || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />\n                  ))}\n                </div>\n              </div>\n            </div>\n            <div className=\"space-y-2\">\n              <h3 className=\"font-semibold\">BGG Rating</h3>\n              <div className=\"flex items-center gap-2\">\n                <span>{gameDetails?.bggRating?.toFixed(1)}/10</span>\n                <Badge variant=\"secondary\">{gameDetails?.bggRank ? `#${gameDetails.bggRank}` : 'Unranked'}</Badge>\n              </div>\n            </div>\n          </div>\n          \n          <div className=\"space-y-2\">\n            <h3 className=\"font-semibold\">Description</h3>\n            <p className=\"text-sm leading-relaxed\">{gameDetails?.description}</p>\n          </div>\n          \n          <div className=\"space-y-2\">\n            <h3 className=\"font-semibold\">Categories & Mechanics</h3>\n            <div className=\"flex flex-wrap gap-2\">\n              {gameDetails?.categories?.map(category => (\n                <Badge key={category} variant=\"outline\">{category}</Badge>\n              ))}\n            </div>\n            <div className=\"flex flex-wrap gap-2 mt-2\">\n              {gameDetails?.mechanics?.map(mechanic => (\n                <Badge key={mechanic} variant=\"secondary\">{mechanic}</Badge>\n              ))}\n            </div>\n          </div>\n        </div>\n      </DialogContent>\n    </Dialog>\n  );\n};\n```\n\n2. Create Convex query for detailed game information:\n```typescript\n// convex/games.ts\nexport const getGameDetails = query({\n  args: { gameId: v.string() },\n  handler: async (ctx, args) => {\n    const game = await ctx.db.get(args.gameId);\n    if (!game) return null;\n    \n    return {\n      ...game,\n      categories: game.categories || [],\n      mechanics: game.mechanics || [],\n      bggRating: game.bggRating || 0,\n      bggRank: game.bggRank || null,\n      complexity: game.complexity || 0,\n      description: game.description || 'No description available.'\n    };\n  }\n});\n```\n\n3. Add click handlers to existing game card components:\n```typescript\n// Update GameCard component to accept onClick prop\ninterface GameCardProps {\n  game: Game;\n  onClick?: () => void;\n}\n\nconst GameCard = ({ game, onClick }: GameCardProps) => {\n  return (\n    <div className=\"cursor-pointer\" onClick={onClick}>\n      {/* existing card content */}\n    </div>\n  );\n};\n```\n\n4. Integrate modal into discovery interface and search results:\n```typescript\n// In DiscoveryInterface component\nconst [selectedGameId, setSelectedGameId] = useState<string | null>(null);\n\nconst handleGameCardClick = (gameId: string) => {\n  setSelectedGameId(gameId);\n};\n\nreturn (\n  <>\n    {/* existing discovery UI */}\n    <GameDetailsModal \n      gameId={selectedGameId} \n      isOpen={!!selectedGameId} \n      onClose={() => setSelectedGameId(null)} \n    />\n  </>\n);\n```\n\n5. Update SessionCard component to use the game details modal:\n```typescript\n// Update the existing handleGameDetails function in SessionCard\nconst handleGameDetails = () => {\n  // Open the game details modal instead of placeholder\n  setSelectedGameId(session.gameId);\n};\n```\nNote: The handleGameDetails function is already set up as a placeholder in the SessionCard component. Wire this to open the GameDetailsModal when the Info button (bottom right) is clicked.\n\n6. Ensure responsive design for mobile devices with proper scrolling and touch interactions.",
         "testStrategy": "1. Unit tests for GameDetailsModal component with mock game data to verify all information displays correctly including edge cases like missing images or descriptions. 2. Test modal opening/closing functionality and proper state management when clicking game cards. 3. Test the Info button in SessionCard component to ensure it properly opens the game details modal for the correct game. 4. Verify responsive design works on mobile devices with proper touch interactions and scrolling within the modal. 5. Test Convex query performance for game details retrieval and ensure proper error handling for non-existent games. 6. Integration tests to ensure modal works correctly in discovery interface, search results, and session card contexts. 7. Test accessibility features including keyboard navigation, screen reader compatibility, and focus management when modal opens/closes. 8. Verify that clicking outside modal or pressing escape key closes the modal properly. 9. Test that the same game details modal can be opened from multiple entry points (discovery cards, search results, session cards) without conflicts.",
@@ -454,7 +541,9 @@
         "details": "1. Create SessionDetailsModal component with comprehensive session information display:\n```typescript\n// components/sessions/SessionDetailsModal.tsx\ninterface SessionDetailsModalProps {\n  sessionId: string;\n  isOpen: boolean;\n  onClose: () => void;\n}\n\nconst SessionDetailsModal = ({ sessionId, isOpen, onClose }: SessionDetailsModalProps) => {\n  const sessionDetails = useQuery(api.sessions.getSessionDetails, { sessionId });\n  const sessionInteractions = useQuery(api.sessions.getSessionInteractions, { sessionId });\n  const currentUser = useQuery(api.users.getCurrentUser);\n  \n  return (\n    <Dialog open={isOpen} onOpenChange={onClose}>\n      <DialogContent className=\"max-w-3xl max-h-[80vh] overflow-y-auto\">\n        <DialogHeader>\n          <DialogTitle>{sessionDetails?.title}</DialogTitle>\n        </DialogHeader>\n        \n        <div className=\"space-y-6\">\n          {/* Host Information Section */}\n          <div className=\"flex items-center space-x-4\">\n            <Avatar className=\"h-12 w-12\">\n              <AvatarImage src={sessionDetails?.host.avatar} />\n              <AvatarFallback>{sessionDetails?.host.name.charAt(0)}</AvatarFallback>\n            </Avatar>\n            <div>\n              <h3 className=\"font-semibold\">{sessionDetails?.host.name}</h3>\n              <p className=\"text-sm text-muted-foreground\">Host</p>\n            </div>\n          </div>\n          \n          {/* Session Timing */}\n          <div className=\"grid grid-cols-2 gap-4\">\n            <div>\n              <Label>Date & Time</Label>\n              <p className=\"text-sm\">{formatDateTime(sessionDetails?.scheduledAt)}</p>\n            </div>\n            <div>\n              <Label>Duration</Label>\n              <p className=\"text-sm\">{sessionDetails?.estimatedDuration} minutes</p>\n            </div>\n          </div>\n          \n          {/* Location Details */}\n          <div>\n            <Label>Location</Label>\n            <p className=\"text-sm\">{sessionDetails?.location?.name}</p>\n            <p className=\"text-xs text-muted-foreground\">{sessionDetails?.location?.address}</p>\n          </div>\n          \n          {/* Interested Players List */}\n          <div>\n            <Label>Interested Players ({sessionInteractions?.interested?.length || 0})</Label>\n            <div className=\"flex flex-wrap gap-2 mt-2\">\n              {sessionInteractions?.interested?.map(player => (\n                <div key={player.id} className=\"flex items-center space-x-2 bg-muted p-2 rounded\">\n                  <Avatar className=\"h-6 w-6\">\n                    <AvatarImage src={player.avatar} />\n                    <AvatarFallback>{player.name.charAt(0)}</AvatarFallback>\n                  </Avatar>\n                  <span className=\"text-sm\">{player.name}</span>\n                </div>\n              ))}\n            </div>\n          </div>\n          \n          {/* Action Buttons */}\n          <div className=\"flex gap-2\">\n            {!sessionInteractions?.userInteraction && (\n              <>\n                <Button onClick={() => handleInteraction('interested')} className=\"flex-1\">\n                  I'm Interested\n                </Button>\n                <Button variant=\"outline\" onClick={() => handleInteraction('declined')} className=\"flex-1\">\n                  Not Interested\n                </Button>\n              </>\n            )}\n          </div>\n        </div>\n      </DialogContent>\n    </Dialog>\n  );\n};\n```\n\n2. Create Convex query for detailed session information:\n```typescript\n// convex/sessions.ts\nexport const getSessionDetails = query({\n  args: { sessionId: v.string() },\n  handler: async (ctx, args) => {\n    const session = await ctx.db.get(args.sessionId);\n    if (!session) return null;\n    \n    const host = await ctx.db.get(session.hostId);\n    const game = await ctx.db.get(session.gameId);\n    \n    return {\n      ...session,\n      host: {\n        id: host._id,\n        name: host.name,\n        avatar: host.avatar\n      },\n      game: {\n        id: game._id,\n        name: game.name,\n        image: game.image\n      }\n    };\n  }\n});\n\nexport const getSessionInteractions = query({\n  args: { sessionId: v.string() },\n  handler: async (ctx, args) => {\n    const interactions = await ctx.db.query('sessionInteractions')\n      .withIndex('by_session', q => q.eq('sessionId', args.sessionId))\n      .collect();\n    \n    const interested = [];\n    const declined = [];\n    \n    for (const interaction of interactions) {\n      const user = await ctx.db.get(interaction.userId);\n      const userInfo = { id: user._id, name: user.name, avatar: user.avatar };\n      \n      if (interaction.interactionType === 'interested') {\n        interested.push(userInfo);\n      } else if (interaction.interactionType === 'declined') {\n        declined.push(userInfo);\n      }\n    }\n    \n    return { interested, declined };\n  }\n});\n```\n\n3. Update session card components to trigger modal:\n```typescript\n// components/sessions/SessionCard.tsx\nconst SessionCard = ({ session }) => {\n  const [isDetailsOpen, setIsDetailsOpen] = useState(false);\n  \n  return (\n    <>\n      <Card className=\"cursor-pointer\" onClick={() => setIsDetailsOpen(true)}>\n        {/* Existing card content */}\n      </Card>\n      \n      <SessionDetailsModal \n        sessionId={session._id}\n        isOpen={isDetailsOpen}\n        onClose={() => setIsDetailsOpen(false)}\n      />\n    </>\n  );\n};\n```",
         "testStrategy": "1. Unit tests for SessionDetailsModal component with mock session data to verify all information displays correctly including host details, timing, location, and interested players list. 2. Test modal opening/closing functionality and proper state management when clicking session cards. 3. Integration tests for Convex queries to ensure session details and interactions are fetched correctly with proper data relationships. 4. Test responsive design and scrolling behavior for sessions with many interested players. 5. Verify interaction buttons work correctly and update the session interaction state. 6. Test edge cases: sessions with no interested players, sessions with missing location data, and sessions where current user has already interacted.",
         "status": "pending",
-        "dependencies": [9],
+        "dependencies": [
+          9
+        ],
         "priority": "medium",
         "subtasks": []
       },
@@ -465,7 +554,10 @@
         "details": "1. Modify SessionCard component to implement optimistic state management:\n```typescript\nconst [optimisticState, setOptimisticState] = useState<{\n  currentSessionId: string | null;\n  isProcessing: boolean;\n  rollbackData?: SessionInteraction;\n}>({ currentSessionId: null, isProcessing: false });\n\nconst handleOptimisticSwipe = async (sessionId: string, interactionType: 'interested' | 'declined') => {\n  // Immediately update UI state\n  setOptimisticState({ currentSessionId: sessionId, isProcessing: true });\n  \n  // Show next card immediately\n  onNextCard();\n  \n  try {\n    await recordSessionInteraction({ sessionId, interactionType });\n    setOptimisticState({ currentSessionId: null, isProcessing: false });\n  } catch (error) {\n    // Rollback UI state on failure\n    onRollbackCard(sessionId);\n    setOptimisticState({ currentSessionId: null, isProcessing: false });\n    showErrorToast('Failed to record interaction. Please try again.');\n  }\n};\n```\n\n2. Implement card queue management in discovery interface:\n```typescript\nconst [sessionQueue, setSessionQueue] = useState<Session[]>([]);\nconst [processedSessions, setProcessedSessions] = useState<string[]>([]);\n\nconst handleNextCard = () => {\n  setSessionQueue(prev => prev.slice(1));\n};\n\nconst handleRollbackCard = (sessionId: string) => {\n  // Restore the card to front of queue\n  const rolledBackSession = processedSessions.find(s => s.id === sessionId);\n  if (rolledBackSession) {\n    setSessionQueue(prev => [rolledBackSession, ...prev]);\n    setProcessedSessions(prev => prev.filter(id => id !== sessionId));\n  }\n};\n```\n\n3. Add error handling and retry logic with exponential backoff:\n```typescript\nconst retryWithBackoff = async (fn: () => Promise<void>, maxRetries = 3) => {\n  for (let i = 0; i < maxRetries; i++) {\n    try {\n      await fn();\n      return;\n    } catch (error) {\n      if (i === maxRetries - 1) throw error;\n      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));\n    }\n  }\n};\n```\n\n4. Implement loading states and visual feedback for background operations:\n```typescript\nconst SwipeCard = ({ session, isProcessing }) => (\n  <div className={`session-card ${isProcessing ? 'processing' : ''}`}>\n    {isProcessing && <div className=\"processing-overlay\">Processing...</div>}\n    {/* card content */}\n  </div>\n);\n```",
         "testStrategy": "1. Unit tests for optimistic state management functions with mock API calls that succeed and fail, verifying proper state transitions and rollback behavior. 2. Integration tests for the complete swipe flow including optimistic updates, API calls, and error handling using Jest and React Testing Library. 3. Test error scenarios including network failures, API timeouts, and server errors, ensuring UI properly rolls back to previous state. 4. Performance testing to verify smooth animations and transitions during optimistic updates, especially rapid successive swipes. 5. E2E tests using Playwright to simulate real user swipe interactions and verify the next card appears immediately while background API calls complete. 6. Test edge cases like swiping rapidly through multiple cards before API calls complete, ensuring queue management works correctly. 7. Verify that failed interactions show appropriate error messages and allow users to retry.",
         "status": "done",
-        "dependencies": [8, 9],
+        "dependencies": [
+          8,
+          9
+        ],
         "priority": "high",
         "subtasks": []
       },
@@ -476,7 +568,9 @@
         "details": "1. Update SessionCard component styling with modern card design:\n```typescript\n// components/session-discovery/SessionCard.tsx\ninterface EnhancedSessionCardProps {\n  session: SessionWithDetails;\n  matchPercentage: number;\n  onSwipeLeft: (sessionId: string) => void;\n  onSwipeRight: (sessionId: string) => void;\n}\n\nconst SessionCard = ({ session, matchPercentage, ...props }: EnhancedSessionCardProps) => {\n  return (\n    <motion.div\n      className=\"relative bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-lg border border-gray-100 overflow-hidden\"\n      whileHover={{ scale: 1.02, y: -4 }}\n      transition={{ type: \"spring\", stiffness: 300, damping: 20 }}\n    >\n      {/* Match percentage badge */}\n      <div className=\"absolute top-4 right-4 z-10\">\n        <Badge className=\"bg-green-500 text-white font-bold text-lg px-3 py-1 rounded-full shadow-md\">\n          {matchPercentage}% Match\n        </Badge>\n      </div>\n      \n      {/* Game image with overlay */}\n      <div className=\"relative h-48 overflow-hidden\">\n        <img src={session.game.imageUrl} className=\"w-full h-full object-cover\" />\n        <div className=\"absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent\" />\n        \n        {/* Game title overlay */}\n        <div className=\"absolute bottom-4 left-4 right-16\">\n          <h2 className=\"text-white font-bold text-xl leading-tight drop-shadow-lg\">\n            {session.game.title}\n          </h2>\n        </div>\n      </div>\n      \n      {/* Card content */}\n      <div className=\"p-6 space-y-4\">\n        {/* Host and player info */}\n        <div className=\"flex items-center justify-between\">\n          <div className=\"flex items-center space-x-3\">\n            <Avatar className=\"h-12 w-12 border-2 border-white shadow-md\">\n              <AvatarImage src={session.host.avatarUrl} />\n              <AvatarFallback>{session.host.displayName[0]}</AvatarFallback>\n            </Avatar>\n            <div>\n              <p className=\"font-semibold text-gray-900\">{session.host.displayName}</p>\n              <p className=\"text-sm text-gray-600\">Host</p>\n            </div>\n          </div>\n          \n          {/* Player count indicator */}\n          <div className=\"flex items-center space-x-1 text-gray-600\">\n            <Users className=\"h-4 w-4\" />\n            <span className=\"text-sm font-medium\">\n              {session.currentPlayerCount}/{session.maxPlayers}\n            </span>\n          </div>\n        </div>\n        \n        {/* Session details with icons */}\n        <div className=\"space-y-2\">\n          <div className=\"flex items-center space-x-2 text-gray-700\">\n            <Calendar className=\"h-4 w-4 text-blue-600\" />\n            <span className=\"text-sm font-medium\">\n              {format(new Date(session.scheduledFor), 'EEEE, MMM d \\'at\\' h:mm a')}\n            </span>\n          </div>\n          \n          <div className=\"flex items-center space-x-2 text-gray-700\">\n            <MapPin className=\"h-4 w-4 text-red-600\" />\n            <span className=\"text-sm\">{session.location}</span>\n          </div>\n          \n          <div className=\"flex items-center space-x-2 text-gray-700\">\n            <Clock className=\"h-4 w-4 text-purple-600\" />\n            <span className=\"text-sm\">\n              ~{session.game.playingTime} min • {session.game.complexity}/5 complexity\n            </span>\n          </div>\n        </div>\n        \n        {/* Interested players avatars */}\n        {session.interestedPlayers.length > 0 && (\n          <div className=\"flex items-center space-x-2\">\n            <span className=\"text-sm text-gray-600\">Also interested:</span>\n            <AvatarGroup max={4} className=\"-space-x-2\">\n              {session.interestedPlayers.map(player => (\n                <Avatar key={player.id} className=\"h-8 w-8 border-2 border-white\">\n                  <AvatarImage src={player.avatarUrl} />\n                  <AvatarFallback className=\"text-xs\">{player.displayName[0]}</AvatarFallback>\n                </Avatar>\n              ))}\n            </AvatarGroup>\n          </div>\n        )}\n      </div>\n      \n      {/* Swipe action indicators */}\n      <div className=\"absolute inset-0 pointer-events-none\">\n        <motion.div\n          className=\"absolute left-8 top-1/2 -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-full font-bold text-lg shadow-lg\"\n          initial={{ opacity: 0, scale: 0.8, rotate: -30 }}\n          animate={{ opacity: swipeDirection === 'left' ? 1 : 0, scale: swipeDirection === 'left' ? 1 : 0.8 }}\n        >\n          PASS\n        </motion.div>\n        \n        <motion.div\n          className=\"absolute right-8 top-1/2 -translate-y-1/2 bg-green-500 text-white px-4 py-2 rounded-full font-bold text-lg shadow-lg\"\n          initial={{ opacity: 0, scale: 0.8, rotate: 30 }}\n          animate={{ opacity: swipeDirection === 'right' ? 1 : 0, scale: swipeDirection === 'right' ? 1 : 0.8 }}\n        >\n          INTERESTED\n        </motion.div>\n      </div>\n    </motion.div>\n  );\n};\n```\n\n2. Install required dependencies:\n```bash\nbun add framer-motion date-fns lucide-react\n```\n\n3. Create reusable AvatarGroup component:\n```typescript\n// components/ui/AvatarGroup.tsx\ninterface AvatarGroupProps {\n  children: React.ReactNode;\n  max?: number;\n  className?: string;\n}\n\nconst AvatarGroup = ({ children, max = 3, className }: AvatarGroupProps) => {\n  const childArray = React.Children.toArray(children);\n  const visibleChildren = childArray.slice(0, max);\n  const hiddenCount = childArray.length - max;\n  \n  return (\n    <div className={cn(\"flex items-center\", className)}>\n      {visibleChildren}\n      {hiddenCount > 0 && (\n        <Avatar className=\"h-8 w-8 border-2 border-white bg-gray-100\">\n          <AvatarFallback className=\"text-xs text-gray-600\">\n            +{hiddenCount}\n          </AvatarFallback>\n        </Avatar>\n      )}\n    </div>\n  );\n};\n```\n\n4. Update SwipeCard component to handle enhanced visual feedback:\n```typescript\n// Add swipe direction state for visual feedback\nconst [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);\n\nconst handlers = useSwipeable({\n  onSwiping: (eventData) => {\n    const direction = eventData.deltaX > 0 ? 'right' : 'left';\n    setSwipeDirection(Math.abs(eventData.deltaX) > 50 ? direction : null);\n  },\n  onSwiped: () => setSwipeDirection(null),\n  // ... existing swipe handlers\n});\n```\n\n5. Implement accessibility features:\n- Add proper ARIA labels and roles\n- Ensure keyboard navigation support\n- Add focus indicators for interactive elements\n- Maintain color contrast ratios above 4.5:1\n- Add reduced motion preferences support",
         "testStrategy": "1. Visual regression testing with Playwright to capture before/after screenshots of SessionCard component in different states (loading, with/without interested players, various match percentages). 2. Accessibility testing using axe-core to verify ARIA labels, keyboard navigation, color contrast ratios, and screen reader compatibility. 3. Animation performance testing on low-end devices to ensure smooth 60fps animations without jank. 4. Cross-browser testing on Chrome, Firefox, Safari to verify consistent visual appearance and animation behavior. 5. Touch interaction testing on mobile devices to verify swipe gestures work correctly with new visual feedback. 6. Component testing with Jest and React Testing Library to verify proper rendering of all visual elements including avatars, match percentage, session details, and interactive states. 7. Manual testing with screen readers (NVDA, VoiceOver) to ensure card content is properly announced and navigable.",
         "status": "pending",
-        "dependencies": [8],
+        "dependencies": [
+          8
+        ],
         "priority": "medium",
         "subtasks": []
       },
@@ -487,7 +581,9 @@
         "details": "1. Update the searchGames query in convex/games.ts:\n   • Extend args to accept an optional `weights` object: `{ title?: number; alternateNames?: number; description?: number }`, defaulting to `{ title: 10, alternateNames: 5, description: 2 }`.\n   • Perform a combined full-text filter: fetch all games where any of the three fields match the searchTerm (using `q.text('title', searchTerm)`, `q.text('alternateNames', searchTerm)`, `q.text('description', searchTerm)`).\n   • After retrieving candidates, compute a numeric relevance score for each game:\n     - Use the configured weights to multiply the number (or intensity) of matches in each field. For example:\n       ```typescript\n       function computeScore(game: Game, term: string, weights: Weights): number {\n         const titleHits = countOccurrences(game.title, term);\n         const altHits = game.alternateNames.reduce((sum, alt) => sum + countOccurrences(alt, term), 0);\n         const descHits = countOccurrences(game.description, term);\n         return titleHits * weights.title + altHits * weights.alternateNames + descHits * weights.description;\n       }\n       ```\n   • Sort the resulting list by descending relevance score before applying pagination (cursor + limit).\n   • Return the games, the new cursor, `hasMore`, and include score if helpful for debugging/UI.\n2. Update API types (both server and client) to reflect the new `weights` parameter and optional `score` field on returned items.\n3. In the React front-end (e.g., GameSearchResults), allow passing custom weights to the search hook only if needed; otherwise rely on server defaults.\n4. Document the new weights API in the codebase README or API spec so other developers know the default values and how to override them.",
         "testStrategy": "1. Unit test the `computeScore` function with synthetic game objects to verify scoring logic for title-only, alt-only, and description-only matches and mixed matches.\n2. Integration tests against the Convex endpoint:\n   • Query with default weights and validate that results are sorted correctly for known fixtures.\n   • Override weights (e.g., high description weight) and verify that descriptions dominate ranking.\n3. Pagination and relevance combined:\n   • Ensure that applying `cursor` + `limit` after sorting returns the correct slice.\n   • Test edge cases: no matches, exact limit of matches, more matches than limit.\n4. Performance tests:\n   • Benchmark search on large dataset (1000+ games) under typical weights to ensure query remains performant.\n   • Test under varying weight configurations.\n5. Front-end verification:\n   • Perform manual testing in the UI to confirm the most relevant games appear first when searching.\n   • Verify that passing custom weights via the search hook produces expected ordering.",
         "status": "done",
-        "dependencies": [3],
+        "dependencies": [
+          3
+        ],
         "priority": "medium",
         "subtasks": [
           {
@@ -503,7 +599,9 @@
             "id": 2,
             "title": "Update API types to include the new weights parameter and optional score field",
             "description": "Revise the API type definitions to incorporate the new weights parameter and an optional score field in the response.",
-            "dependencies": [1],
+            "dependencies": [
+              1
+            ],
             "details": "Modify the API type definitions to include the weights parameter in the request schema and an optional score field in the response schema. Ensure that these changes are reflected in all relevant parts of the codebase.",
             "status": "done",
             "testStrategy": ""
@@ -512,7 +610,9 @@
             "id": 3,
             "title": "Adjust the React front-end to allow passing custom weights to the search hook",
             "description": "Update the React front-end to enable users to specify custom weights when performing searches.",
-            "dependencies": [2],
+            "dependencies": [
+              2
+            ],
             "details": "Modify the search hook in the React front-end to accept a weights object as an argument. Update the user interface to allow users to input or select custom weights for different search fields.",
             "status": "done",
             "testStrategy": ""
@@ -521,7 +621,9 @@
             "id": 4,
             "title": "Document the new weights API in the codebase README or API spec",
             "description": "Add comprehensive documentation for the new weights API in the project's README or API specification.",
-            "dependencies": [3],
+            "dependencies": [
+              3
+            ],
             "details": "Update the project's documentation to include detailed information about the new weights parameter, how to use it, and examples of its application. Ensure that the documentation is clear and accessible to developers.",
             "status": "done",
             "testStrategy": ""
@@ -530,7 +632,9 @@
             "id": 5,
             "title": "Develop and execute a comprehensive test strategy covering unit, integration, pagination, performance, and front-end verification tests",
             "description": "Create and implement a thorough test plan to ensure the weighted search functionality operates correctly and efficiently.",
-            "dependencies": [4],
+            "dependencies": [
+              4
+            ],
             "details": "Design a test strategy that includes unit tests for individual components, integration tests for combined functionality, pagination tests to verify correct handling of paginated results, performance tests to assess efficiency, and front-end verification tests to ensure the user interface behaves as expected with the new weights feature.",
             "status": "done",
             "testStrategy": ""
@@ -544,14 +648,28 @@
         "details": "1. Update games schema in convex/schema.ts to include searchText field:\n```typescript\nconst gamesSchema = defineTable({\n  name: v.string(),\n  alternateNames: v.optional(v.array(v.string())),\n  description: v.optional(v.string()),\n  searchText: v.string(), // Computed field for full-text search\n  // ... existing fields\n}).searchIndex('searchText', {\n  searchField: 'searchText'\n});\n```\n\n2. Create utility function to compute searchText:\n```typescript\n// convex/lib/searchUtils.ts\nexport function computeSearchText(game: {\n  name: string;\n  alternateNames?: string[];\n  description?: string;\n}): string {\n  const parts = [game.name];\n  if (game.alternateNames?.length) {\n    parts.push(...game.alternateNames);\n  }\n  if (game.description) {\n    parts.push(game.description);\n  }\n  return parts.join(' ').toLowerCase().trim();\n}\n```\n\n3. Implement Convex triggers in convex/games.ts:\n```typescript\nimport { internalMutation } from './_generated/server';\nimport { computeSearchText } from './lib/searchUtils';\n\nexport const updateSearchTextOnInsert = internalMutation({\n  args: { gameId: v.id('games') },\n  handler: async (ctx, args) => {\n    const game = await ctx.db.get(args.gameId);\n    if (!game) return;\n    \n    const searchText = computeSearchText(game);\n    await ctx.db.patch(args.gameId, { searchText });\n  }\n});\n\nexport const updateSearchTextOnUpdate = internalMutation({\n  args: { gameId: v.id('games') },\n  handler: async (ctx, args) => {\n    const game = await ctx.db.get(args.gameId);\n    if (!game) return;\n    \n    const searchText = computeSearchText(game);\n    await ctx.db.patch(args.gameId, { searchText });\n  }\n});\n```\n\n4. Set up database triggers in convex/triggers.ts:\n```typescript\nimport { defineSchema, defineTable } from 'convex/server';\nimport { mutation } from './_generated/server';\nimport { internal } from './_generated/api';\n\n// Trigger on game insert\nexport const onGameInsert = mutation({\n  args: {},\n  handler: async (ctx, args) => {\n    // This will be called automatically by Convex on insert\n    await ctx.scheduler.runAfter(0, internal.games.updateSearchTextOnInsert, {\n      gameId: ctx.db.normalizeId('games', args._id)\n    });\n  }\n});\n\n// Trigger on game update\nexport const onGameUpdate = mutation({\n  args: {},\n  handler: async (ctx, args) => {\n    await ctx.scheduler.runAfter(0, internal.games.updateSearchTextOnUpdate, {\n      gameId: ctx.db.normalizeId('games', args._id)\n    });\n  }\n});\n```\n\n5. Create migration script for existing games:\n```typescript\n// convex/migrations/001_populate_search_text.ts\nimport { internalMutation } from '../_generated/server';\nimport { computeSearchText } from '../lib/searchUtils';\n\nexport const populateExistingGamesSearchText = internalMutation({\n  args: {},\n  handler: async (ctx) => {\n    const games = await ctx.db.query('games').collect();\n    const batchSize = 100;\n    \n    for (let i = 0; i < games.length; i += batchSize) {\n      const batch = games.slice(i, i + batchSize);\n      await Promise.all(\n        batch.map(async (game) => {\n          const searchText = computeSearchText(game);\n          await ctx.db.patch(game._id, { searchText });\n        })\n      );\n    }\n    \n    console.log(`Updated searchText for ${games.length} games`);\n  }\n});\n```\n\n6. Update searchGames query to use the new searchText field:\n```typescript\nexport const searchGames = query({\n  args: {\n    searchTerm: v.string(),\n    cursor: v.optional(v.string()),\n    limit: v.optional(v.number())\n  },\n  handler: async (ctx, args) => {\n    const { searchTerm, cursor, limit = 20 } = args;\n    if (!searchTerm) return { games: [], cursor: null, hasMore: false };\n    \n    return await ctx.db\n      .query('games')\n      .search('searchText', searchTerm)\n      .paginate({ cursor, numItems: limit });\n  }\n});\n```",
         "testStrategy": "1. Unit tests for computeSearchText utility function with various game object combinations (name only, with alternateNames, with description, with all fields). 2. Test trigger functionality by inserting and updating games through Convex mutations and verifying searchText field is automatically populated. 3. Integration tests for the migration script using a test database with sample games to ensure all existing records are properly updated. 4. Test the updated searchGames query with the new searchText field to verify search results include matches from name, alternateNames, and description fields. 5. Performance testing to ensure trigger overhead doesn't significantly impact game insert/update operations. 6. Test edge cases: games with empty alternateNames arrays, null descriptions, very long combined searchText strings, and special characters in game names.",
         "status": "pending",
-        "dependencies": [3, 18],
+        "dependencies": [
+          3,
+          18
+        ],
         "priority": "low",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Set up Prettier configuration with ESLint integration",
+        "description": "Configure Prettier with custom .prettierrc settings to disable curly braces for single-line if statements, integrate with ESLint rules to enforce formatting, and ensure Prettier runs as part of the existing lint process.",
+        "details": "1. Create .prettierrc configuration file:\n```json\n{\n  \"semi\": true,\n  \"trailingComma\": \"es5\",\n  \"singleQuote\": true,\n  \"printWidth\": 80,\n  \"tabWidth\": 2,\n  \"useTabs\": false,\n  \"bracketSpacing\": true,\n  \"arrowParens\": \"avoid\",\n  \"endOfLine\": \"lf\",\n  \"bracketSameLine\": false,\n  \"quoteProps\": \"as-needed\"\n}\n```\n\n2. Install required dependencies:\n```bash\nbun add --dev prettier eslint-config-prettier eslint-plugin-prettier\n```\n\n3. Update ESLint configuration (.eslintrc.js or similar) to integrate Prettier:\n```javascript\nmodule.exports = {\n  extends: [\n    // ... existing extends\n    'prettier', // Disables ESLint rules that conflict with Prettier\n  ],\n  plugins: [\n    // ... existing plugins\n    'prettier',\n  ],\n  rules: {\n    // ... existing rules\n    'prettier/prettier': 'error', // Runs Prettier as an ESLint rule\n    'curly': ['error', 'multi-or-nest'], // Allow omitting braces for single-line if statements\n  },\n};\n```\n\n4. Update package.json scripts to include Prettier in lint process:\n```json\n{\n  \"scripts\": {\n    \"lint\": \"eslint . --ext .ts,.tsx,.js,.jsx && prettier --check .\",\n    \"lint:fix\": \"eslint . --ext .ts,.tsx,.js,.jsx --fix && prettier --write .\",\n    \"format\": \"prettier --write .\"\n  }\n}\n```\n\n5. Create .prettierignore file to exclude unnecessary files:\n```\nnode_modules/\ndist/\nbuild/\n.next/\ncoverage/\n*.min.js\n*.min.css\npackage-lock.json\nyarn.lock\nbun.lockb\n```\n\n6. Add VS Code settings (.vscode/settings.json) for editor integration:\n```json\n{\n  \"editor.defaultFormatter\": \"esbenp.prettier-vscode\",\n  \"editor.formatOnSave\": true,\n  \"editor.codeActionsOnSave\": {\n    \"source.fixAll.eslint\": true\n  }\n}\n```",
+        "testStrategy": "1. Test Prettier configuration by running `bun run format` on existing codebase and verify single-line if statements don't get curly braces added. 2. Test ESLint integration by running `bun run lint` and ensure Prettier formatting issues are caught as ESLint errors. 3. Create sample files with various formatting issues (missing semicolons, inconsistent quotes, single-line if statements) and verify they are fixed correctly by `bun run lint:fix`. 4. Test .prettierignore by ensuring ignored files (node_modules, dist) are not formatted when running Prettier commands. 5. Verify VS Code integration by opening a poorly formatted file and confirming it formats on save. 6. Run the complete lint process as part of CI/CD pipeline simulation to ensure no breaking changes to existing build process.",
+        "status": "pending",
+        "dependencies": [],
+        "priority": "medium",
         "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T07:57:52.253Z",
+      "updated": "2025-06-23T08:11:06.755Z",
       "description": "Tasks for master context"
     }
   }
