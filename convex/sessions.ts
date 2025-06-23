@@ -19,6 +19,102 @@ export const getSession = query({
   },
 });
 
+export const getSessionWithDetails = query({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) return null;
+
+    // Get host details
+    const host = await ctx.db.get(session.hostId);
+    if (!host) throw new Error("Host not found");
+
+    // Get player details
+    const players = await Promise.all(
+      session.players.map(async playerId => {
+        const player = await ctx.db.get(playerId);
+        if (!player) return null;
+        return {
+          _id: player._id,
+          name: player.name,
+          displayName: player.displayName,
+          profilePic: player.profilePic,
+        };
+      })
+    );
+
+    // Get interested player details
+    const interestedPlayers = await Promise.all(
+      session.interestedPlayers.map(async playerId => {
+        const player = await ctx.db.get(playerId);
+        if (!player) return null;
+        return {
+          _id: player._id,
+          name: player.name,
+          displayName: player.displayName,
+          profilePic: player.profilePic,
+        };
+      })
+    );
+
+    // Get interactions for more detailed info
+    const interactions = await ctx.db
+      .query("sessionInteractions")
+      .withIndex("by_session", q => q.eq("sessionId", session._id))
+      .collect();
+
+    // Group interactions by type
+    const interactionsByType = {
+      interested: [] as Array<{
+        userId: Id<"users">;
+        createdAt: number;
+      }>,
+      declined: [] as Array<{
+        userId: Id<"users">;
+        createdAt: number;
+      }>,
+      accepted: [] as Array<{
+        userId: Id<"users">;
+        createdAt: number;
+      }>,
+    };
+
+    interactions.forEach(interaction => {
+      if (interaction.interactionType in interactionsByType) {
+        interactionsByType[interaction.interactionType].push({
+          userId: interaction.userId,
+          createdAt: interaction.createdAt,
+        });
+      }
+    });
+
+    return {
+      ...session,
+      host: {
+        _id: host._id,
+        name: host.name,
+        displayName: host.displayName,
+        profilePic: host.profilePic,
+      },
+      playersDetails: players.filter(Boolean) as Array<{
+        _id: Id<"users">;
+        name: string;
+        displayName?: string;
+        profilePic?: string;
+      }>,
+      interestedPlayersDetails: interestedPlayers.filter(Boolean) as Array<{
+        _id: Id<"users">;
+        name: string;
+        displayName?: string;
+        profilePic?: string;
+      }>,
+      interactions: interactionsByType,
+    };
+  },
+});
+
 export const getDiscoverySessions = query({
   args: {},
   handler: async ctx => {
@@ -482,6 +578,110 @@ export const getSessionHistory = query({
     return sessions
       .filter(s => s !== null)
       .sort((a, b) => b.interaction.createdAt - a.interaction.createdAt);
+  },
+});
+
+export const expressInterest = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Check if user is already a player or has already expressed interest
+    if (session.players.includes(userId)) {
+      throw new Error("You are already a player in this session");
+    }
+
+    // Check for existing interaction
+    const existing = await ctx.db
+      .query("sessionInteractions")
+      .withIndex("by_user_session", q =>
+        q.eq("userId", userId).eq("sessionId", args.sessionId)
+      )
+      .unique();
+
+    if (existing) {
+      // Update existing interaction
+      await ctx.db.patch(existing._id, {
+        interactionType: "interested",
+      });
+    } else {
+      // Create new interaction
+      await ctx.db.insert("sessionInteractions", {
+        userId,
+        sessionId: args.sessionId,
+        interactionType: "interested",
+        createdAt: Date.now(),
+      });
+    }
+
+    // Add to interested players if not already there
+    if (!session.interestedPlayers.includes(userId)) {
+      await ctx.db.patch(args.sessionId, {
+        interestedPlayers: [...session.interestedPlayers, userId],
+      });
+
+      // Check if we have enough players to establish the session
+      const totalInterested = session.interestedPlayers.length + 1; // +1 for current user
+      if (
+        totalInterested >= session.minPlayers - session.players.length &&
+        session.status === "proposed"
+      ) {
+        await ctx.db.patch(args.sessionId, {
+          status: "established",
+        });
+      }
+    }
+  },
+});
+
+export const declineSession = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Check for existing interaction
+    const existing = await ctx.db
+      .query("sessionInteractions")
+      .withIndex("by_user_session", q =>
+        q.eq("userId", userId).eq("sessionId", args.sessionId)
+      )
+      .unique();
+
+    if (existing) {
+      // Update existing interaction
+      await ctx.db.patch(existing._id, {
+        interactionType: "declined",
+      });
+    } else {
+      // Create new interaction
+      await ctx.db.insert("sessionInteractions", {
+        userId,
+        sessionId: args.sessionId,
+        interactionType: "declined",
+        createdAt: Date.now(),
+      });
+    }
+
+    // Remove from interested players if present
+    if (session.interestedPlayers.includes(userId)) {
+      await ctx.db.patch(args.sessionId, {
+        interestedPlayers: session.interestedPlayers.filter(
+          id => id !== userId
+        ),
+      });
+    }
   },
 });
 
