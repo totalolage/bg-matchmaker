@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Calendar, MapPin, Users, UserPlus, UserMinus } from "lucide-react";
+import { Calendar, MapPin, Users, UserPlus, UserMinus, Edit2, X, Save } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
@@ -17,6 +18,9 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Separator } from "../../components/ui/separator";
 import { UserAvatar } from "../../components/UserAvatar";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Textarea } from "../../components/ui/textarea";
 
 export const Route = createFileRoute("/sessions/$sessionId")({
   component: SessionDetail,
@@ -34,11 +38,22 @@ function SessionDetail() {
   });
   const currentUser = useQuery(api.users.getCurrentUser);
 
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    scheduledTime: "",
+    location: "",
+    description: "",
+    minPlayers: 2,
+    maxPlayers: 8,
+  });
+
   // Mutations
   const expressInterest = useMutation(api.sessions.expressInterest);
   const declineSession = useMutation(api.sessions.declineSession);
   const joinSession = useMutation(api.sessions.joinSession);
   const cancelSession = useMutation(api.sessions.cancelSession);
+  const updateSession = useMutation(api.sessions.updateSession);
 
   if (!session || !currentUser) {
     return (
@@ -115,6 +130,40 @@ function SessionDetail() {
     }
   };
 
+  const handleSaveChanges = async () => {
+    try {
+      await updateSession({
+        sessionId: typedSessionId,
+        scheduledTime: formData.scheduledTime 
+          ? new Date(formData.scheduledTime).getTime()
+          : undefined,
+        location: formData.location || undefined,
+        description: formData.description || undefined,
+        minPlayers: formData.minPlayers,
+        maxPlayers: formData.maxPlayers,
+      });
+      toast.success("Session updated successfully!");
+      setIsEditing(false);
+    } catch (error) {
+      toast.error("Failed to update session");
+      console.error(error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset form data
+    setFormData({
+      scheduledTime: session.scheduledTime 
+        ? new Date(session.scheduledTime).toISOString().slice(0, 16)
+        : "",
+      location: session.location || "",
+      description: session.description || "",
+      minPlayers: session.minPlayers,
+      maxPlayers: session.maxPlayers,
+    });
+  };
+
   return (
     <PageLayout>
       <PageHeader>
@@ -182,56 +231,134 @@ function SessionDetail() {
           {/* Session Details Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Session Information</CardTitle>
+              <CardTitle className="text-lg">
+                Session Information
+                {isEditing && isHost && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    (Editing)
+                  </span>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {session.scheduledTime && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Date & Time</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Intl.DateTimeFormat("en-US", {
-                        dateStyle: "full",
-                        timeStyle: "short",
-                      }).format(new Date(session.scheduledTime))}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {session.location && (
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <p className="font-medium">Location</p>
-                    <p className="text-sm text-muted-foreground">
-                      {session.location}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Players</p>
-                  <p className="text-sm text-muted-foreground">
-                    {session.players.length} / {session.minPlayers}-
-                    {session.maxPlayers} players
-                  </p>
-                </div>
-              </div>
-
-              {session.description && (
+              {isEditing && isHost ? (
                 <>
-                  <Separator />
-                  <div>
-                    <p className="font-medium mb-2">Description</p>
-                    <p className="text-sm text-muted-foreground">
-                      {session.description}
-                    </p>
+                  {/* Edit Form */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="scheduledTime">Date & Time</Label>
+                      <Input
+                        id="scheduledTime"
+                        type="datetime-local"
+                        value={formData.scheduledTime}
+                        onChange={e => setFormData(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="location">Location</Label>
+                      <Input
+                        id="location"
+                        type="text"
+                        value={formData.location}
+                        onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Enter location"
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="minPlayers">Min Players</Label>
+                        <Input
+                          id="minPlayers"
+                          type="number"
+                          min="2"
+                          max={formData.maxPlayers}
+                          value={formData.minPlayers}
+                          onChange={e => setFormData(prev => ({ ...prev, minPlayers: parseInt(e.target.value) || 2 }))}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="maxPlayers">Max Players</Label>
+                        <Input
+                          id="maxPlayers"
+                          type="number"
+                          min={Math.max(formData.minPlayers, session.players.length)}
+                          value={formData.maxPlayers}
+                          onChange={e => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) || 8 }))}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Add a description for your session"
+                        className="mt-1"
+                        rows={3}
+                      />
+                    </div>
                   </div>
+                </>
+              ) : (
+                <>
+                  {/* Display Mode */}
+                  {session.scheduledTime && (
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Date & Time</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Intl.DateTimeFormat("en-US", {
+                            dateStyle: "full",
+                            timeStyle: "short",
+                          }).format(new Date(session.scheduledTime))}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {session.location && (
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <div>
+                        <p className="font-medium">Location</p>
+                        <p className="text-sm text-muted-foreground">
+                          {session.location}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">Players</p>
+                      <p className="text-sm text-muted-foreground">
+                        {session.players.length} / {session.minPlayers}-
+                        {session.maxPlayers} players
+                      </p>
+                    </div>
+                  </div>
+
+                  {session.description && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="font-medium mb-2">Description</p>
+                        <p className="text-sm text-muted-foreground">
+                          {session.description}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </CardContent>
@@ -392,16 +519,55 @@ function SessionDetail() {
             
             {isHost && (
               <>
-                <Button className="flex-1" variant="outline">
-                  Edit Session
-                </Button>
-                {session.status !== "completed" && session.status !== "cancelled" && (
-                  <Button
-                    variant="destructive"
-                    onClick={handleCancelSession}
-                  >
-                    Cancel Session
-                  </Button>
+                {isEditing ? (
+                  <>
+                    <Button 
+                      className="flex-1" 
+                      onClick={handleSaveChanges}
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      className="flex-1" 
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(true);
+                        // Initialize form data with current session values
+                        setFormData({
+                          scheduledTime: session.scheduledTime 
+                            ? new Date(session.scheduledTime).toISOString().slice(0, 16)
+                            : "",
+                          location: session.location || "",
+                          description: session.description || "",
+                          minPlayers: session.minPlayers,
+                          maxPlayers: session.maxPlayers,
+                        });
+                      }}
+                    >
+                      <Edit2 className="mr-2 h-4 w-4" />
+                      Edit Session
+                    </Button>
+                    {session.status !== "completed" && session.status !== "cancelled" && (
+                      <Button
+                        variant="destructive"
+                        onClick={handleCancelSession}
+                      >
+                        Cancel Session
+                      </Button>
+                    )}
+                  </>
                 )}
               </>
             )}

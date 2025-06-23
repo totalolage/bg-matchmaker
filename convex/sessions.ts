@@ -413,6 +413,65 @@ export const getUserSessions = query({
   },
 });
 
+export const updateSession = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    scheduledTime: v.optional(v.number()),
+    location: v.optional(v.string()),
+    description: v.optional(v.string()),
+    minPlayers: v.optional(v.number()),
+    maxPlayers: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+
+    // Only the host can update the session
+    if (session.hostId !== userId) {
+      throw new Error("Only the host can update the session");
+    }
+
+    // Cannot update completed or cancelled sessions
+    if (session.status === "completed" || session.status === "cancelled") {
+      throw new Error("Cannot update a completed or cancelled session");
+    }
+
+    // Prepare update object
+    const updates: any = {};
+    if (args.scheduledTime !== undefined) updates.scheduledTime = args.scheduledTime;
+    if (args.location !== undefined) updates.location = args.location;
+    if (args.description !== undefined) updates.description = args.description;
+    if (args.minPlayers !== undefined) {
+      // Validate minPlayers
+      if (args.minPlayers < 2) {
+        throw new Error("Minimum players must be at least 2");
+      }
+      if (args.minPlayers > session.maxPlayers) {
+        throw new Error("Minimum players cannot exceed maximum players");
+      }
+      updates.minPlayers = args.minPlayers;
+    }
+    if (args.maxPlayers !== undefined) {
+      // Validate maxPlayers
+      if (args.maxPlayers < session.minPlayers) {
+        throw new Error("Maximum players cannot be less than minimum players");
+      }
+      if (args.maxPlayers < session.players.length) {
+        throw new Error("Maximum players cannot be less than current player count");
+      }
+      updates.maxPlayers = args.maxPlayers;
+    }
+
+    // Update the session
+    await ctx.db.patch(args.sessionId, updates);
+
+    // TODO: In the future, send notifications to interested/accepted players about the update
+  },
+});
+
 export const cancelSession = mutation({
   args: {
     sessionId: v.id("sessions"),
