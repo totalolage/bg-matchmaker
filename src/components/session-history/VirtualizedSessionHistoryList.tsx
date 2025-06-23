@@ -43,7 +43,7 @@ export function VirtualizedSessionHistoryList({
   const { results, status, isLoading, loadMore } = usePaginatedQuery(
     api.sessionInteractions.getUserSessionHistoryPaginated,
     { filters: selectedFilters },
-    { initialNumItems: ITEMS_PER_PAGE }
+    { initialNumItems: ITEMS_PER_PAGE },
   );
 
   const allItems = results || [];
@@ -99,9 +99,10 @@ export function VirtualizedSessionHistoryList({
     );
   }
 
-  const filterLabel = selectedFilters.includes("all")
-    ? "sessions"
-    : selectedFilters.join(", ") + " sessions";
+  const filterLabel =
+    selectedFilters.includes("all") ? "sessions" : (
+      selectedFilters.join(", ") + " sessions"
+    );
 
   // Handle empty state
   if (!isLoading && allItems.length === 0) {
@@ -115,9 +116,9 @@ export function VirtualizedSessionHistoryList({
           emoji="📅"
           title={`No ${filterLabel} found`}
           subtitle={
-            selectedFilters.includes("all")
-              ? "Your session history will appear here once you interact with sessions"
-              : "Try selecting different filters to see more sessions"
+            selectedFilters.includes("all") ?
+              "Your session history will appear here once you interact with sessions"
+            : "Try selecting different filters to see more sessions"
           }
         />
       </div>
@@ -161,14 +162,14 @@ export function VirtualizedSessionHistoryList({
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                {isLoaderRow ? (
+                {isLoaderRow ?
                   <SessionHistorySkeleton />
-                ) : item ? (
+                : item ?
                   <SessionHistoryItem
                     interaction={item.interaction}
                     session={item.session}
                   />
-                ) : null}
+                : null}
               </div>
             );
           })}

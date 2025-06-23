@@ -1,6 +1,6 @@
 import { ComponentProps } from "react";
 
-import { cn } from "../lib/utils";
+import { cn } from "@/lib/utils";
 
 const sizeClasses = {
   sm: "w-12 h-12",
@@ -26,7 +26,7 @@ export const GameImage = ({
         className={cn(
           "bg-gray-200 rounded-lg flex items-center justify-center",
           sizeClasses[size],
-          className
+          className,
         )}
       >
         <span className="text-gray-400 text-2xl">🎲</span>

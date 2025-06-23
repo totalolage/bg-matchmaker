@@ -4,6 +4,15 @@ import { AlertCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import {
+  EXPERTISE_LEVELS,
+  MIN_SEARCH_LENGTH,
+  SEARCH_DEBOUNCE_MS,
+} from "@/components/game-library/constants";
+import type {
+  GameLibraryItem,
+  GameSearchResult,
+} from "@/components/game-library/types";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -12,13 +21,6 @@ import {
 } from "@/components/ui/select";
 import { api } from "@convex/_generated/api";
 import { usePaginatedQuery } from "convex/react";
-
-import {
-  EXPERTISE_LEVELS,
-  MIN_SEARCH_LENGTH,
-  SEARCH_DEBOUNCE_MS,
-} from "../constants";
-import type { GameLibraryItem, GameSearchResult } from "../types";
 
 import { GameSearchSkeleton } from "./GameSearchSkeleton";
 
@@ -47,12 +49,12 @@ export function VirtualizedGameSearchResults({
   // Use paginated query for infinite scrolling
   const { results, status, loadMore } = usePaginatedQuery(
     api.games.searchGamesPaginated,
-    shouldSearch
-      ? {
-          query: debouncedSearchQuery.trim(),
-        }
-      : "skip",
-    { initialNumItems: ITEMS_PER_PAGE }
+    shouldSearch ?
+      {
+        query: debouncedSearchQuery.trim(),
+      }
+    : "skip",
+    { initialNumItems: ITEMS_PER_PAGE },
   );
 
   const allItems = results || [];
@@ -155,16 +157,14 @@ export function VirtualizedGameSearchResults({
                 }}
               >
                 <div className="flex items-center space-x-3 p-2 bg-white rounded border h-full">
-                  {game.image ? (
+                  {game.image ?
                     <img
                       src={game.image}
                       alt={game.name}
                       className="w-12 h-12 rounded object-cover"
                       loading="lazy"
                     />
-                  ) : (
-                    <div className="w-12 h-12 rounded bg-gray-200" />
-                  )}
+                  : <div className="w-12 h-12 rounded bg-gray-200" />}
 
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-gray-900 truncate">

@@ -2,23 +2,22 @@ import { Link } from "@tanstack/react-router";
 import { Calendar, MapPin, MoreVertical, Users } from "lucide-react";
 import { toast } from "sonner";
 
-import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-
-import { EmptyState } from "../EmptyState";
-import { GameImage } from "../GameImage";
-import { PageContent, PageHeader, PageLayout } from "../PageLayout";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { EmptyState } from "@/components/EmptyState";
+import { GameImage } from "@/components/GameImage";
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { UserAvatar } from "../UserAvatar";
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "@/components/UserAvatar";
+import { api } from "@convex/_generated/api";
+import { Id } from "@convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 
 type ProposalWithStats = {
   _id: Id<"sessions">;
@@ -87,14 +86,13 @@ export function UserProposalsPage() {
       </PageHeader>
 
       <PageContent>
-        {proposals.length === 0 ? (
+        {proposals.length === 0 ?
           <EmptyState
             emoji="📋"
             title="No proposals yet"
             subtitle="Create a session to start organizing game nights!"
           />
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        : <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {proposals.map(proposal => (
               <Card
                 key={proposal._id}
@@ -152,7 +150,7 @@ export function UserProposalsPage() {
                           onClick={() => {
                             if (
                               confirm(
-                                "Are you sure you want to cancel this session?"
+                                "Are you sure you want to cancel this session?",
                               )
                             ) {
                               cancelSession({
@@ -160,7 +158,7 @@ export function UserProposalsPage() {
                               })
                                 .then(() => {
                                   toast.success(
-                                    "Session cancelled successfully"
+                                    "Session cancelled successfully",
                                   );
                                 })
                                 .catch(error => {
@@ -274,7 +272,7 @@ export function UserProposalsPage() {
               </Card>
             ))}
           </div>
-        )}
+        }
       </PageContent>
     </PageLayout>
   );

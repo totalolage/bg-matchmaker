@@ -29,9 +29,9 @@ export const populateSearchText = internalMutation({
     for (const game of games) {
       // Generate searchText from name and alternateNames if available
       const searchText =
-        game.alternateNames && game.alternateNames.length > 0
-          ? `${game.name} ${game.alternateNames.join(" ")}`
-          : game.name;
+        game.alternateNames && game.alternateNames.length > 0 ?
+          `${game.name} ${game.alternateNames.join(" ")}`
+        : game.name;
 
       await ctx.db.patch(game._id, { searchText });
       updated++;
@@ -44,7 +44,7 @@ export const populateSearchText = internalMutation({
       .collect();
 
     console.log(
-      `[Migration] Updated ${updated} games, ${remaining.length} remaining`
+      `[Migration] Updated ${updated} games, ${remaining.length} remaining`,
     );
 
     return {
@@ -71,7 +71,7 @@ export const runFullMigration = internalMutation({
         internal.migrations.populateSearchText.populateSearchText,
         {
           batchSize: 100,
-        }
+        },
       );
 
       totalUpdated += result.updated;
@@ -80,13 +80,13 @@ export const runFullMigration = internalMutation({
 
       if (needsMore) {
         console.log(
-          `[Migration] Run ${runs}: Updated ${result.updated}, continuing...`
+          `[Migration] Run ${runs}: Updated ${result.updated}, continuing...`,
         );
       }
     }
 
     console.log(
-      `[Migration] Complete! Total updated: ${totalUpdated} in ${runs} runs`
+      `[Migration] Complete! Total updated: ${totalUpdated} in ${runs} runs`,
     );
 
     return { totalUpdated, runs };

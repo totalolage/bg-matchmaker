@@ -13,9 +13,9 @@ export type FormItemContextValue = {
 };
 
 export const FormFieldContext = createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
+  {} as FormFieldContextValue,
 );
 
 export const FormItemContext = createContext<FormItemContextValue>(
-  {} as FormItemContextValue
+  {} as FormItemContextValue,
 );

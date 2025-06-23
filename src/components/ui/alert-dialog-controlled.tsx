@@ -50,13 +50,13 @@ export const AlertDialogControlled = ({
           {
             open: true,
             closed: false,
-          }[state]
+          }[state],
         ),
       toggle: () => setIsOpen(prev => !prev),
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [isOpen]
+    [isOpen],
   );
 
   const handleAction = async () => {
@@ -81,9 +81,9 @@ export const AlertDialogControlled = ({
           <AlertDialogAction
             onClick={() => void handleAction()}
             className={
-              variant === "destructive"
-                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                : ""
+              variant === "destructive" ?
+                "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              : ""
             }
           >
             {actionLabel}

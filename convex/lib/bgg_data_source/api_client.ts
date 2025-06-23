@@ -13,7 +13,7 @@ const BGG_BASE_URL = "https://boardgamegeek.com/xmlapi2";
  */
 export async function makeRequest(
   ctx: ActionCtx,
-  options: FetchOptions
+  options: FetchOptions,
 ): Promise<string> {
   // Enforce rate limits before making request
   await enforceBGGRateLimit(ctx);
@@ -31,12 +31,12 @@ export async function makeRequest(
       if (response.status === 503 || response.status === 429) {
         throw new BGGAPIError(
           "BGG API rate limit reached. Please try again later.",
-          response.status
+          response.status,
         );
       }
       throw new BGGAPIError(
         `BGG API request failed: ${response.statusText}`,
-        response.status
+        response.status,
       );
     }
 
@@ -48,7 +48,7 @@ export async function makeRequest(
     throw new BGGAPIError(
       "Failed to connect to BGG API",
       undefined,
-      error as Error
+      error as Error,
     );
   }
 }
@@ -58,7 +58,7 @@ export async function makeRequest(
  */
 export function buildSearchParams(
   query: string,
-  exact: boolean = false
+  exact: boolean = false,
 ): URLSearchParams {
   return new URLSearchParams({
     query: query.trim(),
@@ -72,7 +72,7 @@ export function buildSearchParams(
  */
 export function buildThingParams(
   bggIds: string | string[],
-  includeStats: boolean = true
+  includeStats: boolean = true,
 ): URLSearchParams {
   const ids = Array.isArray(bggIds) ? bggIds.join(",") : bggIds;
   const params = new URLSearchParams({ id: ids });

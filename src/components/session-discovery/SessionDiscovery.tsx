@@ -2,9 +2,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
 import { Doc } from "../../../convex/_generated/dataModel";
-import { Button } from "../ui/button";
-import { Card } from "../ui/card";
 
 import { SessionProposal } from "./SessionProposal";
 
@@ -48,7 +49,7 @@ export const SessionDiscovery = ({
 }: SessionDiscoveryProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(
-    null
+    null,
   );
   const [history, setHistory] = useState<
     { sessionId: string; action: "declined" | "interested" }[]
@@ -161,11 +162,10 @@ export const SessionDiscovery = ({
             initial="enter"
             animate="center"
             exit={
-              exitDirection === "left"
-                ? "exitLeft"
-                : exitDirection === "right"
-                  ? "exitRight"
-                  : "exitLeft"
+              exitDirection === "left" ? "exitLeft"
+              : exitDirection === "right" ?
+                "exitRight"
+              : "exitLeft"
             }
             transition={{
               x: { type: "spring", stiffness: 300, damping: 30 },

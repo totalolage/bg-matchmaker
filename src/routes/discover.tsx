@@ -4,11 +4,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
+import { SessionDiscovery } from "@/components/session-discovery";
+import { Button } from "@/components/ui/button";
+
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
-import { PageContent, PageHeader, PageLayout } from "../components/PageLayout";
-import { SessionDiscovery } from "../components/session-discovery";
-import { Button } from "../components/ui/button";
 
 export const Route = createFileRoute("/discover")({
   component: Discover,
@@ -22,12 +23,12 @@ function Discover() {
 
   // Track sessions that have been interacted with optimistically
   const [interactedSessionIds, setInteractedSessionIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   // Filter out sessions that have been optimistically interacted with
   const visibleSessions = sessions.filter(
-    session => !interactedSessionIds.has(session._id)
+    session => !interactedSessionIds.has(session._id),
   );
 
   const handleDecline = (sessionId: string) => {

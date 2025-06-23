@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { ComponentProps } from "react";
 
-import { cn } from "../lib/utils";
+import { cn } from "@/lib/utils";
 
 import { Button } from "./ui/button";
 
@@ -31,7 +31,7 @@ const timeSlotButtonVariants = cva(
     defaultVariants: {
       state: "default",
     },
-  }
+  },
 );
 
 export interface TimeSlotButtonProps
@@ -54,20 +54,18 @@ export const TimeSlotButton = ({
   className,
   disabled,
   ...props
-}: TimeSlotButtonProps) => {
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className={cn(timeSlotButtonVariants({ state }), className)}
-      disabled={disabled || state === "disabled" || state === "committed"}
-      aria-label={`Select ${time} time slot`}
-      aria-pressed={
-        state === "selected" || state === "confirmed" || state === "committed"
-      }
-      {...props}
-    >
-      {time}
-    </Button>
-  );
-};
+}: TimeSlotButtonProps) => (
+  <Button
+    variant="outline"
+    size="sm"
+    className={cn(timeSlotButtonVariants({ state }), className)}
+    disabled={disabled || state === "disabled" || state === "committed"}
+    aria-label={`Select ${time} time slot`}
+    aria-pressed={
+      state === "selected" || state === "confirmed" || state === "committed"
+    }
+    {...props}
+  >
+    {time}
+  </Button>
+);

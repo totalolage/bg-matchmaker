@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,14 +21,12 @@ import { Progress } from "@/components/ui/progress";
 import { api } from "@convex/_generated/api";
 import { BGG_SEEDING } from "@convex/lib/constants";
 
-import { PageContent, PageHeader, PageLayout } from "../PageLayout";
-
 import { CSVUpload } from "./CSVUpload";
 
 export function AdminPage() {
   // Query seeding status - automatically stays up to date
   const { data: status } = useQuery(
-    convexQuery(api.admin.getSeedingAdminStatus, {})
+    convexQuery(api.admin.getSeedingAdminStatus, {}),
   );
 
   // State to force re-render every second for duration update
@@ -333,9 +332,9 @@ export function AdminPage() {
                     className="flex items-center gap-2"
                   >
                     <RefreshCw className="h-4 w-4" />
-                    {startSeeding.isPending
-                      ? "Restarting..."
-                      : "Restart Seeding"}
+                    {startSeeding.isPending ?
+                      "Restarting..."
+                    : "Restart Seeding"}
                   </Button>
                 )}
 
@@ -347,9 +346,9 @@ export function AdminPage() {
                       className="flex items-center gap-2"
                     >
                       <RefreshCw className="h-4 w-4" />
-                      {resumeSeeding.isPending
-                        ? "Retrying..."
-                        : "Retry Seeding"}
+                      {resumeSeeding.isPending ?
+                        "Retrying..."
+                      : "Retry Seeding"}
                     </Button>
                     <Button
                       onClick={handleStop}

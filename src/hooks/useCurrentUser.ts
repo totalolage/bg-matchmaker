@@ -14,7 +14,7 @@ export function useCurrentUser(): Doc<"users"> {
   // we can assert that user exists. If it doesn't, there's a bug.
   if (!user) {
     throw new Error(
-      "User not found. This should not happen when authenticated."
+      "User not found. This should not happen when authenticated.",
     );
   }
 

@@ -17,14 +17,14 @@ const AlertDialogPortal = AlertDialogPrimitive.Portal;
 export const AlertDialogOverlay = (
   props: ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> & {
     ref?: React.Ref<ElementRef<typeof AlertDialogPrimitive.Overlay>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
     <AlertDialogPrimitive.Overlay
       className={cn(
         "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        className
+        className,
       )}
       {...rest}
       ref={ref}
@@ -36,7 +36,7 @@ export type AlertDialogOverlayProps = ComponentProps<typeof AlertDialogOverlay>;
 export const AlertDialogContent = (
   props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
     ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Content>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -46,7 +46,7 @@ export const AlertDialogContent = (
         ref={ref}
         className={cn(
           "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-          className
+          className,
         )}
         {...rest}
       />
@@ -62,7 +62,7 @@ export const AlertDialogHeader = ({
   <div
     className={cn(
       "flex flex-col space-y-2 text-center sm:text-left",
-      className
+      className,
     )}
     {...props}
   />
@@ -76,7 +76,7 @@ export const AlertDialogFooter = ({
   <div
     className={cn(
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
+      className,
     )}
     {...props}
   />
@@ -86,7 +86,7 @@ export type AlertDialogFooterProps = ComponentProps<typeof AlertDialogFooter>;
 export const AlertDialogTitle = (
   props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title> & {
     ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Title>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -104,7 +104,7 @@ export const AlertDialogDescription = (
     typeof AlertDialogPrimitive.Description
   > & {
     ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Description>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -122,7 +122,7 @@ export type AlertDialogDescriptionProps = ComponentProps<
 export const AlertDialogAction = (
   props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
     ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Action>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -138,7 +138,7 @@ export type AlertDialogActionProps = ComponentProps<typeof AlertDialogAction>;
 export const AlertDialogCancel = (
   props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
     ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Cancel>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -147,7 +147,7 @@ export const AlertDialogCancel = (
       className={cn(
         buttonVariants({ variant: "outline" }),
         "mt-2 sm:mt-0",
-        className
+        className,
       )}
       {...rest}
     />

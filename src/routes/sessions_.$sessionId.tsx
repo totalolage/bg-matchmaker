@@ -1,28 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Calendar, MapPin, Users, UserPlus, UserMinus, Edit2, X, Save } from "lucide-react";
-import { toast } from "sonner";
+import {
+  Calendar,
+  Edit2,
+  MapPin,
+  Save,
+  UserMinus,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
+import { GameImage } from "@/components/GameImage";
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { UserAvatar } from "@/components/UserAvatar";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 
-import { GameImage } from "../../components/GameImage";
-import {
-  PageContent,
-  PageHeader,
-  PageLayout,
-} from "../../components/PageLayout";
-import { Badge } from "../../components/ui/badge";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Separator } from "../../components/ui/separator";
-import { UserAvatar } from "../../components/UserAvatar";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
-import { Textarea } from "../../components/ui/textarea";
-
-export const Route = createFileRoute("/sessions/$sessionId")({
+export const Route = createFileRoute("/sessions_/$sessionId")({
   component: SessionDetail,
 });
 
@@ -67,17 +71,16 @@ function SessionDetail() {
 
   const isHost = session.hostId === currentUser._id;
   const isPlayer = session.players.includes(currentUser._id);
-  const isInterested = session.interestedPlayers.includes(currentUser._id);
+  const _isInterested = session.interestedPlayers.includes(currentUser._id);
 
   // Check if user has any interaction with this session
-  const userInteraction = session.interactions.interested.find(
-    i => i.userId === currentUser._id
-  )
-    ? "interested"
-    : session.interactions.declined.find(i => i.userId === currentUser._id)
-    ? "declined"
-    : session.interactions.accepted.find(i => i.userId === currentUser._id)
-    ? "accepted"
+  const userInteraction =
+    session.interactions.interested.find(i => i.userId === currentUser._id) ?
+      "interested"
+    : session.interactions.declined.find(i => i.userId === currentUser._id) ?
+      "declined"
+    : session.interactions.accepted.find(i => i.userId === currentUser._id) ?
+      "accepted"
     : null;
 
   const statusColors = {
@@ -120,7 +123,7 @@ function SessionDetail() {
 
   const handleCancelSession = async () => {
     if (!confirm("Are you sure you want to cancel this session?")) return;
-    
+
     try {
       await cancelSession({ sessionId: typedSessionId });
       toast.success("Session cancelled");
@@ -134,8 +137,9 @@ function SessionDetail() {
     try {
       await updateSession({
         sessionId: typedSessionId,
-        scheduledTime: formData.scheduledTime 
-          ? new Date(formData.scheduledTime).getTime()
+        scheduledTime:
+          formData.scheduledTime ?
+            new Date(formData.scheduledTime).getTime()
           : undefined,
         location: formData.location || undefined,
         description: formData.description || undefined,
@@ -154,8 +158,9 @@ function SessionDetail() {
     setIsEditing(false);
     // Reset form data
     setFormData({
-      scheduledTime: session.scheduledTime 
-        ? new Date(session.scheduledTime).toISOString().slice(0, 16)
+      scheduledTime:
+        session.scheduledTime ?
+          new Date(session.scheduledTime).toISOString().slice(0, 16)
         : "",
       location: session.location || "",
       description: session.description || "",
@@ -194,8 +199,12 @@ function SessionDetail() {
                           {session.status.charAt(0).toUpperCase() +
                             session.status.slice(1)}
                         </Badge>
-                        {isHost && <Badge variant="secondary">You're the Host</Badge>}
-                        {isPlayer && !isHost && <Badge variant="secondary">You're Playing</Badge>}
+                        {isHost && (
+                          <Badge variant="secondary">You're the Host</Badge>
+                        )}
+                        {isPlayer && !isHost && (
+                          <Badge variant="secondary">You're Playing</Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -241,7 +250,7 @@ function SessionDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {isEditing && isHost ? (
+              {isEditing && isHost ?
                 <>
                   {/* Edit Form */}
                   <div className="space-y-4">
@@ -251,7 +260,12 @@ function SessionDetail() {
                         id="scheduledTime"
                         type="datetime-local"
                         value={formData.scheduledTime}
-                        onChange={e => setFormData(prev => ({ ...prev, scheduledTime: e.target.value }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            scheduledTime: e.target.value,
+                          }))
+                        }
                         className="mt-1"
                       />
                     </div>
@@ -262,7 +276,12 @@ function SessionDetail() {
                         id="location"
                         type="text"
                         value={formData.location}
-                        onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            location: e.target.value,
+                          }))
+                        }
                         placeholder="Enter location"
                         className="mt-1"
                       />
@@ -277,7 +296,12 @@ function SessionDetail() {
                           min="2"
                           max={formData.maxPlayers}
                           value={formData.minPlayers}
-                          onChange={e => setFormData(prev => ({ ...prev, minPlayers: parseInt(e.target.value) || 2 }))}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              minPlayers: parseInt(e.target.value) || 2,
+                            }))
+                          }
                           className="mt-1"
                         />
                       </div>
@@ -286,9 +310,17 @@ function SessionDetail() {
                         <Input
                           id="maxPlayers"
                           type="number"
-                          min={Math.max(formData.minPlayers, session.players.length)}
+                          min={Math.max(
+                            formData.minPlayers,
+                            session.players.length,
+                          )}
                           value={formData.maxPlayers}
-                          onChange={e => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) || 8 }))}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              maxPlayers: parseInt(e.target.value) || 8,
+                            }))
+                          }
                           className="mt-1"
                         />
                       </div>
@@ -299,7 +331,12 @@ function SessionDetail() {
                       <Textarea
                         id="description"
                         value={formData.description}
-                        onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
                         placeholder="Add a description for your session"
                         className="mt-1"
                         rows={3}
@@ -307,8 +344,7 @@ function SessionDetail() {
                     </div>
                   </div>
                 </>
-              ) : (
-                <>
+              : <>
                   {/* Display Mode */}
                   {session.scheduledTime && (
                     <div className="flex items-center gap-3">
@@ -360,7 +396,7 @@ function SessionDetail() {
                     </>
                   )}
                 </>
-              )}
+              }
             </CardContent>
           </Card>
 
@@ -407,7 +443,8 @@ function SessionDetail() {
                   <Separator />
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-3">
-                      Interested Players ({session.interestedPlayersDetails.length})
+                      Interested Players (
+                      {session.interestedPlayersDetails.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {session.interestedPlayersDetails.map(player => (
@@ -463,8 +500,11 @@ function SessionDetail() {
               <>
                 <Button
                   className="flex-1"
-                  onClick={handleExpressInterest}
-                  disabled={session.status === "cancelled" || session.status === "completed"}
+                  onClick={() => void handleExpressInterest()}
+                  disabled={
+                    session.status === "cancelled" ||
+                    session.status === "completed"
+                  }
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
                   Express Interest
@@ -472,21 +512,24 @@ function SessionDetail() {
                 <Button
                   className="flex-1"
                   variant="outline"
-                  onClick={handleDeclineSession}
-                  disabled={session.status === "cancelled" || session.status === "completed"}
+                  onClick={() => void handleDeclineSession()}
+                  disabled={
+                    session.status === "cancelled" ||
+                    session.status === "completed"
+                  }
                 >
                   <UserMinus className="mr-2 h-4 w-4" />
                   Not Interested
                 </Button>
               </>
             )}
-            
+
             {userInteraction === "interested" && !isPlayer && (
               <>
                 <Button
                   className="flex-1"
                   variant="default"
-                  onClick={handleJoinSession}
+                  onClick={() => void handleJoinSession()}
                   disabled={
                     session.players.length >= session.maxPlayers ||
                     session.status === "cancelled" ||
@@ -495,35 +538,31 @@ function SessionDetail() {
                 >
                   Join Session
                 </Button>
-                <Button
-                  className="flex-1"
-                  variant="secondary"
-                  disabled
-                >
+                <Button className="flex-1" variant="secondary" disabled>
                   Interest Expressed ✓
                 </Button>
               </>
             )}
-            
+
             {userInteraction === "declined" && (
               <Button className="flex-1" variant="secondary" disabled>
                 Not Interested
               </Button>
             )}
-            
+
             {isPlayer && !isHost && (
               <Button className="flex-1" variant="secondary" disabled>
                 You're In! 🎉
               </Button>
             )}
-            
+
             {isHost && (
               <>
-                {isEditing ? (
+                {isEditing ?
                   <>
-                    <Button 
-                      className="flex-1" 
-                      onClick={handleSaveChanges}
+                    <Button
+                      className="flex-1"
+                      onClick={() => void handleSaveChanges()}
                     >
                       <Save className="mr-2 h-4 w-4" />
                       Save Changes
@@ -537,17 +576,19 @@ function SessionDetail() {
                       Cancel
                     </Button>
                   </>
-                ) : (
-                  <>
-                    <Button 
-                      className="flex-1" 
+                : <>
+                    <Button
+                      className="flex-1"
                       variant="outline"
                       onClick={() => {
                         setIsEditing(true);
                         // Initialize form data with current session values
                         setFormData({
-                          scheduledTime: session.scheduledTime 
-                            ? new Date(session.scheduledTime).toISOString().slice(0, 16)
+                          scheduledTime:
+                            session.scheduledTime ?
+                              new Date(session.scheduledTime)
+                                .toISOString()
+                                .slice(0, 16)
                             : "",
                           location: session.location || "",
                           description: session.description || "",
@@ -559,19 +600,20 @@ function SessionDetail() {
                       <Edit2 className="mr-2 h-4 w-4" />
                       Edit Session
                     </Button>
-                    {session.status !== "completed" && session.status !== "cancelled" && (
-                      <Button
-                        variant="destructive"
-                        onClick={handleCancelSession}
-                      >
-                        Cancel Session
-                      </Button>
-                    )}
+                    {session.status !== "completed" &&
+                      session.status !== "cancelled" && (
+                        <Button
+                          variant="destructive"
+                          onClick={() => void handleCancelSession()}
+                        >
+                          Cancel Session
+                        </Button>
+                      )}
                   </>
-                )}
+                }
               </>
             )}
-            
+
             <Button variant="outline" onClick={() => window.history.back()}>
               Back
             </Button>

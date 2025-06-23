@@ -1,12 +1,15 @@
+import { HOURS } from "@/components/availability/constants";
+import {
+  findIntervalContainingHour,
+  formatTime,
+  isDateInPast,
+} from "@/components/availability/utils";
 import { TimeSlotButton } from "@/components/TimeSlotButton";
 import {
   AvailabilityInterval,
   getAvailabilityForDate,
 } from "@/lib/availability";
 import { Doc } from "@convex/_generated/dataModel";
-
-import { HOURS } from "../constants";
-import { findIntervalContainingHour, formatTime, isDateInPast } from "../utils";
 
 interface TimeGridProps {
   date: Date;
@@ -50,11 +53,11 @@ export const TimeGrid = ({
         if (hoveredTime && !selectedTime) {
           const intervals = getAvailabilityForDate(
             selectedSlots,
-            hoveredTime.date
+            hoveredTime.date,
           );
           const foundInterval = findIntervalContainingHour(
             intervals,
-            hoveredTime.hour
+            hoveredTime.hour,
           );
           if (foundInterval) {
             hoveredIntervalToDelete = foundInterval;

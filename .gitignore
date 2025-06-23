@@ -7,6 +7,7 @@ node_modules/
 
 # Build output
 dist/
+dev-dist/
 
 # Lock files (if using multiple package managers)
 bun.lockb

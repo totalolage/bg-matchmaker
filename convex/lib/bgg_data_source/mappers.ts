@@ -16,7 +16,7 @@ import { BGGAPIError, BGGGameDetails, BGGSearchResult } from "./types";
  * Transform BGG search response to search results
  */
 export function mapSearchResponse(
-  response: BGGSearchResponse
+  response: BGGSearchResponse,
 ): BGGSearchResult[] {
   if (!response.items || !response.items.item) {
     return [];
@@ -48,7 +48,7 @@ function mapSearchItem(item: BGGSearchItem): BGGSearchResult | null {
  */
 export function mapThingResponse(
   response: BGGThingResponse,
-  bggId: string
+  bggId: string,
 ): BGGGameDetails {
   if (!response.items.item?.length)
     throw new BGGAPIError(`Game with BGG ID ${bggId} not found`, 404);
@@ -64,7 +64,7 @@ export function mapThingResponse(
  * Transform multiple thing items to game details
  */
 export function mapMultipleThingItems(
-  response: BGGThingResponse
+  response: BGGThingResponse,
 ): BGGGameDetails[] {
   if (!response.items.item?.length) return [];
 

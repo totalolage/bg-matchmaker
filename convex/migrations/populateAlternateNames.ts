@@ -20,7 +20,7 @@ export const updateGamesWithAlternateNames = internalMutation({
         id: v.id("gameData"),
         alternateNames: v.optional(v.array(v.string())),
         searchText: v.string(),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -46,7 +46,7 @@ export const populateAlternateNames = internalAction({
   },
   handler: async (
     ctx,
-    args
+    args,
   ): Promise<{
     processed: number;
     updated: number;
@@ -66,7 +66,7 @@ export const populateAlternateNames = internalAction({
       {
         cursor: args.cursor,
         limit: batchSize,
-      }
+      },
     );
 
     if (games.length === 0) {
@@ -95,7 +95,7 @@ export const populateAlternateNames = internalAction({
     for (const game of games) {
       try {
         console.log(
-          `[Migration] Fetching data for ${game.name} (BGG ID: ${game.bggId})`
+          `[Migration] Fetching data for ${game.name} (BGG ID: ${game.bggId})`,
         );
 
         // Fetch full details from BGG including alternate names
@@ -103,9 +103,9 @@ export const populateAlternateNames = internalAction({
 
         // Generate searchText
         const searchText =
-          details.alternateNames && details.alternateNames.length > 0
-            ? `${game.name} ${details.alternateNames.join(" ")}`
-            : game.name;
+          details.alternateNames && details.alternateNames.length > 0 ?
+            `${game.name} ${details.alternateNames.join(" ")}`
+          : game.name;
 
         updates.push({
           id: game._id,
@@ -114,12 +114,12 @@ export const populateAlternateNames = internalAction({
         });
 
         console.log(
-          `[Migration] Found ${details.alternateNames?.length || 0} alternate names for ${game.name}`
+          `[Migration] Found ${details.alternateNames?.length || 0} alternate names for ${game.name}`,
         );
       } catch (error) {
         console.error(
           `[Migration] Failed to fetch details for ${game.name}:`,
-          error
+          error,
         );
         errors.push({ gameId: game._id, error: String(error) });
 
@@ -135,7 +135,7 @@ export const populateAlternateNames = internalAction({
     // Update games in database
     const result: { updated: number } = await ctx.runMutation(
       internal.migrations.populateAlternateNames.updateGamesWithAlternateNames,
-      { updates }
+      { updates },
     );
 
     const lastGame = games[games.length - 1];
@@ -178,7 +178,7 @@ export const getGamesNeedingUpdate = internalQuery({
 export const runMigration = internalAction({
   args: {},
   handler: async (
-    ctx
+    ctx,
   ): Promise<{
     totalProcessed: number;
     totalUpdated: number;
@@ -201,7 +201,7 @@ export const runMigration = internalAction({
         nextCursor?: string;
       } = await ctx.runAction(
         internal.migrations.populateAlternateNames.populateAlternateNames,
-        { cursor }
+        { cursor },
       );
 
       totalProcessed += result.processed;
@@ -211,7 +211,7 @@ export const runMigration = internalAction({
       cursor = result.nextCursor;
 
       console.log(
-        `[Migration] Progress: Processed ${totalProcessed}, Updated ${totalUpdated}, Errors ${totalErrors}`
+        `[Migration] Progress: Processed ${totalProcessed}, Updated ${totalUpdated}, Errors ${totalErrors}`,
       );
 
       // Add a small delay to avoid rate limiting
@@ -222,7 +222,7 @@ export const runMigration = internalAction({
 
     console.log("[Migration] Complete!");
     console.log(
-      `[Migration] Final stats: Processed ${totalProcessed}, Updated ${totalUpdated}, Errors ${totalErrors}`
+      `[Migration] Final stats: Processed ${totalProcessed}, Updated ${totalUpdated}, Errors ${totalErrors}`,
     );
 
     return {

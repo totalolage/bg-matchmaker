@@ -43,7 +43,7 @@ export class SessionProposalEngine {
 
   constructor(
     user: Doc<"users">,
-    userInteractions: Doc<"sessionInteractions">[]
+    userInteractions: Doc<"sessionInteractions">[],
   ) {
     this.user = user;
     this.userInteractions = userInteractions;
@@ -55,7 +55,7 @@ export class SessionProposalEngine {
    */
   calculateGamePreferenceOverlap(
     user1Games: string[],
-    user2Games: string[]
+    user2Games: string[],
   ): number {
     if (!user1Games.length || !user2Games.length) {
       return 0;
@@ -64,7 +64,7 @@ export class SessionProposalEngine {
     const user1Set = new Set(user1Games);
     const user2Set = new Set(user2Games);
     const intersection = new Set(
-      [...user1Set].filter(game => user2Set.has(game))
+      [...user1Set].filter(game => user2Set.has(game)),
     );
 
     // Jaccard similarity coefficient
@@ -78,7 +78,7 @@ export class SessionProposalEngine {
    */
   calculateTimeSlotCompatibility(
     user1Schedule: TimeSlot[],
-    user2Schedule: TimeSlot[]
+    user2Schedule: TimeSlot[],
   ): number {
     if (!user1Schedule.length || !user2Schedule.length) {
       return 0;
@@ -123,7 +123,7 @@ export class SessionProposalEngine {
    */
   calculateSuccessRate(
     userId: Id<"users">,
-    interactions: Doc<"sessionInteractions">[]
+    interactions: Doc<"sessionInteractions">[],
   ): number {
     if (!interactions.length) {
       // New users get a neutral score
@@ -131,7 +131,7 @@ export class SessionProposalEngine {
     }
 
     const userInteractions = interactions.filter(
-      interaction => interaction.userId === userId
+      interaction => interaction.userId === userId,
     );
 
     if (!userInteractions.length) {
@@ -158,7 +158,7 @@ export class SessionProposalEngine {
    * Calculate overall proposal score combining all factors
    */
   private calculateOverallScore(
-    scores: Omit<ProposalScore, "overallScore">
+    scores: Omit<ProposalScore, "overallScore">,
   ): number {
     // Weighted average with game preference being most important
     const weights = {
@@ -182,7 +182,7 @@ export class SessionProposalEngine {
       user: Doc<"users">;
       interactions: Doc<"sessionInteractions">[];
     }>,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<SessionProposal[]> {
     const proposals: SessionProposal[] = [];
 
@@ -197,7 +197,7 @@ export class SessionProposalEngine {
       // Calculate individual scores
       const preferenceScore = this.calculateGamePreferenceOverlap(
         this.user.gameLibrary.map(g => g.gameId),
-        otherUser.gameLibrary.map(g => g.gameId)
+        otherUser.gameLibrary.map(g => g.gameId),
       );
 
       // Convert availability to TimeSlot format
@@ -225,12 +225,12 @@ export class SessionProposalEngine {
 
       const timeCompatibilityScore = this.calculateTimeSlotCompatibility(
         userTimeSlots,
-        otherUserTimeSlots
+        otherUserTimeSlots,
       );
 
       const successRateScore = this.calculateSuccessRate(
         otherUser._id,
-        match.interactions
+        match.interactions,
       );
 
       const overallScore = this.calculateOverallScore({
@@ -244,7 +244,7 @@ export class SessionProposalEngine {
         // Find common games for the proposal
         const commonGames = this.user.gameLibrary
           .filter(g1 =>
-            otherUser.gameLibrary.some(g2 => g2.gameId === g1.gameId)
+            otherUser.gameLibrary.some(g2 => g2.gameId === g1.gameId),
           )
           .map(g => g.gameId);
 
@@ -252,7 +252,7 @@ export class SessionProposalEngine {
           // Find overlapping time slots
           const overlappingSlots = this.findOverlappingTimeSlots(
             userTimeSlots,
-            otherUserTimeSlots
+            otherUserTimeSlots,
           );
 
           if (overlappingSlots.length > 0 && commonGames[0]) {
@@ -260,7 +260,7 @@ export class SessionProposalEngine {
             if (firstSlot) {
               // Get the game details from the user's library
               const gameDetails = this.user.gameLibrary.find(
-                g => g.gameId === commonGames[0]
+                g => g.gameId === commonGames[0],
               );
 
               proposals.push({
@@ -279,7 +279,7 @@ export class SessionProposalEngine {
                 reason: this.generateProposalReason(
                   preferenceScore,
                   timeCompatibilityScore,
-                  successRateScore
+                  successRateScore,
                 ),
                 createdAt: Date.now(),
                 expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -305,7 +305,7 @@ export class SessionProposalEngine {
    */
   private findOverlappingTimeSlots(
     schedule1: TimeSlot[],
-    schedule2: TimeSlot[]
+    schedule2: TimeSlot[],
   ): TimeSlot[] {
     const overlaps: TimeSlot[] = [];
 
@@ -346,7 +346,7 @@ export class SessionProposalEngine {
   private generateProposalReason(
     preferenceScore: number,
     timeScore: number,
-    successScore: number
+    successScore: number,
   ): string {
     const reasons: string[] = [];
 

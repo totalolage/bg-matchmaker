@@ -39,13 +39,13 @@ export const getSeedingAdminStatus = query({
       totalErrors: metadata.totalErrors,
       startedAt: new Date(job.startedAt).toISOString(),
       lastUpdatedAt: new Date(job.lastUpdatedAt).toISOString(),
-      completedAt: job.completedAt
-        ? new Date(job.completedAt).toISOString()
-        : null,
+      completedAt:
+        job.completedAt ? new Date(job.completedAt).toISOString() : null,
       error: job.error,
       isCronActive: isSelfScheduling,
-      nextRunTime: isSelfScheduling
-        ? new Date(Date.now() + BGG_SEEDING.SCHEDULE_DELAY_MS).toISOString()
+      nextRunTime:
+        isSelfScheduling ?
+          new Date(Date.now() + BGG_SEEDING.SCHEDULE_DELAY_MS).toISOString()
         : null,
     };
   },
@@ -55,7 +55,7 @@ export const getSeedingAdminStatus = query({
 export const startSeeding = action({
   args: {},
   handler: async (
-    ctx
+    ctx,
   ): Promise<{
     processed: number;
     success: number;
@@ -106,7 +106,7 @@ export const stopSeeding = mutation({
         } catch (e) {
           console.log(
             "[Stop] Could not cancel scheduled function (may have already run):",
-            e
+            e,
           );
         }
       }
@@ -130,7 +130,7 @@ export const stopSeeding = mutation({
 export const resumeSeeding = action({
   args: {},
   handler: async (
-    ctx
+    ctx,
   ): Promise<{
     processed: number;
     success: number;
@@ -196,7 +196,7 @@ export const updateSeedingStatus = internalMutation({
       v.literal("stopping"),
       v.literal("stopped"),
       v.literal("completed"),
-      v.literal("failed")
+      v.literal("failed"),
     ),
   },
   handler: async (ctx, args) => {
@@ -235,7 +235,7 @@ export const batchUpsertGames = mutation({
         strategyGamesRank: v.optional(v.number()),
         thematicRank: v.optional(v.number()),
         wargamesRank: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {

@@ -72,7 +72,7 @@ export function parseSearchResponse(xmlData: string): BGGSearchResponse {
     throw new BGGAPIError(
       "Invalid response format from BGG search API",
       undefined,
-      error instanceof Error ? error : new Error(String(error))
+      error instanceof Error ? error : new Error(String(error)),
     );
   }
 }
@@ -93,7 +93,7 @@ export function parseThingResponse(xmlData: string): BGGThingResponse {
     throw new BGGAPIError(
       "Invalid response format from BGG thing API",
       undefined,
-      error instanceof Error ? error : new Error(String(error))
+      error instanceof Error ? error : new Error(String(error)),
     );
   }
 }
@@ -114,7 +114,7 @@ export function parseHotResponse(xmlData: string): BGGHotResponse {
     throw new BGGAPIError(
       "Invalid response format from BGG hot API",
       undefined,
-      error instanceof Error ? error : new Error(String(error))
+      error instanceof Error ? error : new Error(String(error)),
     );
   }
 }

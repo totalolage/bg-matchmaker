@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export const Avatar = (
   props: React.ComponentPropsWithRef<typeof AvatarPrimitive.Root> & {
     ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Root>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -14,7 +14,7 @@ export const Avatar = (
       ref={ref}
       className={cn(
         "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
-        className
+        className,
       )}
       {...rest}
     />
@@ -25,7 +25,7 @@ export type AvatarProps = ComponentProps<typeof Avatar>;
 export const AvatarImage = (
   props: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> & {
     ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Image>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -41,7 +41,7 @@ export type AvatarImageProps = ComponentProps<typeof AvatarImage>;
 export const AvatarFallback = (
   props: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> & {
     ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Fallback>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -49,7 +49,7 @@ export const AvatarFallback = (
       ref={ref}
       className={cn(
         "flex h-full w-full items-center justify-center rounded-full bg-muted",
-        className
+        className,
       )}
       {...rest}
     />

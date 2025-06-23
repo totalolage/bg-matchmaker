@@ -1,8 +1,9 @@
 import { Clock, MapPin, Users } from "lucide-react";
 import { ComponentProps } from "react";
 
+import { cn } from "@/lib/utils";
+
 import { Doc } from "../../convex/_generated/dataModel";
-import { cn } from "../lib/utils";
 
 import { IconText } from "./IconText";
 
@@ -17,13 +18,17 @@ export const SessionInfo = ({
   size?: "sm" | "md" | "base";
   showPlayers?: boolean;
 }) => {
-  const iconSize = size === "sm" ? 14 : size === "base" ? 18 : 16;
+  const iconSize =
+    size === "sm" ? 14
+    : size === "base" ? 18
+    : 16;
   const textClass =
-    size === "sm" ? "text-xs" : size === "base" ? "text-base" : "text-sm";
+    size === "sm" ? "text-xs"
+    : size === "base" ? "text-base"
+    : "text-sm";
 
-  const scheduledDate = session.scheduledTime
-    ? new Date(session.scheduledTime)
-    : null;
+  const scheduledDate =
+    session.scheduledTime ? new Date(session.scheduledTime) : null;
 
   return (
     <div className={cn("space-y-1", className)}>

@@ -1,6 +1,8 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
+import { EXPERTISE_LEVELS } from "@/components/game-library/constants";
+import type { GameLibraryItem as GameLibraryItemType } from "@/components/game-library/types";
 import { GameImage } from "@/components/GameImage";
 import { GameDetailsModal } from "@/components/games/GameDetailsModal";
 import { Button } from "@/components/ui/button";
@@ -11,9 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { EXPERTISE_LEVELS } from "../constants";
-import type { GameLibraryItem as GameLibraryItemType } from "../types";
 
 interface GameLibraryItemProps {
   game: GameLibraryItemType;
@@ -28,7 +27,7 @@ export function GameLibraryItem({
 }: GameLibraryItemProps) {
   const [showDetails, setShowDetails] = useState(false);
   const expertiseLevel = EXPERTISE_LEVELS.find(
-    l => l.value === game.expertiseLevel
+    l => l.value === game.expertiseLevel,
   );
 
   return (

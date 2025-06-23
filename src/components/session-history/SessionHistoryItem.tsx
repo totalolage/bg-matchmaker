@@ -70,22 +70,21 @@ export function SessionHistoryItem({
       <Card
         className={cn(
           "p-4 hover:shadow-md transition-shadow cursor-pointer",
-          config.borderColor
+          config.borderColor,
         )}
       >
         <div className="flex items-start gap-4">
           {/* Game Image */}
-          {session.gameImage ? (
+          {session.gameImage ?
             <img
               src={session.gameImage}
               alt={session.gameName}
               className="w-16 h-16 rounded-lg object-cover"
             />
-          ) : (
-            <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center">
+          : <div className="w-16 h-16 rounded-lg bg-gray-200 flex items-center justify-center">
               <GamepadIcon size={24} className="text-gray-400" />
             </div>
-          )}
+          }
 
           {/* Content */}
           <div className="flex-1 min-w-0">

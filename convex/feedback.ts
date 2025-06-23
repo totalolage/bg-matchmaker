@@ -50,12 +50,11 @@ export const getSessionFeedback = query({
   args: {
     sessionId: v.id("sessions"),
   },
-  handler: async (ctx, args) => {
-    return await ctx.db
+  handler: async (ctx, args) =>
+    await ctx.db
       .query("sessionFeedback")
       .withIndex("by_session", q => q.eq("sessionId", args.sessionId))
-      .collect();
-  },
+      .collect(),
 });
 
 export const getUserFeedback = query({

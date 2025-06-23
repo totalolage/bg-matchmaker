@@ -11,7 +11,7 @@ export const Button = (
     VariantProps<typeof buttonVariants> & {
       asChild?: boolean;
       ref?: React.Ref<HTMLButtonElement>;
-    }
+    },
 ) => {
   const { className, variant, size, asChild = false, ref, ...rest } = props;
   const Comp = asChild ? Slot : "button";

@@ -1,13 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CreateSessionForm } from "../../components/CreateSessionForm";
-import {
-  PageContent,
-  PageHeader,
-  PageLayout,
-} from "../../components/PageLayout";
+import { CreateSessionForm } from "@/components/CreateSessionForm";
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 
-export const Route = createFileRoute("/sessions/create")({
+export const Route = createFileRoute("/sessions_/create")({
   component: Create,
 });
 

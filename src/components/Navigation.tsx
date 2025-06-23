@@ -2,9 +2,8 @@ import { convexQuery } from "@convex-dev/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 
+import { getVisibleNavigationItems } from "@/lib/navigation";
 import { api } from "@convex/_generated/api";
-
-import { getVisibleNavigationItems } from "../lib/navigation";
 
 export function Navigation() {
   const location = useLocation();

@@ -7,7 +7,7 @@ import { useFormField } from "./hooks";
 export const FormDescription = (
   props: HTMLAttributes<HTMLParagraphElement> & {
     ref?: Ref<HTMLParagraphElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   const { formDescriptionId } = useFormField();

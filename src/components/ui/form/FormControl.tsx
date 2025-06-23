@@ -11,7 +11,7 @@ import { useFormField } from "./hooks";
 export const FormControl = (
   props: ComponentPropsWithoutRef<typeof Slot> & {
     ref?: Ref<ElementRef<typeof Slot>>;
-  }
+  },
 ) => {
   const { ref, ...rest } = props;
   const { error, formItemId, formDescriptionId, formMessageId } =
@@ -22,9 +22,9 @@ export const FormControl = (
       ref={ref}
       id={formItemId}
       aria-describedby={
-        !error
-          ? `${formDescriptionId}`
-          : `${formDescriptionId} ${formMessageId}`
+        !error ?
+          `${formDescriptionId}`
+        : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={!!error}
       {...rest}

@@ -33,7 +33,7 @@ type SearchWeights = {
 // Helper function to count occurrences of search term in text (case-insensitive)
 function countOccurrences(
   text: string | undefined,
-  searchTerm: string
+  searchTerm: string,
 ): number {
   if (!text) return 0;
   const lowerText = text.toLowerCase();
@@ -53,7 +53,7 @@ function countOccurrences(
 function calculateRelevanceScore(
   game: { name?: string; alternateNames?: string[]; description?: string },
   searchTerm: string,
-  weights: SearchWeights
+  weights: SearchWeights,
 ): number {
   const lowerSearchTerm = searchTerm.toLowerCase();
   const lowerName = game.name?.toLowerCase() || "";
@@ -64,18 +64,17 @@ function calculateRelevanceScore(
   }
 
   // Starting with search term gets bonus
-  const startsWithBonus = lowerName.startsWith(lowerSearchTerm)
-    ? weights.title
-    : 0;
+  const startsWithBonus =
+    lowerName.startsWith(lowerSearchTerm) ? weights.title : 0;
 
   // Count occurrences but cap at 2 to prevent gaming
   const titleHits = Math.min(countOccurrences(game.name, searchTerm), 2);
   const altHits = Math.min(
     (game.alternateNames || []).reduce(
       (sum: number, alt: string) => sum + countOccurrences(alt, searchTerm),
-      0
+      0,
     ),
-    2
+    2,
   );
   const descHits = Math.min(countOccurrences(game.description, searchTerm), 2);
 
@@ -90,7 +89,7 @@ function calculateRelevanceScore(
 // Calculate final score combining relevance and popularity
 function calculateFinalScore(
   relevanceScore: number,
-  popularity: number | undefined
+  popularity: number | undefined,
 ): number {
   // For very popular games (>10k), use a stronger boost
   const pop = popularity || 0;
@@ -122,7 +121,7 @@ export const searchGames = query({
         title: v.optional(v.number()),
         alternateNames: v.optional(v.number()),
         description: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args): Promise<GameSearchResult[]> => {
@@ -157,7 +156,7 @@ export const searchGames = query({
         const relevanceScore = calculateRelevanceScore(
           game,
           searchTerm,
-          weights
+          weights,
         );
         const finalScore = calculateFinalScore(relevanceScore, game.popularity);
         return {
@@ -193,7 +192,7 @@ export const searchGamesPaginated = query({
         title: v.optional(v.number()),
         alternateNames: v.optional(v.number()),
         description: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -218,9 +217,8 @@ export const searchGamesPaginated = query({
     // then score and sort them before applying pagination
 
     // Parse cursor to get the offset for our custom pagination
-    const offset = args.paginationOpts.cursor
-      ? parseInt(args.paginationOpts.cursor, 10)
-      : 0;
+    const offset =
+      args.paginationOpts.cursor ? parseInt(args.paginationOpts.cursor, 10) : 0;
     const limit = args.paginationOpts.numItems;
 
     // Use the search index on the name field directly
@@ -235,7 +233,7 @@ export const searchGamesPaginated = query({
         const relevanceScore = calculateRelevanceScore(
           game,
           searchTerm,
-          weights
+          weights,
         );
         const finalScore = calculateFinalScore(relevanceScore, game.popularity);
         return {
@@ -281,12 +279,13 @@ export const getUserLibraryGames = query({
 
     // Batch fetch games by their IDs using individual queries
     // This is the correct approach in Convex for "IN" style queries
-    const gamePromises = args.gameIds.map(async gameId => {
-      return await ctx.db
-        .query("gameData")
-        .withIndex("by_bgg_id", q => q.eq("bggId", gameId))
-        .unique();
-    });
+    const gamePromises = args.gameIds.map(
+      async gameId =>
+        await ctx.db
+          .query("gameData")
+          .withIndex("by_bgg_id", q => q.eq("bggId", gameId))
+          .unique(),
+    );
 
     const games = await Promise.all(gamePromises);
 
@@ -452,7 +451,7 @@ export const searchCachedGames = internalQuery({
 
     return games
       .filter(game =>
-        game.name.toLowerCase().includes(args.query.toLowerCase())
+        game.name.toLowerCase().includes(args.query.toLowerCase()),
       )
       .map(game => ({
         bggId: game.bggId,
@@ -491,9 +490,9 @@ export const cacheGame = internalMutation({
 
     // Generate searchText by combining name and alternate names
     const searchText =
-      args.alternateNames && args.alternateNames.length > 0
-        ? `${args.name} ${args.alternateNames.join(" ")}`
-        : args.name;
+      args.alternateNames && args.alternateNames.length > 0 ?
+        `${args.name} ${args.alternateNames.join(" ")}`
+      : args.name;
 
     const gameData = {
       ...args,
@@ -529,7 +528,7 @@ export const cacheGames = internalMutation({
         yearPublished: v.optional(v.number()),
         popularity: v.optional(v.number()),
         averageRating: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -551,9 +550,9 @@ export const cacheGames = internalMutation({
 
         // Generate searchText by combining name and alternate names
         const searchText =
-          game.alternateNames && game.alternateNames.length > 0
-            ? `${game.name} ${game.alternateNames.join(" ")}`
-            : game.name;
+          game.alternateNames && game.alternateNames.length > 0 ?
+            `${game.name} ${game.alternateNames.join(" ")}`
+          : game.name;
 
         const gameData = {
           ...game,
@@ -574,7 +573,7 @@ export const cacheGames = internalMutation({
         // Log the error but continue processing other games
         console.error(
           `[cacheGames] Failed to cache game ${game.bggId}:`,
-          error
+          error,
         );
         results.push({
           bggId: game.bggId,
@@ -709,12 +708,11 @@ export const getSeedingProgress = internalQuery({
   args: {
     name: v.string(),
   },
-  handler: async (ctx, args) => {
-    return await ctx.db
+  handler: async (ctx, args) =>
+    await ctx.db
       .query("jobs")
       .withIndex("by_name", q => q.eq("name", args.name))
-      .unique();
-  },
+      .unique(),
 });
 
 export const upsertSeedingProgress = internalMutation({
@@ -730,7 +728,7 @@ export const upsertSeedingProgress = internalMutation({
       v.literal("stopping"),
       v.literal("stopped"),
       v.literal("completed"),
-      v.literal("failed")
+      v.literal("failed"),
     ),
     error: v.optional(v.string()),
     scheduledFunctionId: v.optional(v.id("_scheduled_functions")),
@@ -784,7 +782,7 @@ export const seedDatabase = action({
   },
   handler: async (
     ctx,
-    args
+    args,
   ): Promise<{
     processed: number;
     success: number;
@@ -801,7 +799,7 @@ export const seedDatabase = action({
       "[Seed] seedDatabase called, actor:",
       args.actor,
       "isRetry:",
-      args.isRetry
+      args.isRetry,
     );
 
     // Use configured max duration or default
@@ -877,7 +875,7 @@ export const seedDatabase = action({
     // If this is a retry, log it
     if (args.isRetry && existingJob?.status === "failed") {
       console.log(
-        `[Seed] Retrying failed seeding from ID ${existingJob.progress.current + 1}`
+        `[Seed] Retrying failed seeding from ID ${existingJob.progress.current + 1}`,
       );
     }
 
@@ -889,7 +887,7 @@ export const seedDatabase = action({
     if (existingJob) {
       if (existingJob.status === "completed") {
         console.log(
-          `[Seed] Seeding already completed. Last processed ID: ${existingJob.progress.current}`
+          `[Seed] Seeding already completed. Last processed ID: ${existingJob.progress.current}`,
         );
         return {
           processed: existingMetadata?.totalProcessed || 0,
@@ -905,7 +903,7 @@ export const seedDatabase = action({
       startId = existingJob.progress.current + 1;
       console.log(
         `[Seed] Resuming from tracking table. Starting from ID ${startId} ` +
-          `(previous run: ${existingMetadata?.totalProcessed || 0} processed, ${existingMetadata?.totalSuccess || 0} success)`
+          `(previous run: ${existingMetadata?.totalProcessed || 0} processed, ${existingMetadata?.totalSuccess || 0} success)`,
       );
     } else {
       // Fallback to checking highest ID if no tracking exists
@@ -913,7 +911,7 @@ export const seedDatabase = action({
       if (highestId !== null) {
         startId = highestId + 1;
         console.log(
-          `[Seed] Auto-resuming from ID ${startId} (highest existing ID: ${highestId})`
+          `[Seed] Auto-resuming from ID ${startId} (highest existing ID: ${highestId})`,
         );
       }
     }
@@ -948,7 +946,7 @@ export const seedDatabase = action({
         if (elapsedTime >= maxDuration) {
           console.log(
             `[Seed] Approaching time limit (${elapsedTime}ms elapsed). ` +
-              `Scheduling next run to continue from ID ${lastProcessedId + 1}`
+              `Scheduling next run to continue from ID ${lastProcessedId + 1}`,
           );
           shouldScheduleNextRun = true;
           break;
@@ -957,22 +955,22 @@ export const seedDatabase = action({
         const batchEnd = batchStart + batchSize - 1;
         const batchIds = Array.from(
           { length: batchSize },
-          (_, i) => i + batchStart
+          (_, i) => i + batchStart,
         ).map(id => id.toString());
 
         console.log(
-          `[Seed] Processing batch ${batchStart}-${batchEnd} (${batchIds.length} IDs)...`
+          `[Seed] Processing batch ${batchStart}-${batchEnd} (${batchIds.length} IDs)...`,
         );
 
         // Check which games already exist if skipExisting is true
         const existingIds = new Set<string>(
           await ctx.runQuery(internal.games.checkGamesExist, {
             bggIds: batchIds,
-          })
+          }),
         );
         if (existingIds.size > 0) {
           console.log(
-            `[Seed] Skipping ${existingIds.size} existing games in batch`
+            `[Seed] Skipping ${existingIds.size} existing games in batch`,
           );
         }
 
@@ -990,7 +988,7 @@ export const seedDatabase = action({
           internal.games.getSeedingProgress,
           {
             name: seedName,
-          }
+          },
         );
         if (
           beforeFetchJob?.status === "stopping" ||
@@ -999,7 +997,7 @@ export const seedDatabase = action({
           console.log(
             "[Seed] Job is",
             beforeFetchJob.status,
-            ", exiting batch processing"
+            ", exiting batch processing",
           );
           lastProcessedId = batchStart - 1; // Don't count this batch as processed
           shouldScheduleNextRun = false;
@@ -1011,12 +1009,12 @@ export const seedDatabase = action({
           const batchStartTime = Date.now();
           const gameDetails = await BGGDataSource.getMultipleGameDetails(
             ctx,
-            idsToFetch
+            idsToFetch,
           );
           const batchDuration = Date.now() - batchStartTime;
 
           console.log(
-            `[Seed] Fetched ${gameDetails.length} games in ${batchDuration}ms`
+            `[Seed] Fetched ${gameDetails.length} games in ${batchDuration}ms`,
           );
 
           // Reset consecutive not found counter if we found any games
@@ -1054,18 +1052,18 @@ export const seedDatabase = action({
               totalErrors += failed.length;
 
               console.log(
-                `[Seed] Cached ${successful.length} games (${successful.filter(r => r.isNew).length} new, ${successful.filter(r => !r.isNew).length} updated)`
+                `[Seed] Cached ${successful.length} games (${successful.filter(r => r.isNew).length} new, ${successful.filter(r => !r.isNew).length} updated)`,
               );
 
               if (failed.length > 0) {
                 console.log(
-                  `[Seed] Failed to cache ${failed.length} games due to validation/mutation errors`
+                  `[Seed] Failed to cache ${failed.length} games due to validation/mutation errors`,
                 );
               }
             } catch (error) {
               console.error(
                 `[Seed] Failed to cache batch of ${gameDetails.length} games:`,
-                error
+                error,
               );
               totalErrors += gameDetails.length;
             }
@@ -1079,7 +1077,7 @@ export const seedDatabase = action({
             internal.games.getSeedingProgress,
             {
               name: seedName,
-            }
+            },
           );
           if (
             afterBatchJob?.status === "stopping" ||
@@ -1088,7 +1086,7 @@ export const seedDatabase = action({
             console.log(
               "[Seed] Job is",
               afterBatchJob.status,
-              " after batch processing, not updating progress"
+              " after batch processing, not updating progress",
             );
             shouldScheduleNextRun = false;
             break;
@@ -1109,7 +1107,7 @@ export const seedDatabase = action({
           if ((batchStart - startId) % (batchSize * 10) === 0) {
             console.log(
               `[Seed] Progress: Processed ${totalProcessed} IDs, ` +
-                `Success: ${totalSuccess}, Skipped: ${totalSkipped}, Errors: ${totalErrors}`
+                `Success: ${totalSuccess}, Skipped: ${totalSkipped}, Errors: ${totalErrors}`,
             );
           }
 
@@ -1117,7 +1115,7 @@ export const seedDatabase = action({
           if (consecutiveNotFound >= BGG_SEEDING.MAX_CONSECUTIVE_NOT_FOUND) {
             console.log(
               `[Seed] Stopping: ${consecutiveNotFound} consecutive IDs not found. ` +
-                `Likely reached end of BGG database.`
+                `Likely reached end of BGG database.`,
             );
             lastProcessedId = batchEnd;
             break;
@@ -1125,7 +1123,7 @@ export const seedDatabase = action({
         } catch (error) {
           console.error(
             `[Seed] Failed to process batch ${batchStart}-${batchEnd}:`,
-            error
+            error,
           );
           // Count all games in this batch as errors since we couldn't even fetch them
           totalErrors += idsToFetch.length;
@@ -1169,11 +1167,11 @@ export const seedDatabase = action({
           api.games.seedDatabase,
           {
             actor: "scheduler",
-          }
+          },
         );
 
         console.log(
-          `[Seed] Scheduled next run to start from ID ${lastProcessedId + 1} in ${BGG_SEEDING.SCHEDULE_DELAY_MS / 1000 / 60} minutes`
+          `[Seed] Scheduled next run to start from ID ${lastProcessedId + 1} in ${BGG_SEEDING.SCHEDULE_DELAY_MS / 1000 / 60} minutes`,
         );
       } else if (
         currentJob?.status === "stopping" ||
@@ -1182,7 +1180,7 @@ export const seedDatabase = action({
         console.log(
           "[Seed] Job is",
           currentJob.status,
-          ", not scheduling next run"
+          ", not scheduling next run",
         );
       }
 
@@ -1217,8 +1215,13 @@ export const seedDatabase = action({
       }
 
       console.log(
-        `[Seed] ${finalStatus === "completed" ? "Completed" : finalStatus === "stopped" ? "Stopped" : shouldScheduleNextRun ? "Paused for next run" : "In Progress"}! ` +
-          `Total processed: ${totalProcessed}, Success: ${totalSuccess}, Skipped: ${totalSkipped}, Errors: ${totalErrors}`
+        `[Seed] ${
+          finalStatus === "completed" ? "Completed"
+          : finalStatus === "stopped" ? "Stopped"
+          : shouldScheduleNextRun ? "Paused for next run"
+          : "In Progress"
+        }! ` +
+          `Total processed: ${totalProcessed}, Success: ${totalSuccess}, Skipped: ${totalSkipped}, Errors: ${totalErrors}`,
       );
 
       return {
@@ -1288,9 +1291,8 @@ export const getSeedingStatus = query({
       totalErrors: metadata.totalErrors,
       startedAt: new Date(job.startedAt).toISOString(),
       lastUpdatedAt: new Date(job.lastUpdatedAt).toISOString(),
-      completedAt: job.completedAt
-        ? new Date(job.completedAt).toISOString()
-        : null,
+      completedAt:
+        job.completedAt ? new Date(job.completedAt).toISOString() : null,
       error: job.error,
     };
   },
@@ -1359,10 +1361,10 @@ export const testRateLimiting = action({
   handler: async (ctx, args) => {
     const requests = args.numberOfRequests || 5;
     console.log(
-      `[Rate Limit Test] Starting test with ${requests} rapid requests...`
+      `[Rate Limit Test] Starting test with ${requests} rapid requests...`,
     );
     console.log(
-      `[Rate Limit Test] Expected behavior: First request immediate, then 5s between each`
+      `[Rate Limit Test] Expected behavior: First request immediate, then 5s between each`,
     );
 
     const testGameIds = ["174430", "161936", "224517", "167791", "316554"]; // Popular games
@@ -1397,14 +1399,14 @@ export const testRateLimiting = action({
         });
 
         console.log(
-          `[Rate Limit Test] Request ${i + 1} completed in ${duration}ms`
+          `[Rate Limit Test] Request ${i + 1} completed in ${duration}ms`,
         );
         console.log(`[Rate Limit Test] Retrieved: ${details.name}`);
       } catch (error) {
         const duration = Date.now() - requestStartTime;
         console.error(
           `[Rate Limit Test] Request ${i + 1} failed after ${duration}ms:`,
-          error
+          error,
         );
 
         results.push({
@@ -1420,10 +1422,10 @@ export const testRateLimiting = action({
 
     const totalDuration = Date.now() - overallStartTime;
     console.log(
-      `[Rate Limit Test] Test completed in ${totalDuration}ms (${Math.round(totalDuration / 1000)}s)`
+      `[Rate Limit Test] Test completed in ${totalDuration}ms (${Math.round(totalDuration / 1000)}s)`,
     );
     console.log(
-      `[Rate Limit Test] Average time per request: ${Math.round(totalDuration / requests)}ms`
+      `[Rate Limit Test] Average time per request: ${Math.round(totalDuration / requests)}ms`,
     );
 
     return {

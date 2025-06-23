@@ -86,7 +86,7 @@ export const bggHotResponseType = type({
 
 // Type guards and validators
 export function validateSearchResponse(
-  data: unknown
+  data: unknown,
 ): asserts data is typeof bggSearchResponseType.infer {
   const result = bggSearchResponseType(data);
   if (result instanceof type.errors) {
@@ -95,7 +95,7 @@ export function validateSearchResponse(
 }
 
 export function validateThingResponse(
-  data: unknown
+  data: unknown,
 ): asserts data is typeof bggThingResponseType.infer {
   const result = bggThingResponseType(data);
   if (result instanceof type.errors) {
@@ -104,7 +104,7 @@ export function validateThingResponse(
 }
 
 export function validateHotResponse(
-  data: unknown
+  data: unknown,
 ): asserts data is typeof bggHotResponseType.infer {
   const result = bggHotResponseType(data);
   if (result instanceof type.errors) {

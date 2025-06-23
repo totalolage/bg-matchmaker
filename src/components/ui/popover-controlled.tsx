@@ -49,13 +49,13 @@ export const PopoverControlled = ({
           {
             open: true,
             closed: false,
-          }[state]
+          }[state],
         ),
       toggle: () => setIsOpen(prev => !prev),
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [isOpen]
+    [isOpen],
   );
 
   return (

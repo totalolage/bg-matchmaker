@@ -11,13 +11,13 @@ export const recordInteraction = mutation({
     interactionType: v.union(
       v.literal("interested"),
       v.literal("declined"),
-      v.literal("accepted")
+      v.literal("accepted"),
     ),
     metadata: v.optional(
       v.object({
         swipeDirection: v.optional(v.string()),
         deviceType: v.optional(v.string()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -28,7 +28,7 @@ export const recordInteraction = mutation({
     const existing = await ctx.db
       .query("sessionInteractions")
       .withIndex("by_user_session", q =>
-        q.eq("userId", userId).eq("sessionId", args.sessionId)
+        q.eq("userId", userId).eq("sessionId", args.sessionId),
       )
       .unique();
 
@@ -59,8 +59,8 @@ export const getUserInteractions = query({
       v.union(
         v.literal("interested"),
         v.literal("declined"),
-        v.literal("accepted")
-      )
+        v.literal("accepted"),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -76,7 +76,7 @@ export const getUserInteractions = query({
     // Filter by interaction type if specified
     if (args.interactionType) {
       return interactions.filter(
-        i => i.interactionType === args.interactionType
+        i => i.interactionType === args.interactionType,
       );
     }
 
@@ -88,12 +88,11 @@ export const getInteractionsByUser = internalQuery({
   args: {
     userId: v.id("users"),
   },
-  handler: async (ctx, args) => {
-    return await ctx.db
+  handler: async (ctx, args) =>
+    await ctx.db
       .query("sessionInteractions")
       .withIndex("by_user", q => q.eq("userId", args.userId))
-      .collect();
-  },
+      .collect(),
 });
 
 export const getUserSessionHistory = query({
@@ -114,7 +113,7 @@ export const getUserSessionHistory = query({
     // Filter by interaction types if not "all"
     if (!args.filters.includes("all") && args.filters.length > 0) {
       interactions = interactions.filter(i =>
-        args.filters.includes(i.interactionType)
+        args.filters.includes(i.interactionType),
       );
     }
 
@@ -159,8 +158,8 @@ export const getSessionInteractions = query({
       v.union(
         v.literal("interested"),
         v.literal("declined"),
-        v.literal("accepted")
-      )
+        v.literal("accepted"),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -173,7 +172,7 @@ export const getSessionInteractions = query({
     // Filter by interaction type if specified
     if (args.interactionType) {
       return interactions.filter(
-        i => i.interactionType === args.interactionType
+        i => i.interactionType === args.interactionType,
       );
     }
 
@@ -195,7 +194,7 @@ export const getUninteractedSessions = query({
       .collect();
 
     const interactedSessionIds = new Set(
-      userInteractions.map(i => i.sessionId)
+      userInteractions.map(i => i.sessionId),
     );
 
     // Get all active sessions (not completed or cancelled)
@@ -205,14 +204,14 @@ export const getUninteractedSessions = query({
       .filter(q =>
         q.and(
           q.neq(q.field("status"), "completed"),
-          q.neq(q.field("status"), "cancelled")
-        )
+          q.neq(q.field("status"), "cancelled"),
+        ),
       )
       .collect();
 
     // Filter out sessions the user has already interacted with
     return activeSessions.filter(
-      session => !interactedSessionIds.has(session._id)
+      session => !interactedSessionIds.has(session._id),
     );
   },
 });
@@ -228,7 +227,7 @@ export const hasUserInteracted = query({
     const interaction = await ctx.db
       .query("sessionInteractions")
       .withIndex("by_user_session", q =>
-        q.eq("userId", userId).eq("sessionId", args.sessionId)
+        q.eq("userId", userId).eq("sessionId", args.sessionId),
       )
       .unique();
 
@@ -258,14 +257,14 @@ export const getUserSessionHistoryPaginated = query({
 
     // Get paginated interactions
     const { page, isDone, continueCursor } = await query.paginate(
-      args.paginationOpts
+      args.paginationOpts,
     );
 
     // Filter by interaction types if not "all"
     let filteredInteractions = page;
     if (!args.filters.includes("all") && args.filters.length > 0) {
       filteredInteractions = page.filter(i =>
-        args.filters.includes(i.interactionType)
+        args.filters.includes(i.interactionType),
       );
     }
 
@@ -295,7 +294,7 @@ export const getUserSessionHistoryPaginated = query({
             interestedCount,
           },
         };
-      }
+      },
     );
 
     const sessionHistory = await Promise.all(sessionHistoryPromises);
@@ -321,7 +320,7 @@ export const migrateUserSwipes = mutation({
       const existing = await ctx.db
         .query("sessionInteractions")
         .withIndex("by_user_session", q =>
-          q.eq("userId", swipe.userId).eq("sessionId", swipe.sessionId)
+          q.eq("userId", swipe.userId).eq("sessionId", swipe.sessionId),
         )
         .unique();
 

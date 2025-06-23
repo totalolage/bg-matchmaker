@@ -11,11 +11,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { useMutation as useConvexMutation } from "convex/react";
-
-import { api } from "../../convex/_generated/api";
-import { PageContent, PageHeader, PageLayout } from "../components/PageLayout";
-import { Button } from "../components/ui/button";
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -24,10 +21,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../components/ui/form";
-import { Input } from "../components/ui/input";
-import { UserAvatar } from "../components/UserAvatar";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useMutation as useConvexMutation } from "convex/react";
+
+import { api } from "../../convex/_generated/api";
 
 const profileFormSchema = type({
   displayName: "string",
@@ -73,7 +73,7 @@ function EditProfile() {
       router.subscribe("onBeforeNavigate", () => {
         void handleSave();
       }),
-    [handleSave, router]
+    [handleSave, router],
   );
 
   return (

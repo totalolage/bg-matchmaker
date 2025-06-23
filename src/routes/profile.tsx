@@ -9,20 +9,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Edit, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { AvailabilitySchedule } from "../components/availability";
-import { GameLibrary } from "../components/game-library";
-import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
-import { PageHeader, PageLayout } from "../components/PageLayout";
-import { SessionHistory } from "../components/session-history";
-import { Button } from "../components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import { UserAvatar } from "../components/UserAvatar";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { AvailabilitySchedule } from "@/components/availability";
+import { GameLibrary } from "@/components/game-library";
+import { LogoutDialog, LogoutDialogRef } from "@/components/LogoutDialog";
+import { PageHeader, PageLayout } from "@/components/PageLayout";
+import { SessionHistory } from "@/components/session-history";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const searchSchema = type({
   "date?": "string",

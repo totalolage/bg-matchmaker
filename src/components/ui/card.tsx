@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export const Card = (
   props: React.HTMLAttributes<HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -13,7 +13,7 @@ export const Card = (
       ref={ref}
       className={cn(
         "rounded-xl border bg-card text-card-foreground shadow",
-        className
+        className,
       )}
       {...rest}
     />
@@ -24,7 +24,7 @@ export type CardProps = ComponentProps<typeof Card>;
 export const CardHeader = (
   props: React.HTMLAttributes<HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -40,7 +40,7 @@ export type CardHeaderProps = ComponentProps<typeof CardHeader>;
 export const CardTitle = (
   props: React.HTMLAttributes<HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -56,7 +56,7 @@ export type CardTitleProps = ComponentProps<typeof CardTitle>;
 export const CardDescription = (
   props: React.HTMLAttributes<HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (
@@ -72,7 +72,7 @@ export type CardDescriptionProps = ComponentProps<typeof CardDescription>;
 export const CardContent = (
   props: React.HTMLAttributes<HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return <div ref={ref} className={cn("p-6 pt-0", className)} {...rest} />;
@@ -82,7 +82,7 @@ export type CardContentProps = ComponentProps<typeof CardContent>;
 export const CardFooter = (
   props: React.HTMLAttributes<HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   return (

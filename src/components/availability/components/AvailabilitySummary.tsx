@@ -1,7 +1,6 @@
+import { formatTime } from "@/components/availability/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Doc } from "@convex/_generated/dataModel";
-
-import { formatTime } from "../utils";
 
 interface AvailabilitySummaryProps {
   selectedSlots: Doc<"users">["availability"];
@@ -29,7 +28,7 @@ export const AvailabilitySummary = ({
               day.intervals.map(interval => ({
                 date: day.date,
                 interval,
-              }))
+              })),
             )
             .map(({ date, interval }) => {
               const dateObj = new Date(date + "T00:00:00");

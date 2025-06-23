@@ -2,12 +2,13 @@ import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { EmptyState } from "@/components/EmptyState";
+import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
+import { ProfileDropdown } from "@/components/ProfileDropdown";
+import { SectionHeader } from "@/components/SectionHeader";
+import { SessionCard } from "@/components/SessionCard";
+
 import { api } from "../../convex/_generated/api";
-import { EmptyState } from "../components/EmptyState";
-import { PageContent, PageHeader, PageLayout } from "../components/PageLayout";
-import { ProfileDropdown } from "../components/ProfileDropdown";
-import { SectionHeader } from "../components/SectionHeader";
-import { SessionCard } from "../components/SessionCard";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -30,7 +31,7 @@ function Home() {
       <PageContent>
         <div className="mb-6">
           <SectionHeader title="Your Sessions" />
-          {sessions && sessions.length > 0 ? (
+          {sessions && sessions.length > 0 ?
             <div className="space-y-3">
               {sessions.map(session => (
                 <div
@@ -41,13 +42,12 @@ function Home() {
                 </div>
               ))}
             </div>
-          ) : (
-            <EmptyState
+          : <EmptyState
               emoji="🎯"
               title="No sessions yet"
               subtitle="Start discovering games to join!"
             />
-          )}
+          }
         </div>
       </PageContent>
     </PageLayout>

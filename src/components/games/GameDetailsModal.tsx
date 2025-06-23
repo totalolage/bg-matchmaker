@@ -25,33 +25,31 @@ export const GameDetailsModal = ({
 }: GameDetailsModalProps) => {
   const gameDetails = useQuery(
     api.games.getGameDetails,
-    gameId ? { gameId } : "skip"
+    gameId ? { gameId } : "skip",
   );
 
-  const renderComplexity = (complexity: number) => {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="font-medium">{complexity.toFixed(1)}/5</span>
-        <div className="flex">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={`w-4 h-4 ${
-                i < Math.round(complexity)
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300"
-              }`}
-            />
-          ))}
-        </div>
+  const renderComplexity = (complexity: number) => (
+    <div className="flex items-center gap-2">
+      <span className="font-medium">{complexity.toFixed(1)}/5</span>
+      <div className="flex">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            className={`w-4 h-4 ${
+              i < Math.round(complexity) ?
+                "fill-yellow-400 text-yellow-400"
+              : "text-gray-300"
+            }`}
+          />
+        ))}
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        {!gameDetails ? (
+        {!gameDetails ?
           <div className="space-y-6">
             <div className="flex items-start gap-4">
               <Skeleton className="w-32 h-32 rounded" />
@@ -67,8 +65,7 @@ export const GameDetailsModal = ({
             </div>
             <Skeleton className="h-32" />
           </div>
-        ) : (
-          <>
+        : <>
             <DialogHeader className="sr-only">
               <DialogTitle>{gameDetails.name}</DialogTitle>
             </DialogHeader>
@@ -102,9 +99,10 @@ export const GameDetailsModal = ({
                     Player Count
                   </h3>
                   <p className="font-medium">
-                    {gameDetails.minPlayers === gameDetails.maxPlayers
-                      ? `${gameDetails.minPlayers} players`
-                      : `${gameDetails.minPlayers}-${gameDetails.maxPlayers} players`}
+                    {gameDetails.minPlayers === gameDetails.maxPlayers ?
+                      `${gameDetails.minPlayers} players`
+                    : `${gameDetails.minPlayers}-${gameDetails.maxPlayers} players`
+                    }
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -112,29 +110,29 @@ export const GameDetailsModal = ({
                     Playing Time
                   </h3>
                   <p className="font-medium">
-                    {gameDetails.minPlayTime === gameDetails.maxPlayTime
-                      ? `${gameDetails.minPlayTime} minutes`
-                      : `${gameDetails.minPlayTime}-${gameDetails.maxPlayTime} minutes`}
+                    {gameDetails.minPlayTime === gameDetails.maxPlayTime ?
+                      `${gameDetails.minPlayTime} minutes`
+                    : `${gameDetails.minPlayTime}-${gameDetails.maxPlayTime} minutes`
+                    }
                   </p>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-semibold text-muted-foreground">
                     Complexity
                   </h3>
-                  {gameDetails.complexity ? (
+                  {gameDetails.complexity ?
                     renderComplexity(gameDetails.complexity)
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
+                  : <p className="text-sm text-muted-foreground">
                       Not available
                     </p>
-                  )}
+                  }
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-sm font-semibold text-muted-foreground">
                     BGG Rating
                   </h3>
                   <div className="flex items-center gap-2">
-                    {gameDetails.bggRating ? (
+                    {gameDetails.bggRating ?
                       <>
                         <span className="font-medium">
                           {gameDetails.bggRating.toFixed(1)}/10
@@ -145,11 +143,10 @@ export const GameDetailsModal = ({
                           </Badge>
                         )}
                       </>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
+                    : <p className="text-sm text-muted-foreground">
                         Not available
                       </p>
-                    )}
+                    }
                   </div>
                 </div>
               </div>
@@ -203,7 +200,7 @@ export const GameDetailsModal = ({
               )}
             </div>
           </>
-        )}
+        }
       </DialogContent>
     </Dialog>
   );

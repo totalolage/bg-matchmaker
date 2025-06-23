@@ -62,47 +62,37 @@ export function CSVUpload() {
   const batchUpsertGames = useConvexMutation(api.admin.batchUpsertGames);
 
   const uploadMutation = useMutation({
-    mutationFn: async (games: ParsedGameData[]) => {
-      return batchUpsertGames({ games });
-    },
+    mutationFn: async (games: ParsedGameData[]) => batchUpsertGames({ games }),
   });
 
-  const parseGameData = (row: CSVRow): ParsedGameData => {
-    return {
-      bggId: row.id,
-      name: row.name,
-      yearPublished: row.yearpublished
-        ? parseInt(row.yearpublished, 10)
-        : undefined,
-      rank: row.rank ? parseInt(row.rank, 10) : undefined,
-      bayesAverage: row.bayesaverage ? parseFloat(row.bayesaverage) : undefined,
-      average: row.average ? parseFloat(row.average) : undefined,
-      usersRated: row.usersrated ? parseInt(row.usersrated, 10) : undefined,
-      isExpansion: row.is_expansion === "1",
-      abstractsRank: row.abstracts_rank
-        ? parseInt(row.abstracts_rank, 10)
-        : undefined,
-      cgsRank: row.cgs_rank ? parseInt(row.cgs_rank, 10) : undefined,
-      childrensGamesRank: row.childrensgames_rank
-        ? parseInt(row.childrensgames_rank, 10)
-        : undefined,
-      familyGamesRank: row.familygames_rank
-        ? parseInt(row.familygames_rank, 10)
-        : undefined,
-      partyGamesRank: row.partygames_rank
-        ? parseInt(row.partygames_rank, 10)
-        : undefined,
-      strategyGamesRank: row.strategygames_rank
-        ? parseInt(row.strategygames_rank, 10)
-        : undefined,
-      thematicRank: row.thematic_rank
-        ? parseInt(row.thematic_rank, 10)
-        : undefined,
-      wargamesRank: row.wargames_rank
-        ? parseInt(row.wargames_rank, 10)
-        : undefined,
-    };
-  };
+  const parseGameData = (row: CSVRow): ParsedGameData => ({
+    bggId: row.id,
+    name: row.name,
+    yearPublished:
+      row.yearpublished ? parseInt(row.yearpublished, 10) : undefined,
+    rank: row.rank ? parseInt(row.rank, 10) : undefined,
+    bayesAverage: row.bayesaverage ? parseFloat(row.bayesaverage) : undefined,
+    average: row.average ? parseFloat(row.average) : undefined,
+    usersRated: row.usersrated ? parseInt(row.usersrated, 10) : undefined,
+    isExpansion: row.is_expansion === "1",
+    abstractsRank:
+      row.abstracts_rank ? parseInt(row.abstracts_rank, 10) : undefined,
+    cgsRank: row.cgs_rank ? parseInt(row.cgs_rank, 10) : undefined,
+    childrensGamesRank:
+      row.childrensgames_rank ?
+        parseInt(row.childrensgames_rank, 10)
+      : undefined,
+    familyGamesRank:
+      row.familygames_rank ? parseInt(row.familygames_rank, 10) : undefined,
+    partyGamesRank:
+      row.partygames_rank ? parseInt(row.partygames_rank, 10) : undefined,
+    strategyGamesRank:
+      row.strategygames_rank ? parseInt(row.strategygames_rank, 10) : undefined,
+    thematicRank:
+      row.thematic_rank ? parseInt(row.thematic_rank, 10) : undefined,
+    wargamesRank:
+      row.wargames_rank ? parseInt(row.wargames_rank, 10) : undefined,
+  });
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -160,7 +150,7 @@ export function CSVUpload() {
 
           let totalImported = 0;
           const totalBatches = Math.ceil(
-            allGames.length / CSV_IMPORT.BATCH_SIZE
+            allGames.length / CSV_IMPORT.BATCH_SIZE,
           );
 
           for (let i = 0; i < allGames.length; i += CSV_IMPORT.BATCH_SIZE) {
@@ -180,14 +170,14 @@ export function CSVUpload() {
               console.error(`Error importing batch ${batchNumber}:`, error);
               localStats.errors += batch.length;
               toast.error(
-                `Failed to import batch ${batchNumber} of ${totalBatches} (${batch.length} games)`
+                `Failed to import batch ${batchNumber} of ${totalBatches} (${batch.length} games)`,
               );
             }
           }
 
           if (totalImported > 0) {
             toast.success(
-              `Import complete! Imported ${totalImported} games out of ${localStats.total} total.`
+              `Import complete! Imported ${totalImported} games out of ${localStats.total} total.`,
             );
           }
 

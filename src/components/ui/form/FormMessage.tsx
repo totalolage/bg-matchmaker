@@ -7,7 +7,7 @@ import { useFormField } from "./hooks";
 export const FormMessage = (
   props: HTMLAttributes<HTMLParagraphElement> & {
     ref?: Ref<HTMLParagraphElement>;
-  }
+  },
 ) => {
   const { className, children, ref, ...rest } = props;
   const { error, formMessageId } = useFormField();

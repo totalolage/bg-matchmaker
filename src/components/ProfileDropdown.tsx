@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Calendar, ChevronDown, LogOut, User } from "lucide-react";
 import { ComponentProps, useRef } from "react";
 
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import {
   DropdownMenu,

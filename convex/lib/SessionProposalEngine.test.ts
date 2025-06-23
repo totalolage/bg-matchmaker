@@ -120,7 +120,7 @@ describe("SessionProposalEngine", () => {
       // Union: game1, game2, game3, game4 (4 games)
       // Score: 2/4 = 0.5
       expect(
-        engine.calculateGamePreferenceOverlap(user1Games, user2Games)
+        engine.calculateGamePreferenceOverlap(user1Games, user2Games),
       ).toBe(0.5);
     });
 
@@ -128,7 +128,7 @@ describe("SessionProposalEngine", () => {
       const user1Games = ["game1", "game2"];
       const user2Games = ["game3", "game4"];
       expect(
-        engine.calculateGamePreferenceOverlap(user1Games, user2Games)
+        engine.calculateGamePreferenceOverlap(user1Games, user2Games),
       ).toBe(0);
     });
 
@@ -137,7 +137,7 @@ describe("SessionProposalEngine", () => {
       const user2Games = ["game1", "game2", "game2"];
       // Should treat as sets: {game1, game2} for both
       expect(
-        engine.calculateGamePreferenceOverlap(user1Games, user2Games)
+        engine.calculateGamePreferenceOverlap(user1Games, user2Games),
       ).toBe(1);
     });
   });
@@ -148,8 +148,8 @@ describe("SessionProposalEngine", () => {
       expect(
         engine.calculateTimeSlotCompatibility(
           [{ date: "2024-01-01", start: 600, end: 720 }],
-          []
-        )
+          [],
+        ),
       ).toBe(0);
     });
 
@@ -168,7 +168,7 @@ describe("SessionProposalEngine", () => {
       // Total time: 240 minutes
       // Score: (60 * 2) / 240 = 0.5
       expect(
-        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots)
+        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots),
       ).toBe(0.5);
     });
 
@@ -176,7 +176,7 @@ describe("SessionProposalEngine", () => {
       const user1Slots = [{ date: "2024-01-01", start: 600, end: 720 }];
       const user2Slots = [{ date: "2024-01-01", start: 840, end: 960 }];
       expect(
-        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots)
+        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots),
       ).toBe(0);
     });
 
@@ -184,7 +184,7 @@ describe("SessionProposalEngine", () => {
       const user1Slots = [{ date: "2024-01-01", start: 600, end: 720 }];
       const user2Slots = [{ date: "2024-01-02", start: 600, end: 720 }];
       expect(
-        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots)
+        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots),
       ).toBe(0);
     });
 
@@ -201,7 +201,7 @@ describe("SessionProposalEngine", () => {
       // Total time: 480 minutes
       // Score: (120 * 2) / 480 = 0.5
       expect(
-        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots)
+        engine.calculateTimeSlotCompatibility(user1Slots, user2Slots),
       ).toBe(0.5);
     });
   });
@@ -209,7 +209,7 @@ describe("SessionProposalEngine", () => {
   describe("calculateSuccessRate", () => {
     it("should return 0.5 for users with no interactions", () => {
       expect(engine.calculateSuccessRate("newuser" as Id<"users">, [])).toBe(
-        0.5
+        0.5,
       );
     });
 
@@ -253,7 +253,7 @@ describe("SessionProposalEngine", () => {
       // Result: 2.2 / 3.6 ≈ 0.611
       const rate = engine.calculateSuccessRate(
         "user1" as Id<"users">,
-        interactions
+        interactions,
       );
       expect(rate).toBeCloseTo(0.611, 2);
     });
@@ -285,11 +285,11 @@ describe("SessionProposalEngine", () => {
 
       const acceptedRate = engine.calculateSuccessRate(
         "user1" as Id<"users">,
-        acceptedOnly
+        acceptedOnly,
       );
       const interestedRate = engine.calculateSuccessRate(
         "user1" as Id<"users">,
-        interestedOnly
+        interestedOnly,
       );
 
       expect(acceptedRate).toBeGreaterThan(interestedRate);
@@ -318,7 +318,7 @@ describe("SessionProposalEngine", () => {
       ];
 
       expect(
-        engine.calculateSuccessRate("user1" as Id<"users">, allDeclined)
+        engine.calculateSuccessRate("user1" as Id<"users">, allDeclined),
       ).toBe(0);
     });
   });

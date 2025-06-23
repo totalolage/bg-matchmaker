@@ -5,14 +5,14 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
 );
 
 export const Label = (
   props: React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
     VariantProps<typeof labelVariants> & {
       ref?: React.Ref<React.ElementRef<typeof LabelPrimitive.Root>>;
-    }
+    },
 ) => {
   const { className, ref, ...rest } = props;
   return (

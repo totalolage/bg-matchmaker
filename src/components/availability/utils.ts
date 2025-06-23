@@ -1,17 +1,15 @@
 import { AvailabilityInterval } from "@/lib/availability";
 
 // Get short day names for tabs
-export const getShortDayName = (date: Date) => {
-  return new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(date);
-};
+export const getShortDayName = (date: Date) =>
+  new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(date);
 
 // Get short date format (DD/MM or MM/DD based on locale)
-export const getShortDate = (date: Date) => {
-  return new Intl.DateTimeFormat(undefined, {
+export const getShortDate = (date: Date) =>
+  new Intl.DateTimeFormat(undefined, {
     day: "numeric",
     month: "numeric",
   }).format(date);
-};
 
 // Get the first day of the week for the user's locale
 export const getLocaleFirstDayOfWeek = () => {
@@ -156,13 +154,13 @@ export const formatWeekRange = (weekDates: Date[]) => {
 // Find interval containing a specific hour
 export const findIntervalContainingHour = (
   intervals: AvailabilityInterval[],
-  hour: number
+  hour: number,
 ): AvailabilityInterval | null => {
   const timeInMinutes = hour * 60;
   return (
     intervals.find(
       interval =>
-        timeInMinutes >= interval.start && timeInMinutes < interval.end
+        timeInMinutes >= interval.start && timeInMinutes < interval.end,
     ) || null
   );
 };
@@ -170,7 +168,5 @@ export const findIntervalContainingHour = (
 // Check if a time slot is selected
 export const isTimeInInterval = (
   intervals: AvailabilityInterval[],
-  hour: number
-): boolean => {
-  return findIntervalContainingHour(intervals, hour) !== null;
-};
+  hour: number,
+): boolean => findIntervalContainingHour(intervals, hour) !== null;

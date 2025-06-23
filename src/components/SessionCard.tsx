@@ -24,7 +24,7 @@ export const SessionCard = ({
   clickable?: boolean;
 }) => {
   const getStatusVariant = (
-    status: string
+    status: string,
   ): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "proposed":

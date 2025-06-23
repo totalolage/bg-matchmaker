@@ -39,7 +39,7 @@ export function minutesToTime(minutes: number): string {
  * Uses sorting and single pass - O(n log n) complexity
  */
 export function mergeIntervals(
-  intervals: AvailabilityInterval[]
+  intervals: AvailabilityInterval[],
 ): AvailabilityInterval[] {
   if (intervals.length <= 1) return intervals;
 
@@ -75,7 +75,7 @@ export function mergeIntervals(
  */
 export function addInterval(
   existingIntervals: AvailabilityInterval[],
-  newInterval: AvailabilityInterval
+  newInterval: AvailabilityInterval,
 ): AvailabilityInterval[] {
   return mergeIntervals([...existingIntervals, newInterval]);
 }
@@ -86,7 +86,7 @@ export function addInterval(
  */
 export function removeInterval(
   existingIntervals: AvailabilityInterval[],
-  intervalToRemove: AvailabilityInterval
+  intervalToRemove: AvailabilityInterval,
 ): AvailabilityInterval[] {
   const result: AvailabilityInterval[] = [];
 
@@ -126,10 +126,10 @@ export function removeInterval(
  */
 export function isTimeAvailable(
   intervals: AvailabilityInterval[],
-  timeInMinutes: number
+  timeInMinutes: number,
 ): boolean {
   return intervals.some(
-    interval => timeInMinutes >= interval.start && timeInMinutes < interval.end
+    interval => timeInMinutes >= interval.start && timeInMinutes < interval.end,
   );
 }
 
@@ -139,7 +139,7 @@ export function isTimeAvailable(
 export function findAvailableSlots(
   intervals: AvailabilityInterval[],
   durationMinutes: number,
-  granularityMinutes: number = 15
+  granularityMinutes: number = 15,
 ): AvailabilityInterval[] {
   const slots: AvailabilityInterval[] = [];
 
@@ -168,7 +168,7 @@ export function findAvailableSlots(
  */
 export function intersectIntervals(
   intervalsA: AvailabilityInterval[],
-  intervalsB: AvailabilityInterval[]
+  intervalsB: AvailabilityInterval[],
 ): AvailabilityInterval[] {
   const result: AvailabilityInterval[] = [];
 
@@ -193,7 +193,7 @@ export function intersectIntervals(
 export function updateDayAvailability(
   availability: DayAvailability[],
   date: string,
-  intervals: AvailabilityInterval[]
+  intervals: AvailabilityInterval[],
 ): DayAvailability[] {
   const merged = mergeIntervals(intervals);
   const existingIndex = availability.findIndex(day => day.date === date);
@@ -211,7 +211,7 @@ export function updateDayAvailability(
   } else if (merged.length > 0) {
     // Add new day
     return [...availability, { date, intervals: merged }].sort((a, b) =>
-      a.date.localeCompare(b.date)
+      a.date.localeCompare(b.date),
     );
   }
 
@@ -223,7 +223,7 @@ export function updateDayAvailability(
  */
 export function getAvailabilityForDate(
   availability: DayAvailability[],
-  date: string
+  date: string,
 ): AvailabilityInterval[] {
   const day = availability.find(d => d.date === date);
   return day ? day.intervals : [];

@@ -58,7 +58,7 @@ export const GameSelector = ({
   // Search for games when user types
   const searchResults = useQuery(
     api.games.searchGames,
-    debouncedSearchTerm.length >= 2 ? { query: debouncedSearchTerm } : "skip"
+    debouncedSearchTerm.length >= 2 ? { query: debouncedSearchTerm } : "skip",
   );
 
   // Filter search results to only show games in user's library and convert to Game format
@@ -69,7 +69,7 @@ export const GameSelector = ({
       .map(result => {
         // Find the full game data from user library games
         const fullGame = userLibraryGames?.find(
-          g => g.boardGameAtlasId === result.bggId
+          g => g.boardGameAtlasId === result.bggId,
         );
         if (fullGame) {
           return fullGame;
@@ -112,9 +112,10 @@ export const GameSelector = ({
               <h3 className="font-semibold text-lg">{selectedGame.name}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary" className="text-xs">
-                  {selectedGame.minPlayers === selectedGame.maxPlayers
-                    ? `${selectedGame.minPlayers} players`
-                    : `${selectedGame.minPlayers}-${selectedGame.maxPlayers} players`}
+                  {selectedGame.minPlayers === selectedGame.maxPlayers ?
+                    `${selectedGame.minPlayers} players`
+                  : `${selectedGame.minPlayers}-${selectedGame.maxPlayers} players`
+                  }
                 </Badge>
                 <Badge variant="secondary" className="text-xs">
                   {selectedGame.playTime} min
@@ -157,46 +158,10 @@ export const GameSelector = ({
           </p>
         )}
 
-        {!searchTerm ? (
-          // Show all user's games when not searching
-          userLibraryGames?.map(game => (
-            <Card
-              key={game._id}
-              className="p-3 cursor-pointer hover:bg-accent transition-colors"
-              onClick={() => handleGameClick(game)}
-            >
-              <div className="flex items-center gap-3">
-                <GameImage
-                  src={game.imageUrl}
-                  alt={game.name}
-                  className="w-12 h-12 rounded object-cover"
-                />
-                <div className="flex-1">
-                  <p className="font-medium">{game.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {game.minPlayers === game.maxPlayers
-                        ? `${game.minPlayers} players`
-                        : `${game.minPlayers}-${game.maxPlayers} players`}
-                    </Badge>
-                    <Badge className="text-xs">
-                      {getExpertiseLevel(game.boardGameAtlasId)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))
-        ) : (
-          // Show filtered search results
-          <>
-            {filteredResults.length === 0 &&
-              debouncedSearchTerm.length >= 2 && (
-                <p className="text-center text-muted-foreground py-8">
-                  No games from your library match "{debouncedSearchTerm}"
-                </p>
-              )}
-            {filteredResults.map(game => (
+        {
+          !searchTerm ?
+            // Show all user's games when not searching
+            userLibraryGames?.map(game => (
               <Card
                 key={game._id}
                 className="p-3 cursor-pointer hover:bg-accent transition-colors"
@@ -210,19 +175,11 @@ export const GameSelector = ({
                   />
                   <div className="flex-1">
                     <p className="font-medium">{game.name}</p>
-                    {game.alternateNames && game.alternateNames.length > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Also known as: {game.alternateNames[0]}
-                      </p>
-                    )}
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="secondary" className="text-xs">
-                        {game.minPlayers === game.maxPlayers
-                          ? `${game.minPlayers} players`
-                          : `${game.minPlayers}-${game.maxPlayers} players`}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {game.playTime} min
+                        {game.minPlayers === game.maxPlayers ?
+                          `${game.minPlayers} players`
+                        : `${game.minPlayers}-${game.maxPlayers} players`}
                       </Badge>
                       <Badge className="text-xs">
                         {getExpertiseLevel(game.boardGameAtlasId)}
@@ -231,9 +188,55 @@ export const GameSelector = ({
                   </div>
                 </div>
               </Card>
-            ))}
-          </>
-        )}
+            ))
+            // Show filtered search results
+          : <>
+              {filteredResults.length === 0 &&
+                debouncedSearchTerm.length >= 2 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    No games from your library match "{debouncedSearchTerm}"
+                  </p>
+                )}
+              {filteredResults.map(game => (
+                <Card
+                  key={game._id}
+                  className="p-3 cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() => handleGameClick(game)}
+                >
+                  <div className="flex items-center gap-3">
+                    <GameImage
+                      src={game.imageUrl}
+                      alt={game.name}
+                      className="w-12 h-12 rounded object-cover"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium">{game.name}</p>
+                      {game.alternateNames &&
+                        game.alternateNames.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            Also known as: {game.alternateNames[0]}
+                          </p>
+                        )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {game.minPlayers === game.maxPlayers ?
+                            `${game.minPlayers} players`
+                          : `${game.minPlayers}-${game.maxPlayers} players`}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {game.playTime} min
+                        </Badge>
+                        <Badge className="text-xs">
+                          {getExpertiseLevel(game.boardGameAtlasId)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </>
+
+        }
       </div>
     </div>
   );

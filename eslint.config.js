@@ -9,11 +9,13 @@ import boundaries from "eslint-plugin-boundaries";
 import reactCompiler from "eslint-plugin-react-compiler";
 import prettier from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
+import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 
 export default tseslint.config(
   {
     ignores: [
       "dist",
+      "dev-dist",
       "eslint.config.js",
       "convex/_generated",
       "postcss.config.js",
@@ -46,6 +48,7 @@ export default tseslint.config(
       "simple-import-sort": simpleImportSort,
       boundaries: boundaries,
       prettier: prettier,
+      "no-relative-import-paths": noRelativeImportPaths,
     },
     settings: {
       "boundaries/elements": [
@@ -169,13 +172,33 @@ export default tseslint.config(
         },
       ],
 
+      // Enforce @/ imports for non-sibling directories
+      "no-relative-import-paths/no-relative-import-paths": [
+        "error",
+        {
+          allowSameFolder: true,
+          rootDir: "src",
+          prefix: "@",
+        },
+      ],
+
       // Prettier integration
       "prettier/prettier": "error",
 
-      // Allow omitting braces for single-line if statements
-      curly: ["error", "multi-or-nest"],
+      // Enforce no braces for single-line statements
+      curly: ["error", "multi-or-nest", "consistent"],
+
+      // Prefer concise arrow functions without braces for single expressions
+      "arrow-body-style": [
+        "error",
+        "as-needed",
+        { requireReturnForObjectLiteral: false },
+      ],
+
+      // Allow void operator in arrow functions for event handlers
+      "@typescript-eslint/no-confusing-void-expression": "off",
     },
   },
   // Prettier config needs to be last to override conflicting rules
-  prettierConfig
+  prettierConfig,
 );

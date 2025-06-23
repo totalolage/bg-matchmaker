@@ -54,7 +54,7 @@ export const AvailabilitySchedule = ({
       wait: DEBOUNCE_DELAY,
       trailing: true,
       leading: false,
-    }
+    },
   );
 
   // Mutation with debounced success notification
@@ -88,7 +88,7 @@ export const AvailabilitySchedule = ({
     handleSlotClick,
     clearSelection,
   } = useAvailabilitySelection(selectedSlots, availability =>
-    updateAvailability.mutate({ availability })
+    updateAvailability.mutate({ availability }),
   );
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -111,16 +111,18 @@ export const AvailabilitySchedule = ({
   })();
 
   // Show notification immediately on navigation
-  useEffect(() => {
-    return router.subscribe("onBeforeNavigate", () => {
-      if (successDebouncer.getIsPending()) {
-        // Cancel the debounced notification
-        successDebouncer.cancel();
-        // Show immediately
-        toast.success("Availability updated");
-      }
-    });
-  }, [router, successDebouncer]);
+  useEffect(
+    () =>
+      router.subscribe("onBeforeNavigate", () => {
+        if (successDebouncer.getIsPending()) {
+          // Cancel the debounced notification
+          successDebouncer.cancel();
+          // Show immediately
+          toast.success("Availability updated");
+        }
+      }),
+    [router, successDebouncer],
+  );
 
   useImperativeHandle(
     ref,
@@ -131,13 +133,13 @@ export const AvailabilitySchedule = ({
           {
             open: true,
             closed: false,
-          }[state]
+          }[state],
         ),
       toggle: () => setDatePickerOpen(prev => !prev),
       open: () => setDatePickerOpen(true),
       close: () => setDatePickerOpen(false),
     }),
-    [datePickerOpen]
+    [datePickerOpen],
   );
 
   const weekDates = getWeekDates(currentWeekStart);

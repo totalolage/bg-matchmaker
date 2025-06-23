@@ -12,8 +12,9 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           id: profile.id,
           name: profile.username || profile.global_name,
           email: profile.email,
-          image: profile.avatar
-            ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
+          image:
+            profile.avatar ?
+              `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
             : undefined,
           discordId: profile.id,
         };
@@ -23,22 +24,21 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   callbacks: {
     async createOrUpdateUser(ctx: MutationCtx, args) {
       // Check if user exists
-      const existingUser = args.existingUserId
-        ? await ctx.db.get(args.existingUserId)
-        : null;
+      const existingUser =
+        args.existingUserId ? await ctx.db.get(args.existingUserId) : null;
 
       if (existingUser) {
         // Update existing user
         await ctx.db.patch(existingUser._id, {
           name:
-            typeof args.profile.name === "string"
-              ? args.profile.name
-              : existingUser.name,
+            typeof args.profile.name === "string" ?
+              args.profile.name
+            : existingUser.name,
           email: args.profile.email,
           profilePic:
-            typeof args.profile.image === "string"
-              ? args.profile.image
-              : existingUser.profilePic,
+            typeof args.profile.image === "string" ?
+              args.profile.image
+            : existingUser.profilePic,
         });
         return existingUser._id;
       }
@@ -54,9 +54,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       const userId = await ctx.db.insert("users", {
         name: args.profile.name,
         email: args.profile.email,
-        emailVerificationTime: args.profile.emailVerified
-          ? Date.now()
-          : undefined,
+        emailVerificationTime:
+          args.profile.emailVerified ? Date.now() : undefined,
         profilePic: args.profile.image,
         discordId: args.profile.discordId,
         gameLibrary: [],
@@ -71,7 +70,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       const accounts = await ctx.db
         .query("authAccounts")
         .withIndex("userIdAndProvider", q =>
-          q.eq("userId", args.userId).eq("provider", "discord")
+          q.eq("userId", args.userId).eq("provider", "discord"),
         )
         .collect();
 

@@ -74,6 +74,7 @@
     "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-boundaries": "^5.0.1",
+    "eslint-plugin-no-relative-import-paths": "^1.6.1",
     "eslint-plugin-prettier": "^5.5.0",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -92,6 +93,7 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
+    "vite-plugin-pwa": "^1.0.0",
     "vitest": "^3.2.4"
   }
 }

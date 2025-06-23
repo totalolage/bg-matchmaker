@@ -3,7 +3,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { api, internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import { action, mutation, query } from "./_generated/server";
 import { SessionProposalEngine } from "./lib/SessionProposalEngine";
 
@@ -42,7 +42,7 @@ export const getSessionWithDetails = query({
           displayName: player.displayName,
           profilePic: player.profilePic,
         };
-      })
+      }),
     );
 
     // Get interested player details
@@ -56,7 +56,7 @@ export const getSessionWithDetails = query({
           displayName: player.displayName,
           profilePic: player.profilePic,
         };
-      })
+      }),
     );
 
     // Get interactions for more detailed info
@@ -144,7 +144,7 @@ export const getDiscoverySessions = query({
       .collect();
 
     const interactedSessionIds = new Set(
-      userInteractions.map(i => i.sessionId)
+      userInteractions.map(i => i.sessionId),
     );
 
     // Filter out sessions user has already interacted with or is already part of
@@ -153,7 +153,7 @@ export const getDiscoverySessions = query({
         !interactedSessionIds.has(session._id) &&
         session.hostId !== userId &&
         !session.players.includes(userId) &&
-        !session.interestedPlayers.includes(userId)
+        !session.interestedPlayers.includes(userId),
     );
 
     // Calculate match scores based on user's game library and availability
@@ -194,7 +194,7 @@ export const getDiscoverySessions = query({
             interval =>
               sessionMinutes >= interval.start &&
               sessionMinutes < interval.end &&
-              interval.type !== "committed" // Exclude committed slots
+              interval.type !== "committed", // Exclude committed slots
           );
         });
 
@@ -266,7 +266,7 @@ export const swipeSession = mutation({
     const existing = await ctx.db
       .query("sessionInteractions")
       .withIndex("by_user_session", q =>
-        q.eq("userId", userId).eq("sessionId", args.sessionId)
+        q.eq("userId", userId).eq("sessionId", args.sessionId),
       )
       .unique();
 
@@ -333,7 +333,7 @@ export const joinSession = mutation({
       await ctx.db.patch(args.sessionId, {
         players: [...session.players, userId],
         interestedPlayers: session.interestedPlayers.filter(
-          id => id !== userId
+          id => id !== userId,
         ),
       });
 
@@ -341,7 +341,7 @@ export const joinSession = mutation({
       const existing = await ctx.db
         .query("sessionInteractions")
         .withIndex("by_user_session", q =>
-          q.eq("userId", userId).eq("sessionId", args.sessionId)
+          q.eq("userId", userId).eq("sessionId", args.sessionId),
         )
         .unique();
 
@@ -408,7 +408,7 @@ export const getUserSessions = query({
       session =>
         session.hostId === userId ||
         session.players.includes(userId) ||
-        session.interestedPlayers.includes(userId)
+        session.interestedPlayers.includes(userId),
     );
   },
 });
@@ -440,8 +440,9 @@ export const updateSession = mutation({
     }
 
     // Prepare update object
-    const updates: any = {};
-    if (args.scheduledTime !== undefined) updates.scheduledTime = args.scheduledTime;
+    const updates: Partial<Doc<"sessions">> = {};
+    if (args.scheduledTime !== undefined)
+      updates.scheduledTime = args.scheduledTime;
     if (args.location !== undefined) updates.location = args.location;
     if (args.description !== undefined) updates.description = args.description;
     if (args.minPlayers !== undefined) {
@@ -460,7 +461,9 @@ export const updateSession = mutation({
         throw new Error("Maximum players cannot be less than minimum players");
       }
       if (args.maxPlayers < session.players.length) {
-        throw new Error("Maximum players cannot be less than current player count");
+        throw new Error(
+          "Maximum players cannot be less than current player count",
+        );
       }
       updates.maxPlayers = args.maxPlayers;
     }
@@ -507,7 +510,7 @@ export const cancelSession = mutation({
       } catch (error) {
         console.error(
           `Failed to restore availability for user ${playerId}:`,
-          error
+          error,
         );
       }
     }
@@ -539,13 +542,13 @@ export const getUserProposals = query({
 
         // Count by type
         const interestedCount = interactions.filter(
-          i => i.interactionType === "interested"
+          i => i.interactionType === "interested",
         ).length;
         const declinedCount = interactions.filter(
-          i => i.interactionType === "declined"
+          i => i.interactionType === "declined",
         ).length;
         const acceptedCount = interactions.filter(
-          i => i.interactionType === "accepted"
+          i => i.interactionType === "accepted",
         ).length;
 
         // Get user details for interested/accepted users
@@ -554,19 +557,19 @@ export const getUserProposals = query({
             .filter(
               i =>
                 i.interactionType === "interested" ||
-                i.interactionType === "accepted"
+                i.interactionType === "accepted",
             )
             .map(async i => {
               const user = await ctx.db.get(i.userId);
-              return user
-                ? {
+              return user ?
+                  {
                     _id: user._id,
                     name: user.name,
                     profilePic: user.profilePic,
                     interactionType: i.interactionType,
                   }
                 : null;
-            })
+            }),
         );
 
         return {
@@ -579,12 +582,12 @@ export const getUserProposals = query({
           },
           interestedUsers: interestedUsers.filter(u => u !== null),
         };
-      })
+      }),
     );
 
     // Sort by creation date (newest first)
     return proposalsWithStats.sort(
-      (a, b) => (b._creationTime || 0) - (a._creationTime || 0)
+      (a, b) => (b._creationTime || 0) - (a._creationTime || 0),
     );
   },
 });
@@ -595,8 +598,8 @@ export const getSessionHistory = query({
       v.union(
         v.literal("interested"),
         v.literal("declined"),
-        v.literal("accepted")
-      )
+        v.literal("accepted"),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -612,7 +615,7 @@ export const getSessionHistory = query({
     // Filter by interaction type if specified
     if (args.interactionType) {
       interactions = interactions.filter(
-        i => i.interactionType === args.interactionType
+        i => i.interactionType === args.interactionType,
       );
     }
 
@@ -630,7 +633,7 @@ export const getSessionHistory = query({
             metadata: interaction.metadata,
           },
         };
-      })
+      }),
     );
 
     // Filter out null values and sort by interaction date
@@ -660,7 +663,7 @@ export const expressInterest = mutation({
     const existing = await ctx.db
       .query("sessionInteractions")
       .withIndex("by_user_session", q =>
-        q.eq("userId", userId).eq("sessionId", args.sessionId)
+        q.eq("userId", userId).eq("sessionId", args.sessionId),
       )
       .unique();
 
@@ -714,7 +717,7 @@ export const declineSession = mutation({
     const existing = await ctx.db
       .query("sessionInteractions")
       .withIndex("by_user_session", q =>
-        q.eq("userId", userId).eq("sessionId", args.sessionId)
+        q.eq("userId", userId).eq("sessionId", args.sessionId),
       )
       .unique();
 
@@ -737,7 +740,7 @@ export const declineSession = mutation({
     if (session.interestedPlayers.includes(userId)) {
       await ctx.db.patch(args.sessionId, {
         interestedPlayers: session.interestedPlayers.filter(
-          id => id !== userId
+          id => id !== userId,
         ),
       });
     }
@@ -751,7 +754,7 @@ export const generateSessionProposals = action({
   },
   handler: async (
     ctx,
-    args
+    args,
   ): Promise<{
     proposalsGenerated: number;
     proposals: Array<{
@@ -774,7 +777,7 @@ export const generateSessionProposals = action({
       internal.sessionInteractions.getInteractionsByUser,
       {
         userId,
-      }
+      },
     );
 
     // Fetch all active users (excluding the current user)
@@ -789,9 +792,9 @@ export const generateSessionProposals = action({
           internal.sessionInteractions.getInteractionsByUser,
           {
             userId: matchUser._id,
-          }
+          },
         ),
-      }))
+      })),
     );
 
     // Initialize the proposal engine
@@ -800,7 +803,7 @@ export const generateSessionProposals = action({
     // Generate proposals
     const proposals = await engine.generateProposals(
       matchesWithInteractions,
-      limit
+      limit,
     );
 
     // Save proposals to database
@@ -837,7 +840,7 @@ export const saveSessionProposal = mutation({
       v.literal("pending"),
       v.literal("accepted"),
       v.literal("declined"),
-      v.literal("expired")
+      v.literal("expired"),
     ),
     reason: v.string(),
     createdAt: v.number(),
@@ -846,7 +849,7 @@ export const saveSessionProposal = mutation({
       v.object({
         commonGames: v.optional(v.array(v.string())),
         overlappingTimeSlots: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -854,12 +857,12 @@ export const saveSessionProposal = mutation({
     const existingProposal = await ctx.db
       .query("sessionProposals")
       .withIndex("by_user_status", q =>
-        q.eq("proposedToUserId", args.proposedToUserId).eq("status", "pending")
+        q.eq("proposedToUserId", args.proposedToUserId).eq("status", "pending"),
       )
       .filter(
         q =>
           q.eq(q.field("gameId"), args.gameId) &&
-          q.eq(q.field("proposedParticipants"), args.proposedParticipants)
+          q.eq(q.field("proposedParticipants"), args.proposedParticipants),
       )
       .first();
 

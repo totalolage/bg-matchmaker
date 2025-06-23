@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export const Progress = (
   props: React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
     ref?: React.Ref<React.ElementRef<typeof ProgressPrimitive.Root>>;
-  }
+  },
 ) => {
   const { className, value, ref, ...rest } = props;
   return (
@@ -14,7 +14,7 @@ export const Progress = (
       ref={ref}
       className={cn(
         "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
-        className
+        className,
       )}
       {...rest}
     >

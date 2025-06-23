@@ -30,7 +30,7 @@ export class BGGAPIError extends Error {
   constructor(
     message: string,
     public statusCode?: number,
-    originalError?: Error
+    originalError?: Error,
   ) {
     super(message, { cause: originalError });
     this.name = "BGGAPIError";

@@ -30,7 +30,7 @@ import {
 export async function searchGames(
   ctx: ActionCtx,
   query: string,
-  exact: boolean = false
+  exact: boolean = false,
 ): Promise<BGGSearchResult[]> {
   if (!query || query.trim().length < 2) {
     return [];
@@ -51,7 +51,7 @@ export async function searchGames(
  */
 export async function getGameDetails(
   ctx: ActionCtx,
-  bggId: string
+  bggId: string,
 ): Promise<BGGGameDetails> {
   const params = buildThingParams(bggId);
   const xmlData = await makeRequest(ctx, {
@@ -68,7 +68,7 @@ export async function getGameDetails(
  */
 export async function getMultipleGameDetails(
   ctx: ActionCtx,
-  bggIds: string[]
+  bggIds: string[],
 ): Promise<BGGGameDetails[]> {
   if (bggIds.length === 0) {
     return [];
@@ -106,7 +106,7 @@ export async function getMultipleGameDetails(
  */
 export async function getHotGames(
   ctx: ActionCtx,
-  limit: number = 50
+  limit: number = 50,
 ): Promise<string[]> {
   const params = buildHotParams();
   const xmlData = await makeRequest(ctx, {
@@ -125,7 +125,7 @@ export async function getHotGames(
  */
 export async function getTopRankedGames(
   ctx: ActionCtx,
-  page: number = 1
+  page: number = 1,
 ): Promise<BGGSearchResult[]> {
   const params = buildTopRankedParams(page);
   const xmlData = await makeRequest(ctx, {
@@ -142,7 +142,7 @@ export async function getTopRankedGames(
  */
 export async function getGameDetailsWithErrorHandling(
   ctx: ActionCtx,
-  bggIds: string[]
+  bggIds: string[],
 ): Promise<BulkFetchResult<BGGGameDetails>> {
   const result: BulkFetchResult<BGGGameDetails> = {
     successful: [],

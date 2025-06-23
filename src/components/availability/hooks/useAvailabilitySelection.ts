@@ -1,6 +1,10 @@
 import { useState } from "react";
 
 import {
+  findIntervalContainingHour,
+  isDateInPast,
+} from "@/components/availability/utils";
+import {
   addInterval,
   AvailabilityInterval,
   getAvailabilityForDate,
@@ -9,8 +13,6 @@ import {
 } from "@/lib/availability";
 import { Doc } from "@convex/_generated/dataModel";
 
-import { findIntervalContainingHour, isDateInPast } from "../utils";
-
 interface SelectedTime {
   date: string;
   hour: number;
@@ -18,7 +20,7 @@ interface SelectedTime {
 
 export const useAvailabilitySelection = (
   selectedSlots: Doc<"users">["availability"],
-  onUpdate: (availability: Doc<"users">["availability"]) => void
+  onUpdate: (availability: Doc<"users">["availability"]) => void,
 ) => {
   const [selectedTime, setSelectedTime] = useState<SelectedTime | null>(null);
   const [hoveredTime, setHoveredTime] = useState<SelectedTime | null>(null);
@@ -30,7 +32,7 @@ export const useAvailabilitySelection = (
       interval =>
         timeInMinutes >= interval.start &&
         timeInMinutes < interval.end &&
-        interval.type !== "committed" // Don't count committed slots as selected
+        interval.type !== "committed", // Don't count committed slots as selected
     );
   };
 
@@ -41,13 +43,12 @@ export const useAvailabilitySelection = (
       interval =>
         timeInMinutes >= interval.start &&
         timeInMinutes < interval.end &&
-        interval.type === "committed"
+        interval.type === "committed",
     );
   };
 
-  const isTimeSelected = (date: string, hour: number) => {
-    return selectedTime?.date === date && selectedTime?.hour === hour;
-  };
+  const isTimeSelected = (date: string, hour: number) =>
+    selectedTime?.date === date && selectedTime?.hour === hour;
 
   const isInHoverRange = (date: string, hour: number) => {
     if (
@@ -80,7 +81,7 @@ export const useAvailabilitySelection = (
       const newSlots = updateDayAvailability(
         selectedSlots,
         date,
-        updatedIntervals
+        updatedIntervals,
       );
 
       onUpdate(newSlots);
@@ -104,7 +105,7 @@ export const useAvailabilitySelection = (
       const newSlots = updateDayAvailability(
         selectedSlots,
         date,
-        updatedIntervals
+        updatedIntervals,
       );
 
       onUpdate(newSlots);
@@ -123,7 +124,7 @@ export const useAvailabilitySelection = (
         const newSlots = updateDayAvailability(
           selectedSlots,
           date,
-          updatedIntervals
+          updatedIntervals,
         );
 
         onUpdate(newSlots);

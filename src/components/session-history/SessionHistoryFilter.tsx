@@ -40,8 +40,9 @@ export function SessionHistoryFilter({
     if (value === "all") {
       onFilterChange(["all"]);
     } else {
-      const newFilters = selectedFilters.includes(value)
-        ? selectedFilters.filter(f => f !== value && f !== "all")
+      const newFilters =
+        selectedFilters.includes(value) ?
+          selectedFilters.filter(f => f !== value && f !== "all")
         : [...selectedFilters.filter(f => f !== "all"), value];
 
       onFilterChange(newFilters.length === 0 ? ["all"] : newFilters);
@@ -65,7 +66,7 @@ export function SessionHistoryFilter({
               isSelected &&
                 option.value !== "all" &&
                 "bg-purple-600 hover:bg-purple-700 border-purple-600",
-              !isSelected && option.color
+              !isSelected && option.color,
             )}
           >
             <Icon size={16} className={cn(isSelected && "text-white")} />

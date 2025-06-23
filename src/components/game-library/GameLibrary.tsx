@@ -27,7 +27,7 @@ export const GameLibrary = ({ user }: GameLibraryProps) => {
 
   const handleAddGame = async (
     game: GameSearchResult,
-    expertiseLevel: string
+    expertiseLevel: string,
   ) => {
     await addGame(game, expertiseLevel);
     setIsAddingGame(false);

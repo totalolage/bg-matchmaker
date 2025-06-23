@@ -31,15 +31,15 @@ export function usePaginatedSearch({
   // Query for paginated results
   const paginatedResults = useQuery(
     api.games.searchGamesPaginated,
-    searchQuery.trim().length >= 2
-      ? {
-          query: searchQuery,
-          paginationOpts: {
-            numItems: itemsPerPage,
-            cursor,
-          },
-        }
-      : "skip"
+    searchQuery.trim().length >= 2 ?
+      {
+        query: searchQuery,
+        paginationOpts: {
+          numItems: itemsPerPage,
+          cursor,
+        },
+      }
+    : "skip",
   );
 
   // Reset results when search query changes
@@ -61,7 +61,7 @@ export function usePaginatedSearch({
           // Avoid duplicates by checking bggId
           const existingIds = new Set(prev.map(r => r.bggId));
           const newResults = paginatedResults.page.filter(
-            r => !existingIds.has(r.bggId)
+            r => !existingIds.has(r.bggId),
           );
           return [...prev, ...newResults];
         });

@@ -16,11 +16,9 @@ export const navigationItems: NavItem[] = [
 ];
 
 // Get the ordered paths for router transitions
-export const getNavigationOrder = (): string[] => {
-  return navigationItems.map(item => item.to);
-};
+export const getNavigationOrder = (): string[] =>
+  navigationItems.map(item => item.to);
 
 // Get navigation items filtered by user role
-export const getVisibleNavigationItems = (isAdmin: boolean): NavItem[] => {
-  return navigationItems.filter(item => !item.requiresAdmin || isAdmin);
-};
+export const getVisibleNavigationItems = (isAdmin: boolean): NavItem[] =>
+  navigationItems.filter(item => !item.requiresAdmin || isAdmin);

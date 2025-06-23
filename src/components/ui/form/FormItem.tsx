@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { FormItemContext } from "./types";
 
 export const FormItem = (
-  props: HTMLAttributes<HTMLDivElement> & { ref?: Ref<HTMLDivElement> }
+  props: HTMLAttributes<HTMLDivElement> & { ref?: Ref<HTMLDivElement> },
 ) => {
   const { className, ref, ...rest } = props;
   const id = useId();

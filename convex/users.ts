@@ -60,9 +60,9 @@ export const updateGameLibrary = mutation({
           v.literal("beginner"),
           v.literal("intermediate"),
           v.literal("advanced"),
-          v.literal("expert")
+          v.literal("expert"),
         ),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -88,12 +88,12 @@ export const updateAvailability = mutation({
             start: v.number(),
             end: v.number(),
             type: v.optional(
-              v.union(v.literal("available"), v.literal("committed"))
+              v.union(v.literal("available"), v.literal("committed")),
             ),
             sessionId: v.optional(v.id("sessions")),
-          })
+          }),
         ),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -125,7 +125,7 @@ export const commitAvailabilitySlot = mutation({
 
     // Find the availability record for the given date
     const availabilityIndex = user.availability.findIndex(
-      a => a.date === args.date
+      a => a.date === args.date,
     );
 
     if (availabilityIndex === -1) {
@@ -168,7 +168,7 @@ export const commitAvailabilitySlot = mutation({
             i.type === "committed" &&
             i.sessionId === args.sessionId &&
             i.start === args.startTime &&
-            i.end === args.endTime
+            i.end === args.endTime,
         );
 
         if (!committedSlotExists) {
@@ -321,9 +321,7 @@ export const updateDisplayName = mutation({
 
 export const getUser = query({
   args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.userId);
-  },
+  handler: async (ctx, args) => await ctx.db.get(args.userId),
 });
 
 export const getActiveUsers = query({
@@ -334,7 +332,7 @@ export const getActiveUsers = query({
 
     // Filter to only users with game library and availability set
     return allUsers.filter(
-      user => user.gameLibrary.length > 0 && user.availability.length > 0
+      user => user.gameLibrary.length > 0 && user.availability.length > 0,
     );
   },
 });

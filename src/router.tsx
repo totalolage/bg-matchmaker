@@ -23,7 +23,7 @@ export function createRouter() {
           const direction =
             toIndex > fromIndex ? "slide-forward" : "slide-backward";
           console.log(
-            `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (${direction})`
+            `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (${direction})`,
           );
           return [direction];
         }
@@ -34,7 +34,7 @@ export function createRouter() {
           toLocation.pathname === "/profile/edit"
         ) {
           console.log(
-            `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (slide-forward)`
+            `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (slide-forward)`,
           );
           return ["slide-forward"];
         }
@@ -43,13 +43,13 @@ export function createRouter() {
           toLocation.pathname === "/profile"
         ) {
           console.log(
-            `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (slide-backward)`
+            `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (slide-backward)`,
           );
           return ["slide-backward"];
         }
 
         console.log(
-          `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (fade)`
+          `[TanStack Router] View transition: ${fromLocation.pathname} → ${toLocation.pathname} (fade)`,
         );
         return ["fade"];
       },

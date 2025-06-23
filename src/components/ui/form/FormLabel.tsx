@@ -14,7 +14,7 @@ import { useFormField } from "./hooks";
 export const FormLabel = (
   props: ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & {
     ref?: Ref<ElementRef<typeof LabelPrimitive.Root>>;
-  }
+  },
 ) => {
   const { className, ref, ...rest } = props;
   const { error, formItemId } = useFormField();
