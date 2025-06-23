@@ -1,17 +1,13 @@
-import { useDebouncedValue } from "@tanstack/react-pacer";
-import { Loader2, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { api } from "@convex/_generated/api";
 import { Doc } from "@convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 
-import { MIN_SEARCH_LENGTH,SEARCH_DEBOUNCE_MS } from "../constants";
 import type { GameSearchResult } from "../types";
 
-import { GameSearchResults } from "./GameSearchResults";
+import { VirtualizedGameSearchResults } from "./VirtualizedGameSearchResults";
 
 interface AddGameDialogProps {
   user: Doc<"users">;
@@ -19,25 +15,12 @@ interface AddGameDialogProps {
   onClose: () => void;
 }
 
-export function AddGameDialog({ user, onAddGame, onClose }: AddGameDialogProps) {
+export function AddGameDialog({
+  user,
+  onAddGame,
+  onClose,
+}: AddGameDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery] = useDebouncedValue(searchQuery, { wait: SEARCH_DEBOUNCE_MS });
-
-  const searchResults =
-    useQuery(
-      api.games.searchGames,
-      debouncedSearchQuery.trim().length >= MIN_SEARCH_LENGTH
-        ? { query: debouncedSearchQuery.trim() }
-        : "skip",
-    ) || [];
-
-  const isSearching =
-    searchQuery.trim().length >= MIN_SEARCH_LENGTH && searchQuery !== debouncedSearchQuery;
-
-  const searchError =
-    searchQuery.trim().length >= MIN_SEARCH_LENGTH && !isSearching && searchResults.length === 0
-      ? "No games found. Try a different search term or import by BGG ID."
-      : null;
 
   return (
     <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -61,17 +44,12 @@ export function AddGameDialog({ user, onAddGame, onClose }: AddGameDialogProps) 
           placeholder="Search for a game..."
           onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
           before={<Search size={16} className="text-gray-400" />}
-          after={isSearching ? (
-            <Loader2 size={16} className="animate-spin text-gray-400" />
-          ) : null}
           {...{ incremental: true }}
         />
       </div>
 
-      <GameSearchResults
-        searchResults={searchResults}
-        isSearching={isSearching}
-        searchError={searchError}
+      <VirtualizedGameSearchResults
+        searchQuery={searchQuery}
         userLibrary={user.gameLibrary}
         onAddGame={onAddGame}
       />

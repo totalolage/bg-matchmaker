@@ -109,8 +109,8 @@ const applicationTables = {
     averageRating: v.optional(v.number()), // BGG average rating
   })
     .index("by_bgg_id", ["bggId"])
-    .searchIndex("search_all_names", {
-      searchField: "searchText",
+    .searchIndex("search_name", {
+      searchField: "name",
     }),
 
   userSwipes: defineTable({

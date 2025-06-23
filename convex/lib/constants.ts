@@ -25,4 +25,21 @@ export const CSV_IMPORT = {
   BATCH_SIZE: 1000,
 } as const;
 
+// Search Weights Constants
+export const SEARCH_WEIGHTS = {
+  DEFAULT: {
+    title: 10,
+    alternateNames: 5,
+    description: 2,
+  },
+} as const;
+
+// Search Scoring Constants
+export const SEARCH_SCORING = {
+  // Maximum expected popularity for normalization (BGG's most popular games)
+  MAX_POPULARITY: 100000,
+  // Popularity boost factor (0.5 means popularity can boost score by up to 50%)
+  POPULARITY_BOOST_FACTOR: 0.5,
+} as const;
+
 // Other app constants can be added here as needed

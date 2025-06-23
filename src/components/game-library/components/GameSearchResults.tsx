@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/select";
 
 import { EXPERTISE_LEVELS } from "../constants";
-import type { GameLibraryItem,GameSearchResult } from "../types";
+import type { GameLibraryItem, GameSearchResult } from "../types";
+
+import { GameSearchSkeleton } from "./GameSearchSkeleton";
 
 interface GameSearchResultsProps {
   searchResults: GameSearchResult[];
@@ -36,23 +38,7 @@ export function GameSearchResults({
   }
 
   if (isSearching && searchResults.length === 0) {
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 3 }, (_, i) => (
-          <div
-            key={i}
-            className="flex items-center space-x-3 p-2 bg-white rounded border animate-pulse"
-          >
-            <div className="w-12 h-12 bg-gray-200 rounded" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-3 bg-gray-200 rounded w-1/2" />
-            </div>
-            <div className="w-32 h-9 bg-gray-200 rounded" />
-          </div>
-        ))}
-      </div>
-    );
+    return <GameSearchSkeleton count={3} />;
   }
 
   if (searchResults.length === 0) {
@@ -87,15 +73,13 @@ export function GameSearchResults({
           <div className="flex-1">
             <h4 className="font-medium text-gray-900">{game.name}</h4>
             <p className="text-sm text-gray-500">
-              {game.minPlayers}-{game.maxPlayers} players •{" "}
-              {game.playingTime}min
+              {game.minPlayers}-{game.maxPlayers} players • {game.playingTime}
+              min
             </p>
           </div>
           <Select
             onValueChange={(value) => void onAddGame(game, value)}
-            disabled={userLibrary.some(
-              (g) => g.gameId === game.bggId,
-            )}
+            disabled={userLibrary.some((g) => g.gameId === game.bggId)}
           >
             <SelectTrigger className="w-32">
               <SelectValue

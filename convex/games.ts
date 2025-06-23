@@ -11,7 +11,7 @@ import {
   query,
 } from "./_generated/server";
 import { BGGDataSource } from "./lib/bgg_data_source";
-import { BGG_SEEDING } from "./lib/constants";
+import { BGG_SEEDING, SEARCH_WEIGHTS } from "./lib/constants";
 
 type GameSearchResult = {
   bggId: string;
@@ -21,33 +21,161 @@ type GameSearchResult = {
   maxPlayers: number;
   playingTime: number;
   complexity: number;
+  score?: number; // Optional relevance score for weighted search
 };
+
+type SearchWeights = {
+  title: number;
+  alternateNames: number;
+  description: number;
+};
+
+// Helper function to count occurrences of search term in text (case-insensitive)
+function countOccurrences(
+  text: string | undefined,
+  searchTerm: string,
+): number {
+  if (!text) return 0;
+  const lowerText = text.toLowerCase();
+  const lowerTerm = searchTerm.toLowerCase();
+  let count = 0;
+  let index = 0;
+
+  while ((index = lowerText.indexOf(lowerTerm, index)) !== -1) {
+    count++;
+    index += lowerTerm.length;
+  }
+
+  return count;
+}
+
+// Calculate relevance score based on weights
+function calculateRelevanceScore(
+  game: { name?: string; alternateNames?: string[]; description?: string },
+  searchTerm: string,
+  weights: SearchWeights,
+): number {
+  const lowerSearchTerm = searchTerm.toLowerCase();
+  const lowerName = game.name?.toLowerCase() || "";
+
+  // Exact match gets highest score
+  if (lowerName === lowerSearchTerm) {
+    return weights.title * 3; // Triple score for exact match
+  }
+
+  // Starting with search term gets bonus
+  const startsWithBonus = lowerName.startsWith(lowerSearchTerm)
+    ? weights.title
+    : 0;
+
+  // Count occurrences but cap at 2 to prevent gaming
+  const titleHits = Math.min(countOccurrences(game.name, searchTerm), 2);
+  const altHits = Math.min(
+    (game.alternateNames || []).reduce(
+      (sum: number, alt: string) => sum + countOccurrences(alt, searchTerm),
+      0,
+    ),
+    2,
+  );
+  const descHits = Math.min(countOccurrences(game.description, searchTerm), 2);
+
+  return (
+    startsWithBonus +
+    titleHits * weights.title +
+    altHits * weights.alternateNames +
+    descHits * weights.description
+  );
+}
+
+// Calculate final score combining relevance and popularity
+function calculateFinalScore(
+  relevanceScore: number,
+  popularity: number | undefined,
+): number {
+  // For very popular games (>10k), use a stronger boost
+  const pop = popularity || 0;
+
+  if (pop > 10000) {
+    // For very popular games, use a logarithmic boost that can go up to 2x
+    const logPop = Math.log10(pop);
+    const popularityBoost = 1 + logPop / 10; // At 100k popularity, this is ~1.5x boost
+    return relevanceScore * popularityBoost;
+  } else if (pop > 1000) {
+    // Medium popularity gets moderate boost
+    const normalizedPop = pop / 10000;
+    const popularityBoost = 1 + normalizedPop * 0.3; // Up to 30% boost
+    return relevanceScore * popularityBoost;
+  } else {
+    // Low popularity games get minimal boost
+    const normalizedPop = pop / 1000;
+    const popularityBoost = 1 + normalizedPop * 0.1; // Up to 10% boost
+    return relevanceScore * popularityBoost;
+  }
+}
 
 // Local-only search - no BGG API calls
 export const searchGames = query({
   args: {
     query: v.string(),
+    weights: v.optional(
+      v.object({
+        title: v.optional(v.number()),
+        alternateNames: v.optional(v.number()),
+        description: v.optional(v.number()),
+      }),
+    ),
   },
   handler: async (ctx, args): Promise<GameSearchResult[]> => {
     if (!args.query || args.query.trim().length < 2) {
       return [];
     }
 
-    // Use Convex full-text search on searchText field which includes both name and alternate names
-    const results = await ctx.db
-      .query("gameData")
-      .withSearchIndex("search_all_names", (q) => q.search("searchText", args.query))
-      .take(20);
+    const searchTerm = args.query.trim();
+    const weights: SearchWeights = {
+      title: args.weights?.title ?? SEARCH_WEIGHTS.DEFAULT.title,
+      alternateNames:
+        args.weights?.alternateNames ?? SEARCH_WEIGHTS.DEFAULT.alternateNames,
+      description:
+        args.weights?.description ?? SEARCH_WEIGHTS.DEFAULT.description,
+    };
 
-    return results.map((game) => ({
-      bggId: game.bggId,
-      name: game.name,
-      image: game.image || "",
-      minPlayers: game.minPlayers || 1,
-      maxPlayers: game.maxPlayers || 1,
-      playingTime: game.playingTime || 0,
-      complexity: game.complexity || 0,
-    }));
+    // Use the search index on the name field directly
+    const nameResults = await ctx.db
+      .query("gameData")
+      .withSearchIndex("search_name", (q) => q.search("name", searchTerm))
+      .take(200); // Get more results to ensure we don't miss popular games
+
+    // Convert to a map to avoid duplicates
+    const gameMap = new Map();
+    nameResults.forEach((game) => gameMap.set(game.bggId, game));
+
+    const filteredResults = Array.from(gameMap.values());
+
+    // Calculate scores and sort
+    const scoredResults = filteredResults
+      .map((game) => {
+        const relevanceScore = calculateRelevanceScore(
+          game,
+          searchTerm,
+          weights,
+        );
+        const finalScore = calculateFinalScore(relevanceScore, game.popularity);
+        return {
+          bggId: game.bggId,
+          name: game.name,
+          image: game.image || "",
+          minPlayers: game.minPlayers || 1,
+          maxPlayers: game.maxPlayers || 1,
+          playingTime: game.playingTime || 0,
+          complexity: game.complexity || 0,
+          score: finalScore,
+        };
+      })
+      .filter((game) => game.score > 0) // Only include games with positive scores
+      .sort((a, b) => b.score - a.score) // Sort by score descending
+      .slice(0, 20); // Return top 20 results
+
+    return scoredResults;
   },
 });
 
@@ -59,6 +187,13 @@ export const searchGamesPaginated = query({
       numItems: v.number(),
       cursor: v.union(v.string(), v.null()),
     }),
+    weights: v.optional(
+      v.object({
+        title: v.optional(v.number()),
+        alternateNames: v.optional(v.number()),
+        description: v.optional(v.number()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     if (!args.query || args.query.trim().length < 2) {
@@ -69,20 +204,53 @@ export const searchGamesPaginated = query({
       };
     }
 
-    // Convert undefined cursor to null for Convex pagination
-    const paginationOptions = {
-      numItems: args.paginationOpts.numItems,
-      cursor: args.paginationOpts.cursor ?? null,
+    const searchTerm = args.query.trim();
+    const weights: SearchWeights = {
+      title: args.weights?.title ?? SEARCH_WEIGHTS.DEFAULT.title,
+      alternateNames:
+        args.weights?.alternateNames ?? SEARCH_WEIGHTS.DEFAULT.alternateNames,
+      description:
+        args.weights?.description ?? SEARCH_WEIGHTS.DEFAULT.description,
     };
 
-    // Use Convex full-text search on searchText field which includes both name and alternate names
-    const paginatedResults = await ctx.db
+    // For weighted search, we need to fetch all matching results first,
+    // then score and sort them before applying pagination
+
+    // Parse cursor to get the offset for our custom pagination
+    const offset = args.paginationOpts.cursor
+      ? parseInt(args.paginationOpts.cursor, 10)
+      : 0;
+    const limit = args.paginationOpts.numItems;
+
+    // Use the search index on the name field directly
+    const searchResults = await ctx.db
       .query("gameData")
-      .withSearchIndex("search_all_names", (q) => q.search("searchText", args.query))
-      .paginate(paginationOptions);
+      .withSearchIndex("search_name", (q) => q.search("name", searchTerm))
+      .take(500); // Get enough results to ensure popular games are included
+
+    // Score and sort all results
+    const scoredResults = searchResults
+      .map((game) => {
+        const relevanceScore = calculateRelevanceScore(
+          game,
+          searchTerm,
+          weights,
+        );
+        const finalScore = calculateFinalScore(relevanceScore, game.popularity);
+        return {
+          game,
+          score: finalScore,
+        };
+      })
+      .filter((result) => result.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    // Apply manual pagination
+    const paginatedScoredResults = scoredResults.slice(offset, offset + limit);
+    const hasMore = offset + limit < scoredResults.length;
 
     // Transform the page results to match GameSearchResult format
-    const transformedPage = paginatedResults.page.map((game) => ({
+    const transformedPage = paginatedScoredResults.map(({ game, score }) => ({
       bggId: game.bggId,
       name: game.name,
       image: game.image || "",
@@ -90,12 +258,13 @@ export const searchGamesPaginated = query({
       maxPlayers: game.maxPlayers || 1,
       playingTime: game.playingTime || 0,
       complexity: game.complexity || 0,
+      score,
     }));
 
     return {
       page: transformedPage,
-      isDone: paginatedResults.isDone,
-      continueCursor: paginatedResults.continueCursor,
+      isDone: !hasMore,
+      continueCursor: hasMore ? String(offset + limit) : "",
     };
   },
 });
@@ -250,9 +419,10 @@ export const cacheGame = internalMutation({
       .unique();
 
     // Generate searchText by combining name and alternate names
-    const searchText = args.alternateNames && args.alternateNames.length > 0
-      ? `${args.name} ${args.alternateNames.join(' ')}`
-      : args.name;
+    const searchText =
+      args.alternateNames && args.alternateNames.length > 0
+        ? `${args.name} ${args.alternateNames.join(" ")}`
+        : args.name;
 
     const gameData = {
       ...args,
@@ -309,9 +479,10 @@ export const cacheGames = internalMutation({
           .unique();
 
         // Generate searchText by combining name and alternate names
-        const searchText = game.alternateNames && game.alternateNames.length > 0
-          ? `${game.name} ${game.alternateNames.join(' ')}`
-          : game.name;
+        const searchText =
+          game.alternateNames && game.alternateNames.length > 0
+            ? `${game.name} ${game.alternateNames.join(" ")}`
+            : game.name;
 
         const gameData = {
           ...game,
