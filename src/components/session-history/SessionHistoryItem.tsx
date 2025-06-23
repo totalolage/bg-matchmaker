@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import {
   Calendar,
   Check,
@@ -120,7 +119,12 @@ export function SessionHistoryItem({
             {session.scheduledTime && (
               <div className="flex items-center gap-2">
                 <Calendar size={14} />
-                <span>{format(new Date(session.scheduledTime), "PPp")}</span>
+                <span>
+                  {new Intl.DateTimeFormat("en-US", {
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  }).format(new Date(session.scheduledTime))}
+                </span>
               </div>
             )}
 
@@ -160,7 +164,11 @@ export function SessionHistoryItem({
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Clock size={12} />
               <span>
-                {format(new Date(interaction.createdAt), "MMM d, yyyy")}
+                {new Intl.DateTimeFormat("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                }).format(new Date(interaction.createdAt))}
               </span>
             </div>
           </div>

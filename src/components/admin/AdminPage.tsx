@@ -234,7 +234,10 @@ export function AdminPage() {
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Last Updated:</span>
                     <span>
-                      {new Date(status.lastUpdatedAt).toLocaleString()}
+                      {new Intl.DateTimeFormat("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "medium",
+                      }).format(new Date(status.lastUpdatedAt))}
                     </span>
                   </div>
                 )}
@@ -242,7 +245,12 @@ export function AdminPage() {
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Completed:</span>
-                    <span>{new Date(status.completedAt).toLocaleString()}</span>
+                    <span>
+                      {new Intl.DateTimeFormat("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "medium",
+                      }).format(new Date(status.completedAt))}
+                    </span>
                   </div>
                 )}
               </div>
@@ -259,7 +267,10 @@ export function AdminPage() {
                   {status.nextRunTime && (
                     <p className="text-sm text-muted-foreground">
                       If needed, next batch will start around:{" "}
-                      {new Date(status.nextRunTime).toLocaleString()}
+                      {new Intl.DateTimeFormat("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "medium",
+                      }).format(new Date(status.nextRunTime))}
                     </p>
                   )}
                 </div>
