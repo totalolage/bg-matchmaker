@@ -1,4 +1,5 @@
 const { fontFamily } = require("tailwindcss/defaultTheme");
+const safeSpacingPlugin = require("./tailwind-safe-spacing-plugin");
 
 module.exports = {
   darkMode: ["class"],
@@ -90,4 +91,5 @@ module.exports = {
       boxShadow: ["hover", "active"],
     },
   },
+  plugins: [safeSpacingPlugin],
 };

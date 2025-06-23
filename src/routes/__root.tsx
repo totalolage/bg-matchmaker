@@ -13,9 +13,12 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
   component: () => (
-    <div className="min-h-dvh bg-gradient-to-br from-purple-50 to-blue-50 overscroll-none">
+    <div
+      className="min-h-dvh bg-gradient-to-br from-purple-50 to-blue-50 overscroll-none"
+      id="app-root"
+    >
       <Authenticated>
-        <div className="relative max-w-xl mx-auto bg-white min-h-dvh shadow-xl flex flex-col safe-x">
+        <div className="relative max-w-xl mx-auto bg-white min-h-dvh shadow-xl flex flex-col px-s-0">
           <div
             className="grid flex-1 overflow-hidden"
             style={{ viewTransitionName: "content", contain: "layout" }}
@@ -27,7 +30,7 @@ export const Route = createRootRouteWithContext<{
       </Authenticated>
 
       <Unauthenticated>
-        <div className="min-h-dvh flex items-center justify-center p-4 safe-x safe-y">
+        <div className="min-h-dvh flex items-center justify-center p-s-4">
           <div className="w-full max-w-xl">
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
