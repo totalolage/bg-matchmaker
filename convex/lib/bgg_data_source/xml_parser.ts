@@ -31,12 +31,12 @@ const parser = new XMLParser(parserOptions);
  */
 export function parseSearchResponse(xmlData: string): BGGSearchResponse {
   const parsed = parser.parse(xmlData);
-  
+
   // Normalize items.item to always be an array
   if (parsed.items && parsed.items.item && !Array.isArray(parsed.items.item)) {
     parsed.items.item = [parsed.items.item];
   }
-  
+
   try {
     validateSearchResponse(parsed);
     return parsed;
@@ -54,12 +54,12 @@ export function parseSearchResponse(xmlData: string): BGGSearchResponse {
  */
 export function parseThingResponse(xmlData: string): BGGThingResponse {
   const parsed = parser.parse(xmlData);
-  
+
   // Normalize items.item to always be an array
   if (parsed.items && parsed.items.item && !Array.isArray(parsed.items.item)) {
     parsed.items.item = [parsed.items.item];
   }
-  
+
   try {
     validateThingResponse(parsed);
     return parsed;
@@ -77,12 +77,12 @@ export function parseThingResponse(xmlData: string): BGGThingResponse {
  */
 export function parseHotResponse(xmlData: string): BGGHotResponse {
   const parsed = parser.parse(xmlData);
-  
+
   // Normalize items.item to always be an array
   if (parsed.items && parsed.items.item && !Array.isArray(parsed.items.item)) {
     parsed.items.item = [parsed.items.item];
   }
-  
+
   try {
     validateHotResponse(parsed);
     return parsed;
@@ -94,5 +94,3 @@ export function parseHotResponse(xmlData: string): BGGHotResponse {
     );
   }
 }
-
-

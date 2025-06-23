@@ -15,7 +15,7 @@ export const populateSearchText = internalMutation({
     // Get games without searchText
     const games = await ctx.db
       .query("gameData")
-      .filter((q) => q.eq(q.field("searchText"), undefined))
+      .filter(q => q.eq(q.field("searchText"), undefined))
       .take(batchSize);
 
     if (games.length === 0) {
@@ -40,11 +40,11 @@ export const populateSearchText = internalMutation({
     // Check how many more need updating
     const remaining = await ctx.db
       .query("gameData")
-      .filter((q) => q.eq(q.field("searchText"), undefined))
+      .filter(q => q.eq(q.field("searchText"), undefined))
       .collect();
 
     console.log(
-      `[Migration] Updated ${updated} games, ${remaining.length} remaining`,
+      `[Migration] Updated ${updated} games, ${remaining.length} remaining`
     );
 
     return {
@@ -58,7 +58,7 @@ export const populateSearchText = internalMutation({
 // Helper mutation to run the migration until complete
 export const runFullMigration = internalMutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     console.log("[Migration] Starting searchText population...");
 
     let totalUpdated = 0;
@@ -71,7 +71,7 @@ export const runFullMigration = internalMutation({
         internal.migrations.populateSearchText.populateSearchText,
         {
           batchSize: 100,
-        },
+        }
       );
 
       totalUpdated += result.updated;
@@ -80,13 +80,13 @@ export const runFullMigration = internalMutation({
 
       if (needsMore) {
         console.log(
-          `[Migration] Run ${runs}: Updated ${result.updated}, continuing...`,
+          `[Migration] Run ${runs}: Updated ${result.updated}, continuing...`
         );
       }
     }
 
     console.log(
-      `[Migration] Complete! Total updated: ${totalUpdated} in ${runs} runs`,
+      `[Migration] Complete! Total updated: ${totalUpdated} in ${runs} runs`
     );
 
     return { totalUpdated, runs };

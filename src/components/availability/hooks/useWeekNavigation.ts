@@ -43,7 +43,7 @@ export const useWeekNavigation = (successDebouncer: Debouncer<() => void>) => {
       successDebouncer.cancel();
       toast.success("Availability updated");
     }
-    
+
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() - 7);
     setCurrentWeekStart(newStart);
@@ -55,7 +55,7 @@ export const useWeekNavigation = (successDebouncer: Debouncer<() => void>) => {
       successDebouncer.cancel();
       toast.success("Availability updated");
     }
-    
+
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() + 7);
     setCurrentWeekStart(newStart);

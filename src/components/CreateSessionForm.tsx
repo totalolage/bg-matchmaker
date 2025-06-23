@@ -45,7 +45,7 @@ export const CreateSessionForm = () => {
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Create Session</h2>
       <Form {...form}>
-        <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
+        <form onSubmit={e => void onSubmit(e)} className="space-y-4">
           <FormField
             control={form.control}
             name="sessionName"

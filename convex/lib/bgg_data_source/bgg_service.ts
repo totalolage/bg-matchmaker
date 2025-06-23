@@ -81,7 +81,7 @@ export async function getMultipleGameDetails(
   // Process in batches
   for (let i = 0; i < bggIds.length; i += BATCH_SIZE) {
     const batch = bggIds.slice(i, i + BATCH_SIZE);
-    
+
     try {
       const params = buildThingParams(batch);
       const xmlData = await makeRequest(ctx, {
@@ -116,7 +116,7 @@ export async function getHotGames(
 
   const parsed = parseHotResponse(xmlData);
   const gameIds = mapHotResponse(parsed);
-  
+
   return gameIds.slice(0, limit);
 }
 
@@ -157,12 +157,12 @@ export async function getGameDetailsWithErrorHandling(
   try {
     const bulkResults = await getMultipleGameDetails(ctx, bggIds);
     result.successful = bulkResults;
-    
+
     // Find which IDs failed
-    const successfulIds = new Set(bulkResults.map((game) => game.id));
-    const failedIds = bggIds.filter((id) => !successfulIds.has(id));
-    
-    result.failed = failedIds.map((id) => ({
+    const successfulIds = new Set(bulkResults.map(game => game.id));
+    const failedIds = bggIds.filter(id => !successfulIds.has(id));
+
+    result.failed = failedIds.map(id => ({
       id,
       error: new Error("Game not found in bulk response"),
     }));

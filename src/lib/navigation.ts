@@ -1,4 +1,4 @@
-import { Home, LucideIcon,Plus, Search, Shield, User } from "lucide-react";
+import { Home, LucideIcon, Plus, Search, Shield, User } from "lucide-react";
 
 export interface NavItem {
   to: string;

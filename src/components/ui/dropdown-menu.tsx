@@ -1,26 +1,34 @@
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { Check, ChevronRight, Circle } from "lucide-react"
-import type { ComponentProps, ComponentPropsWithoutRef, ElementRef, HTMLAttributes, Ref } from "react"
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import { Check, ChevronRight, Circle } from "lucide-react";
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ElementRef,
+  HTMLAttributes,
+  Ref,
+} from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-const DropdownMenu = DropdownMenuPrimitive.Root
+const DropdownMenu = DropdownMenuPrimitive.Root;
 
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
-const DropdownMenuGroup = DropdownMenuPrimitive.Group
+const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal
+const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 
-const DropdownMenuSub = DropdownMenuPrimitive.Sub
+const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 
-const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
+const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
 
-export const DropdownMenuSubTrigger = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
-  inset?: boolean
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.SubTrigger>>
-}) => {
-  const { className, inset, children, ref, ...rest } = props
+export const DropdownMenuSubTrigger = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
+    inset?: boolean;
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.SubTrigger>>;
+  }
+) => {
+  const { className, inset, children, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.SubTrigger
       ref={ref}
@@ -34,14 +42,18 @@ export const DropdownMenuSubTrigger = (props: ComponentPropsWithoutRef<typeof Dr
       {children}
       <ChevronRight className="ml-auto" />
     </DropdownMenuPrimitive.SubTrigger>
-  )
-}
-export type DropdownMenuSubTriggerProps = ComponentProps<typeof DropdownMenuSubTrigger>
+  );
+};
+export type DropdownMenuSubTriggerProps = ComponentProps<
+  typeof DropdownMenuSubTrigger
+>;
 
-export const DropdownMenuSubContent = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent> & {
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.SubContent>>
-}) => {
-  const { className, ref, ...rest } = props
+export const DropdownMenuSubContent = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent> & {
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.SubContent>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.SubContent
       ref={ref}
@@ -51,14 +63,18 @@ export const DropdownMenuSubContent = (props: ComponentPropsWithoutRef<typeof Dr
       )}
       {...rest}
     />
-  )
-}
-export type DropdownMenuSubContentProps = ComponentProps<typeof DropdownMenuSubContent>
+  );
+};
+export type DropdownMenuSubContentProps = ComponentProps<
+  typeof DropdownMenuSubContent
+>;
 
-export const DropdownMenuContent = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> & {
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Content>>
-}) => {
-  const { className, sideOffset = 4, ref, ...rest } = props
+export const DropdownMenuContent = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> & {
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Content>>;
+  }
+) => {
+  const { className, sideOffset = 4, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
@@ -72,15 +88,19 @@ export const DropdownMenuContent = (props: ComponentPropsWithoutRef<typeof Dropd
         {...rest}
       />
     </DropdownMenuPrimitive.Portal>
-  )
-}
-export type DropdownMenuContentProps = ComponentProps<typeof DropdownMenuContent>
+  );
+};
+export type DropdownMenuContentProps = ComponentProps<
+  typeof DropdownMenuContent
+>;
 
-export const DropdownMenuItem = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
-  inset?: boolean
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Item>>
-}) => {
-  const { className, inset, ref, ...rest } = props
+export const DropdownMenuItem = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
+    inset?: boolean;
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Item>>;
+  }
+) => {
+  const { className, inset, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.Item
       ref={ref}
@@ -91,14 +111,16 @@ export const DropdownMenuItem = (props: ComponentPropsWithoutRef<typeof Dropdown
       )}
       {...rest}
     />
-  )
-}
-export type DropdownMenuItemProps = ComponentProps<typeof DropdownMenuItem>
+  );
+};
+export type DropdownMenuItemProps = ComponentProps<typeof DropdownMenuItem>;
 
-export const DropdownMenuCheckboxItem = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem> & {
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>>
-}) => {
-  const { className, children, checked, ref, ...rest } = props
+export const DropdownMenuCheckboxItem = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem> & {
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>>;
+  }
+) => {
+  const { className, children, checked, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.CheckboxItem
       ref={ref}
@@ -116,14 +138,18 @@ export const DropdownMenuCheckboxItem = (props: ComponentPropsWithoutRef<typeof 
       </span>
       {children}
     </DropdownMenuPrimitive.CheckboxItem>
-  )
-}
-export type DropdownMenuCheckboxItemProps = ComponentProps<typeof DropdownMenuCheckboxItem>
+  );
+};
+export type DropdownMenuCheckboxItemProps = ComponentProps<
+  typeof DropdownMenuCheckboxItem
+>;
 
-export const DropdownMenuRadioItem = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem> & {
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.RadioItem>>
-}) => {
-  const { className, children, ref, ...rest } = props
+export const DropdownMenuRadioItem = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem> & {
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.RadioItem>>;
+  }
+) => {
+  const { className, children, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.RadioItem
       ref={ref}
@@ -140,15 +166,19 @@ export const DropdownMenuRadioItem = (props: ComponentPropsWithoutRef<typeof Dro
       </span>
       {children}
     </DropdownMenuPrimitive.RadioItem>
-  )
-}
-export type DropdownMenuRadioItemProps = ComponentProps<typeof DropdownMenuRadioItem>
+  );
+};
+export type DropdownMenuRadioItemProps = ComponentProps<
+  typeof DropdownMenuRadioItem
+>;
 
-export const DropdownMenuLabel = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
-  inset?: boolean
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Label>>
-}) => {
-  const { className, inset, ref, ...rest } = props
+export const DropdownMenuLabel = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
+    inset?: boolean;
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Label>>;
+  }
+) => {
+  const { className, inset, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.Label
       ref={ref}
@@ -159,23 +189,27 @@ export const DropdownMenuLabel = (props: ComponentPropsWithoutRef<typeof Dropdow
       )}
       {...rest}
     />
-  )
-}
-export type DropdownMenuLabelProps = ComponentProps<typeof DropdownMenuLabel>
+  );
+};
+export type DropdownMenuLabelProps = ComponentProps<typeof DropdownMenuLabel>;
 
-export const DropdownMenuSeparator = (props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator> & {
-  ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Separator>>
-}) => {
-  const { className, ref, ...rest } = props
+export const DropdownMenuSeparator = (
+  props: ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator> & {
+    ref?: Ref<ElementRef<typeof DropdownMenuPrimitive.Separator>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <DropdownMenuPrimitive.Separator
       ref={ref}
       className={cn("-mx-1 my-1 h-px bg-muted", className)}
       {...rest}
     />
-  )
-}
-export type DropdownMenuSeparatorProps = ComponentProps<typeof DropdownMenuSeparator>
+  );
+};
+export type DropdownMenuSeparatorProps = ComponentProps<
+  typeof DropdownMenuSeparator
+>;
 
 export const DropdownMenuShortcut = ({
   className,
@@ -186,9 +220,11 @@ export const DropdownMenuShortcut = ({
       className={cn("ml-auto text-xs tracking-widest opacity-60", className)}
       {...props}
     />
-  )
-}
-export type DropdownMenuShortcutProps = ComponentProps<typeof DropdownMenuShortcut>
+  );
+};
+export type DropdownMenuShortcutProps = ComponentProps<
+  typeof DropdownMenuShortcut
+>;
 
 export {
   DropdownMenu,
@@ -197,4 +233,4 @@ export {
   DropdownMenuRadioGroup,
   DropdownMenuSub,
   DropdownMenuTrigger,
-}
+};

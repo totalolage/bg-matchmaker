@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { ComponentProps, Ref,useImperativeHandle, useState } from "react";
+import { ComponentProps, Ref, useImperativeHandle, useState } from "react";
 
 import {
   AlertDialog,
@@ -33,13 +33,13 @@ export const LogoutDialog = ({ ref }: { ref?: Ref<LogoutDialogRef> }) => {
           {
             open: true,
             closed: false,
-          }[state],
+          }[state]
         ),
-      toggle: () => setIsOpen((prev) => !prev),
+      toggle: () => setIsOpen(prev => !prev),
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [isOpen],
+    [isOpen]
   );
 
   const handleLogout = async () => {
@@ -68,4 +68,3 @@ export const LogoutDialog = ({ ref }: { ref?: Ref<LogoutDialogRef> }) => {
 };
 
 export type LogoutDialogProps = ComponentProps<typeof LogoutDialog>;
-

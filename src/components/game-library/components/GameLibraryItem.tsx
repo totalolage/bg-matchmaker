@@ -25,17 +25,19 @@ export function GameLibraryItem({
   onRemove,
 }: GameLibraryItemProps) {
   const expertiseLevel = EXPERTISE_LEVELS.find(
-    (l) => l.value === game.expertiseLevel,
+    l => l.value === game.expertiseLevel
   );
 
   return (
     <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200 animate-in fade-in slide-in-from-bottom-5 duration-200">
-      {game.gameImage && <GameImage src={game.gameImage} alt={game.gameName} size="md" />}
+      {game.gameImage && (
+        <GameImage src={game.gameImage} alt={game.gameName} size="md" />
+      )}
       <div className="flex-1">
         <h3 className="font-medium text-gray-900">{game.gameName}</h3>
         <Select
           value={game.expertiseLevel}
-          onValueChange={(value) => void onUpdateExpertise(game.gameId, value)}
+          onValueChange={value => void onUpdateExpertise(game.gameId, value)}
         >
           <SelectTrigger
             className={`mt-1 w-32 h-7 text-xs ${expertiseLevel?.color}`}
@@ -43,7 +45,7 @@ export function GameLibraryItem({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {EXPERTISE_LEVELS.map((level) => (
+            {EXPERTISE_LEVELS.map(level => (
               <SelectItem key={level.value} value={level.value}>
                 {level.label}
               </SelectItem>

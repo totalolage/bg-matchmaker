@@ -12,8 +12,8 @@ import { useEffect, useRef, useState } from "react";
 import { AvailabilitySchedule } from "../components/availability";
 import { GameLibrary } from "../components/game-library";
 import { LogoutDialog, LogoutDialogRef } from "../components/LogoutDialog";
-import { SessionHistory } from "../components/session-history";
 import { PageHeader, PageLayout } from "../components/PageLayout";
+import { SessionHistory } from "../components/session-history";
 import { Button } from "../components/ui/button";
 import {
   Tabs,
@@ -176,4 +176,3 @@ function Profile() {
     </>
   );
 }
-

@@ -19,8 +19,8 @@ export const submitFeedback = mutation({
     // Check if feedback already exists
     const existingFeedback = await ctx.db
       .query("sessionFeedback")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("sessionId"), args.sessionId))
+      .withIndex("by_user", q => q.eq("userId", userId))
+      .filter(q => q.eq(q.field("sessionId"), args.sessionId))
       .unique();
 
     if (existingFeedback) {
@@ -53,20 +53,20 @@ export const getSessionFeedback = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("sessionFeedback")
-      .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
+      .withIndex("by_session", q => q.eq("sessionId", args.sessionId))
       .collect();
   },
 });
 
 export const getUserFeedback = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
     return await ctx.db
       .query("sessionFeedback")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .withIndex("by_user", q => q.eq("userId", userId))
       .collect();
   },
 });

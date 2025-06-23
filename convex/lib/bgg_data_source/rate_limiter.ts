@@ -37,8 +37,12 @@ export async function enforceBGGRateLimit(ctx: ActionCtx): Promise<void> {
 
   // If we need to wait, do so
   if (!throttleStatus.ok && throttleStatus.retryAfter) {
-    console.log(`[BGG Rate Limiter] Waiting ${throttleStatus.retryAfter}ms before next BGG API request`);
-    await new Promise((resolve) => setTimeout(resolve, throttleStatus.retryAfter));
+    console.log(
+      `[BGG Rate Limiter] Waiting ${throttleStatus.retryAfter}ms before next BGG API request`
+    );
+    await new Promise(resolve =>
+      setTimeout(resolve, throttleStatus.retryAfter)
+    );
   }
 }
 
@@ -46,16 +50,17 @@ export async function enforceBGGRateLimit(ctx: ActionCtx): Promise<void> {
  * Check client API rate limits (per-client)
  * @param clientId - Unique identifier for the client (e.g., user ID)
  */
-export async function enforceClientRateLimit(ctx: ActionCtx, clientId: string): Promise<void> {
+export async function enforceClientRateLimit(
+  ctx: ActionCtx,
+  clientId: string
+): Promise<void> {
   const status = await rateLimiter.limit(ctx, "clientApiLimit", {
     key: clientId,
   });
-  
+
   if (!status.ok) {
     throw new ConvexError(
       `Rate limit exceeded. Please try again in ${Math.ceil(status.retryAfter / 1000)} seconds.`
     );
   }
 }
-
-

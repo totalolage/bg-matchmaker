@@ -1,16 +1,20 @@
-import type { ComponentProps, HTMLAttributes, Ref } from "react"
+import type { ComponentProps, HTMLAttributes, Ref } from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-import { useFormField } from "./hooks"
+import { useFormField } from "./hooks";
 
-export const FormMessage = (props: HTMLAttributes<HTMLParagraphElement> & { ref?: Ref<HTMLParagraphElement> }) => {
-  const { className, children, ref, ...rest } = props
-  const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message) : children
+export const FormMessage = (
+  props: HTMLAttributes<HTMLParagraphElement> & {
+    ref?: Ref<HTMLParagraphElement>;
+  }
+) => {
+  const { className, children, ref, ...rest } = props;
+  const { error, formMessageId } = useFormField();
+  const body = error ? String(error?.message) : children;
 
   if (!body) {
-    return null
+    return null;
   }
 
   return (
@@ -22,7 +26,7 @@ export const FormMessage = (props: HTMLAttributes<HTMLParagraphElement> & { ref?
     >
       {body}
     </p>
-  )
-}
+  );
+};
 
-export type FormMessageProps = ComponentProps<typeof FormMessage>
+export type FormMessageProps = ComponentProps<typeof FormMessage>;

@@ -5,7 +5,7 @@
 
 export type AvailabilityInterval = {
   start: number; // minutes since midnight (0-1439)
-  end: number;   // minutes since midnight (0-1439)
+  end: number; // minutes since midnight (0-1439)
 };
 
 export type DayAvailability = {
@@ -17,7 +17,7 @@ export type DayAvailability = {
  * Convert time string "HH:MM" to minutes since midnight
  */
 export function timeToMinutes(timeString: string): number {
-  const [hours, minutes] = timeString.split(':').map(Number);
+  const [hours, minutes] = timeString.split(":").map(Number);
   return (hours || 0) * 60 + (minutes || 0);
 }
 
@@ -27,30 +27,31 @@ export function timeToMinutes(timeString: string): number {
 export function minutesToTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
 }
-
 
 /**
  * Merge overlapping and adjacent intervals efficiently
  * Uses sorting and single pass - O(n log n) complexity
  */
-export function mergeIntervals(intervals: AvailabilityInterval[]): AvailabilityInterval[] {
+export function mergeIntervals(
+  intervals: AvailabilityInterval[]
+): AvailabilityInterval[] {
   if (intervals.length <= 1) return intervals;
-  
+
   // Sort by start time
   const sorted = [...intervals].sort((a, b) => a.start - b.start);
   const firstInterval = sorted[0];
   if (!firstInterval) return [];
-  
+
   const merged: AvailabilityInterval[] = [firstInterval];
-  
+
   for (let i = 1; i < sorted.length; i++) {
     const current = sorted[i];
     const last = merged[merged.length - 1];
-    
+
     if (!current || !last) continue;
-    
+
     // Check if intervals overlap or are adjacent
     if (current.start <= last.end) {
       // Merge intervals
@@ -60,7 +61,7 @@ export function mergeIntervals(intervals: AvailabilityInterval[]): AvailabilityI
       merged.push(current);
     }
   }
-  
+
   return merged;
 }
 
@@ -84,41 +85,47 @@ export function removeInterval(
   intervalToRemove: AvailabilityInterval
 ): AvailabilityInterval[] {
   const result: AvailabilityInterval[] = [];
-  
+
   for (const existing of existingIntervals) {
     // No overlap - keep the interval
-    if (existing.end <= intervalToRemove.start || existing.start >= intervalToRemove.end) {
+    if (
+      existing.end <= intervalToRemove.start ||
+      existing.start >= intervalToRemove.end
+    ) {
       result.push(existing);
       continue;
     }
-    
+
     // Partial overlap - may need to split
     // Keep part before the removal interval
     if (existing.start < intervalToRemove.start) {
       result.push({
         start: existing.start,
-        end: Math.min(existing.end, intervalToRemove.start)
+        end: Math.min(existing.end, intervalToRemove.start),
       });
     }
-    
+
     // Keep part after the removal interval
     if (existing.end > intervalToRemove.end) {
       result.push({
         start: Math.max(existing.start, intervalToRemove.end),
-        end: existing.end
+        end: existing.end,
       });
     }
   }
-  
+
   return result;
 }
 
 /**
  * Check if a specific time (in minutes) is available
  */
-export function isTimeAvailable(intervals: AvailabilityInterval[], timeInMinutes: number): boolean {
-  return intervals.some(interval => 
-    timeInMinutes >= interval.start && timeInMinutes < interval.end
+export function isTimeAvailable(
+  intervals: AvailabilityInterval[],
+  timeInMinutes: number
+): boolean {
+  return intervals.some(
+    interval => timeInMinutes >= interval.start && timeInMinutes < interval.end
   );
 }
 
@@ -131,20 +138,24 @@ export function findAvailableSlots(
   granularityMinutes: number = 15
 ): AvailabilityInterval[] {
   const slots: AvailabilityInterval[] = [];
-  
+
   for (const interval of intervals) {
     const duration = interval.end - interval.start;
     if (duration < durationMinutes) continue;
-    
+
     // Generate slots within this interval
-    for (let start = interval.start; start + durationMinutes <= interval.end; start += granularityMinutes) {
+    for (
+      let start = interval.start;
+      start + durationMinutes <= interval.end;
+      start += granularityMinutes
+    ) {
       slots.push({
         start,
-        end: start + durationMinutes
+        end: start + durationMinutes,
       });
     }
   }
-  
+
   return slots;
 }
 
@@ -156,18 +167,18 @@ export function intersectIntervals(
   intervalsB: AvailabilityInterval[]
 ): AvailabilityInterval[] {
   const result: AvailabilityInterval[] = [];
-  
+
   for (const a of intervalsA) {
     for (const b of intervalsB) {
       const start = Math.max(a.start, b.start);
       const end = Math.min(a.end, b.end);
-      
+
       if (start < end) {
         result.push({ start, end });
       }
     }
   }
-  
+
   return mergeIntervals(result);
 }
 
@@ -182,7 +193,7 @@ export function updateDayAvailability(
 ): DayAvailability[] {
   const merged = mergeIntervals(intervals);
   const existingIndex = availability.findIndex(day => day.date === date);
-  
+
   if (existingIndex >= 0) {
     // Update existing day
     const updated = [...availability];
@@ -195,9 +206,11 @@ export function updateDayAvailability(
     return updated;
   } else if (merged.length > 0) {
     // Add new day
-    return [...availability, { date, intervals: merged }].sort((a, b) => a.date.localeCompare(b.date));
+    return [...availability, { date, intervals: merged }].sort((a, b) =>
+      a.date.localeCompare(b.date)
+    );
   }
-  
+
   return availability;
 }
 

@@ -9,16 +9,19 @@ import { getVisibleNavigationItems } from "../lib/navigation";
 export function Navigation() {
   const location = useLocation();
   const { data: user } = useQuery(convexQuery(api.auth.loggedInUser, {}));
-  
+
   const isAdmin = user?.role === "Admin";
   const navItems = getVisibleNavigationItems(isAdmin);
 
   return (
-    <nav className="sticky bottom-0 bg-white border-t border-gray-200" style={{ viewTransitionName: 'navigation' }}>
+    <nav
+      className="sticky bottom-0 bg-white border-t border-gray-200"
+      style={{ viewTransitionName: "navigation" }}
+    >
       <div className="flex">
         {navItems.map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to;
-          
+
           if (isActive) {
             // Render a div instead of Link for the active page
             return (
@@ -31,7 +34,7 @@ export function Navigation() {
               </div>
             );
           }
-          
+
           return (
             <Link
               key={to}

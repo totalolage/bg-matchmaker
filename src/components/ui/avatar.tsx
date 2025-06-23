@@ -1,12 +1,14 @@
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
-import type { ComponentProps } from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import type { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-export const Avatar = (props: React.ComponentPropsWithRef<typeof AvatarPrimitive.Root> & {
-  ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Root>>
-}) => {
-  const { className, ref, ...rest } = props
+export const Avatar = (
+  props: React.ComponentPropsWithRef<typeof AvatarPrimitive.Root> & {
+    ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Root>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AvatarPrimitive.Root
       ref={ref}
@@ -16,28 +18,32 @@ export const Avatar = (props: React.ComponentPropsWithRef<typeof AvatarPrimitive
       )}
       {...rest}
     />
-  )
-}
-export type AvatarProps = ComponentProps<typeof Avatar>
+  );
+};
+export type AvatarProps = ComponentProps<typeof Avatar>;
 
-export const AvatarImage = (props: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> & {
-  ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Image>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AvatarImage = (
+  props: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> & {
+    ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Image>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AvatarPrimitive.Image
       ref={ref}
       className={cn("aspect-square h-full w-full", className)}
       {...rest}
     />
-  )
-}
-export type AvatarImageProps = ComponentProps<typeof AvatarImage>
+  );
+};
+export type AvatarImageProps = ComponentProps<typeof AvatarImage>;
 
-export const AvatarFallback = (props: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> & {
-  ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Fallback>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AvatarFallback = (
+  props: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> & {
+    ref?: React.Ref<React.ElementRef<typeof AvatarPrimitive.Fallback>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AvatarPrimitive.Fallback
       ref={ref}
@@ -47,6 +53,6 @@ export const AvatarFallback = (props: React.ComponentPropsWithoutRef<typeof Avat
       )}
       {...rest}
     />
-  )
-}
-export type AvatarFallbackProps = ComponentProps<typeof AvatarFallback>
+  );
+};
+export type AvatarFallbackProps = ComponentProps<typeof AvatarFallback>;

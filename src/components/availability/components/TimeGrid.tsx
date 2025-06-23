@@ -1,9 +1,12 @@
 import { TimeSlotButton } from "@/components/TimeSlotButton";
-import { AvailabilityInterval,getAvailabilityForDate } from "@/lib/availability";
+import {
+  AvailabilityInterval,
+  getAvailabilityForDate,
+} from "@/lib/availability";
 import { Doc } from "@convex/_generated/dataModel";
 
 import { HOURS } from "../constants";
-import { findIntervalContainingHour,formatTime, isDateInPast } from "../utils";
+import { findIntervalContainingHour, formatTime, isDateInPast } from "../utils";
 
 interface TimeGridProps {
   date: Date;
@@ -28,12 +31,12 @@ export const TimeGrid = ({
   onSlotClick,
   onSlotHover,
 }: TimeGridProps) => {
-  const dateISO = date.toISOString().split('T')[0];
+  const dateISO = date.toISOString().split("T")[0];
   const isPast = isDateInPast(date);
 
   return (
     <div className="grid grid-cols-12 gap-1">
-      {HOURS.map((hour) => {
+      {HOURS.map(hour => {
         const timeString = formatTime(hour);
         const isSelected = dateISO ? isTimeSelected(dateISO, hour) : false;
         const isConfirmed = dateISO ? isSlotSelected(dateISO, hour) : false;
@@ -44,9 +47,12 @@ export const TimeGrid = ({
         if (hoveredTime && !selectedTime) {
           const intervals = getAvailabilityForDate(
             selectedSlots,
-            hoveredTime.date,
+            hoveredTime.date
           );
-          const foundInterval = findIntervalContainingHour(intervals, hoveredTime.hour);
+          const foundInterval = findIntervalContainingHour(
+            intervals,
+            hoveredTime.hour
+          );
           if (foundInterval) {
             hoveredIntervalToDelete = foundInterval;
           }
@@ -84,9 +90,7 @@ export const TimeGrid = ({
             time={timeString}
             state={buttonState}
             onClick={() => dateISO && onSlotClick(dateISO, hour)}
-            onMouseEnter={() =>
-              dateISO && onSlotHover({ date: dateISO, hour })
-            }
+            onMouseEnter={() => dateISO && onSlotHover({ date: dateISO, hour })}
             onMouseLeave={() => onSlotHover(null)}
             disabled={isPast}
           />

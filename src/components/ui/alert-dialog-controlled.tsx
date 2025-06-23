@@ -1,4 +1,4 @@
-import { PropsWithChildren, Ref,useImperativeHandle, useState } from "react";
+import { PropsWithChildren, Ref, useImperativeHandle, useState } from "react";
 
 import {
   AlertDialog,
@@ -27,7 +27,7 @@ type AlertDialogControlledProps = PropsWithChildren<{
   cancelLabel?: string;
   onAction?: () => void | Promise<void>;
   variant?: "default" | "destructive";
-}>
+}>;
 
 export const AlertDialogControlled = ({
   ref,
@@ -50,13 +50,13 @@ export const AlertDialogControlled = ({
           {
             open: true,
             closed: false,
-          }[state],
+          }[state]
         ),
-      toggle: () => setIsOpen((prev) => !prev),
+      toggle: () => setIsOpen(prev => !prev),
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [isOpen],
+    [isOpen]
   );
 
   const handleAction = async () => {
@@ -80,7 +80,11 @@ export const AlertDialogControlled = ({
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => void handleAction()}
-            className={variant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            className={
+              variant === "destructive"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : ""
+            }
           >
             {actionLabel}
           </AlertDialogAction>

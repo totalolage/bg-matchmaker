@@ -1,4 +1,10 @@
-import { PropsWithChildren, ReactNode, Ref,useImperativeHandle, useState } from "react";
+import {
+  PropsWithChildren,
+  ReactNode,
+  Ref,
+  useImperativeHandle,
+  useState,
+} from "react";
 
 import {
   Popover,
@@ -21,7 +27,7 @@ type PopoverControlledProps = PropsWithChildren<{
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
   className?: string;
-}>
+}>;
 
 export const PopoverControlled = ({
   ref,
@@ -43,13 +49,13 @@ export const PopoverControlled = ({
           {
             open: true,
             closed: false,
-          }[state],
+          }[state]
         ),
-      toggle: () => setIsOpen((prev) => !prev),
+      toggle: () => setIsOpen(prev => !prev),
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
     }),
-    [isOpen],
+    [isOpen]
   );
 
   return (

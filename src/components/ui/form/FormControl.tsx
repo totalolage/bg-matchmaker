@@ -1,11 +1,21 @@
-import { Slot } from "@radix-ui/react-slot"
-import type { ComponentProps, ComponentPropsWithoutRef, ElementRef,Ref } from "react"
+import { Slot } from "@radix-ui/react-slot";
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ElementRef,
+  Ref,
+} from "react";
 
-import { useFormField } from "./hooks"
+import { useFormField } from "./hooks";
 
-export const FormControl = (props: ComponentPropsWithoutRef<typeof Slot> & { ref?: Ref<ElementRef<typeof Slot>> }) => {
-  const { ref, ...rest } = props
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
+export const FormControl = (
+  props: ComponentPropsWithoutRef<typeof Slot> & {
+    ref?: Ref<ElementRef<typeof Slot>>;
+  }
+) => {
+  const { ref, ...rest } = props;
+  const { error, formItemId, formDescriptionId, formMessageId } =
+    useFormField();
 
   return (
     <Slot
@@ -19,7 +29,7 @@ export const FormControl = (props: ComponentPropsWithoutRef<typeof Slot> & { ref
       aria-invalid={!!error}
       {...rest}
     />
-  )
-}
+  );
+};
 
-export type FormControlProps = ComponentProps<typeof FormControl>
+export type FormControlProps = ComponentProps<typeof FormControl>;

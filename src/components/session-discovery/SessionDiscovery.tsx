@@ -48,7 +48,7 @@ export const SessionDiscovery = ({
 }: SessionDiscoveryProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(
-    null,
+    null
   );
   const [history, setHistory] = useState<
     { sessionId: string; action: "declined" | "interested" }[]
@@ -67,7 +67,7 @@ export const SessionDiscovery = ({
     setExitDirection("left");
 
     // Update history immediately for undo functionality
-    setHistory((prev) => [
+    setHistory(prev => [
       ...prev,
       { sessionId: currentSession._id, action: "declined" },
     ]);
@@ -92,7 +92,7 @@ export const SessionDiscovery = ({
     setExitDirection("right");
 
     // Update history immediately for undo functionality
-    setHistory((prev) => [
+    setHistory(prev => [
       ...prev,
       { sessionId: currentSession._id, action: "interested" },
     ]);
@@ -119,7 +119,7 @@ export const SessionDiscovery = ({
   const handleUndo = () => {
     if (history.length === 0) return;
 
-    setHistory((prev) => prev.slice(0, -1));
+    setHistory(prev => prev.slice(0, -1));
 
     // TODO: Also undo the database action and re-show the session
     // This will require coordination with the parent component

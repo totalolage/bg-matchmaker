@@ -1,11 +1,11 @@
-import { ComponentProps,ReactNode } from "react";
+import { ComponentProps, ReactNode } from "react";
 
 import { cn } from "../lib/utils";
 
-export const SectionHeader = ({ 
-  title, 
-  action, 
-  className 
+export const SectionHeader = ({
+  title,
+  action,
+  className,
 }: {
   title: string;
   action?: ReactNode;

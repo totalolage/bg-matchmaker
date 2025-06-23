@@ -1,19 +1,25 @@
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
-import type { ComponentProps, ComponentPropsWithoutRef, ElementRef } from "react"
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ElementRef,
+} from "react";
 
-import { buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-const AlertDialog = AlertDialogPrimitive.Root
+const AlertDialog = AlertDialogPrimitive.Root;
 
-const AlertDialogTrigger = AlertDialogPrimitive.Trigger
+const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
-const AlertDialogPortal = AlertDialogPrimitive.Portal
+const AlertDialogPortal = AlertDialogPrimitive.Portal;
 
-export const AlertDialogOverlay = (props: ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> & {
-  ref?: React.Ref<ElementRef<typeof AlertDialogPrimitive.Overlay>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AlertDialogOverlay = (
+  props: ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> & {
+    ref?: React.Ref<ElementRef<typeof AlertDialogPrimitive.Overlay>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AlertDialogPrimitive.Overlay
       className={cn(
@@ -23,14 +29,16 @@ export const AlertDialogOverlay = (props: ComponentPropsWithoutRef<typeof AlertD
       {...rest}
       ref={ref}
     />
-  )
-}
-export type AlertDialogOverlayProps = ComponentProps<typeof AlertDialogOverlay>
+  );
+};
+export type AlertDialogOverlayProps = ComponentProps<typeof AlertDialogOverlay>;
 
-export const AlertDialogContent = (props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
-  ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Content>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AlertDialogContent = (
+  props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
+    ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Content>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -43,9 +51,9 @@ export const AlertDialogContent = (props: React.ComponentPropsWithoutRef<typeof 
         {...rest}
       />
     </AlertDialogPortal>
-  )
-}
-export type AlertDialogContentProps = ComponentProps<typeof AlertDialogContent>
+  );
+};
+export type AlertDialogContentProps = ComponentProps<typeof AlertDialogContent>;
 
 export const AlertDialogHeader = ({
   className,
@@ -58,8 +66,8 @@ export const AlertDialogHeader = ({
     )}
     {...props}
   />
-)
-export type AlertDialogHeaderProps = ComponentProps<typeof AlertDialogHeader>
+);
+export type AlertDialogHeaderProps = ComponentProps<typeof AlertDialogHeader>;
 
 export const AlertDialogFooter = ({
   className,
@@ -72,55 +80,67 @@ export const AlertDialogFooter = ({
     )}
     {...props}
   />
-)
-export type AlertDialogFooterProps = ComponentProps<typeof AlertDialogFooter>
+);
+export type AlertDialogFooterProps = ComponentProps<typeof AlertDialogFooter>;
 
-export const AlertDialogTitle = (props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title> & {
-  ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Title>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AlertDialogTitle = (
+  props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title> & {
+    ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Title>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AlertDialogPrimitive.Title
       ref={ref}
       className={cn("text-lg font-semibold", className)}
       {...rest}
     />
-  )
-}
-export type AlertDialogTitleProps = ComponentProps<typeof AlertDialogTitle>
+  );
+};
+export type AlertDialogTitleProps = ComponentProps<typeof AlertDialogTitle>;
 
-export const AlertDialogDescription = (props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description> & {
-  ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Description>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AlertDialogDescription = (
+  props: React.ComponentPropsWithoutRef<
+    typeof AlertDialogPrimitive.Description
+  > & {
+    ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Description>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AlertDialogPrimitive.Description
       ref={ref}
       className={cn("text-sm text-muted-foreground", className)}
       {...rest}
     />
-  )
-}
-export type AlertDialogDescriptionProps = ComponentProps<typeof AlertDialogDescription>
+  );
+};
+export type AlertDialogDescriptionProps = ComponentProps<
+  typeof AlertDialogDescription
+>;
 
-export const AlertDialogAction = (props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
-  ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Action>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AlertDialogAction = (
+  props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
+    ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Action>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AlertDialogPrimitive.Action
       ref={ref}
       className={cn(buttonVariants(), className)}
       {...rest}
     />
-  )
-}
-export type AlertDialogActionProps = ComponentProps<typeof AlertDialogAction>
+  );
+};
+export type AlertDialogActionProps = ComponentProps<typeof AlertDialogAction>;
 
-export const AlertDialogCancel = (props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
-  ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Cancel>>
-}) => {
-  const { className, ref, ...rest } = props
+export const AlertDialogCancel = (
+  props: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
+    ref?: React.Ref<React.ElementRef<typeof AlertDialogPrimitive.Cancel>>;
+  }
+) => {
+  const { className, ref, ...rest } = props;
   return (
     <AlertDialogPrimitive.Cancel
       ref={ref}
@@ -131,12 +151,8 @@ export const AlertDialogCancel = (props: React.ComponentPropsWithoutRef<typeof A
       )}
       {...rest}
     />
-  )
-}
-export type AlertDialogCancelProps = ComponentProps<typeof AlertDialogCancel>
+  );
+};
+export type AlertDialogCancelProps = ComponentProps<typeof AlertDialogCancel>;
 
-export {
-  AlertDialog,
-  AlertDialogPortal,
-  AlertDialogTrigger,
-}
+export { AlertDialog, AlertDialogPortal, AlertDialogTrigger };

@@ -1,12 +1,7 @@
 import { useDebouncer } from "@tanstack/react-pacer";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearch } from "@tanstack/react-router";
-import {
-  Ref,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from "react";
+import { Ref, useEffect, useImperativeHandle, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -29,7 +24,7 @@ import { useAvailabilitySelection } from "./hooks/useAvailabilitySelection";
 import { useWeekNavigation } from "./hooks/useWeekNavigation";
 // Local imports
 import { DEBOUNCE_DELAY } from "./constants";
-import { getLocaleFirstDayOfWeek,getWeekDates } from "./utils";
+import { getLocaleFirstDayOfWeek, getWeekDates } from "./utils";
 
 interface DatePickerRef {
   state: "open" | "closed";
@@ -48,20 +43,20 @@ export const AvailabilitySchedule = ({
 }) => {
   const router = useRouter();
   const search = useSearch({ from: "/profile" });
-  
+
   // Use availability directly from Convex query - no local state
   const selectedSlots = user.availability;
-  
-  // Debounced success notification  
+
+  // Debounced success notification
   const successDebouncer = useDebouncer(
     () => toast.success("Availability updated"),
     {
       wait: DEBOUNCE_DELAY,
       trailing: true,
-      leading: false
+      leading: false,
     }
   );
-  
+
   // Mutation with debounced success notification
   const updateAvailability = useMutation({
     mutationFn: useConvexMutation(api.users.updateAvailability),
@@ -70,7 +65,7 @@ export const AvailabilitySchedule = ({
     },
     onError: () => {
       toast.error("Failed to update availability");
-    }
+    },
   });
 
   // Use custom hooks
@@ -91,13 +86,12 @@ export const AvailabilitySchedule = ({
     isInHoverRange,
     handleSlotClick,
     clearSelection,
-  } = useAvailabilitySelection(
-    selectedSlots,
-    (availability) => updateAvailability.mutate({ availability })
+  } = useAvailabilitySelection(selectedSlots, availability =>
+    updateAvailability.mutate({ availability })
   );
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  
+
   // Calculate selectedDayIndex from URL date
   const selectedDayIndex = (() => {
     if (!search.date) {
@@ -107,7 +101,7 @@ export const AvailabilitySchedule = ({
       const localeFirstDay = getLocaleFirstDayOfWeek();
       return (currentDay - localeFirstDay + 7) % 7;
     }
-    
+
     // Calculate day index from URL date
     const urlDate = new Date(search.date);
     const dayOfWeek = urlDate.getDay();
@@ -136,13 +130,13 @@ export const AvailabilitySchedule = ({
           {
             open: true,
             closed: false,
-          }[state],
+          }[state]
         ),
-      toggle: () => setDatePickerOpen((prev) => !prev),
+      toggle: () => setDatePickerOpen(prev => !prev),
       open: () => setDatePickerOpen(true),
       close: () => setDatePickerOpen(false),
     }),
-    [datePickerOpen],
+    [datePickerOpen]
   );
 
   const weekDates = getWeekDates(currentWeekStart);

@@ -6,7 +6,7 @@ import { mutation, query } from "./_generated/server";
 
 export const getDiscoverySessions = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
@@ -16,12 +16,12 @@ export const getDiscoverySessions = query({
     // Get sessions that are proposed or established
     const proposedSessions = await ctx.db
       .query("sessions")
-      .withIndex("by_status", (q) => q.eq("status", "proposed"))
+      .withIndex("by_status", q => q.eq("status", "proposed"))
       .collect();
 
     const establishedSessions = await ctx.db
       .query("sessions")
-      .withIndex("by_status", (q) => q.eq("status", "established"))
+      .withIndex("by_status", q => q.eq("status", "established"))
       .collect();
 
     const sessions = [...proposedSessions, ...establishedSessions];
@@ -29,30 +29,28 @@ export const getDiscoverySessions = query({
     // Get user's interactions to filter out already interacted sessions
     const userInteractions = await ctx.db
       .query("sessionInteractions")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .withIndex("by_user", q => q.eq("userId", userId))
       .collect();
 
     const interactedSessionIds = new Set(
-      userInteractions.map((i) => i.sessionId),
+      userInteractions.map(i => i.sessionId)
     );
 
     // Filter out sessions user has already interacted with or is already part of
     const availableSessions = sessions.filter(
-      (session) =>
+      session =>
         !interactedSessionIds.has(session._id) &&
         session.hostId !== userId &&
         !session.players.includes(userId) &&
-        !session.interestedPlayers.includes(userId),
+        !session.interestedPlayers.includes(userId)
     );
 
     // Calculate match scores based on user's game library and availability
-    const scoredSessions = availableSessions.map((session) => {
+    const scoredSessions = availableSessions.map(session => {
       let score = 0;
 
       // Game match score
-      const userGame = user.gameLibrary.find(
-        (g) => g.gameId === session.gameId,
-      );
+      const userGame = user.gameLibrary.find(g => g.gameId === session.gameId);
       if (userGame) {
         score += 50; // Base score for having the game
 
@@ -77,13 +75,13 @@ export const getDiscoverySessions = query({
         const sessionMinutes =
           sessionDate.getHours() * 60 + sessionDate.getMinutes();
 
-        const availableSlot = user.availability.find((slot) => {
+        const availableSlot = user.availability.find(slot => {
           if (slot.date !== sessionDateISO) return false;
 
           // Check if session time falls within any interval
           return slot.intervals.some(
-            (interval) =>
-              sessionMinutes >= interval.start && sessionMinutes < interval.end,
+            interval =>
+              sessionMinutes >= interval.start && sessionMinutes < interval.end
           );
         });
 
@@ -154,8 +152,8 @@ export const swipeSession = mutation({
     // Check for existing interaction
     const existing = await ctx.db
       .query("sessionInteractions")
-      .withIndex("by_user_session", (q) =>
-        q.eq("userId", userId).eq("sessionId", args.sessionId),
+      .withIndex("by_user_session", q =>
+        q.eq("userId", userId).eq("sessionId", args.sessionId)
       )
       .unique();
 
@@ -222,15 +220,15 @@ export const joinSession = mutation({
       await ctx.db.patch(args.sessionId, {
         players: [...session.players, userId],
         interestedPlayers: session.interestedPlayers.filter(
-          (id) => id !== userId,
+          id => id !== userId
         ),
       });
 
       // Record this as an "accepted" interaction
       const existing = await ctx.db
         .query("sessionInteractions")
-        .withIndex("by_user_session", (q) =>
-          q.eq("userId", userId).eq("sessionId", args.sessionId),
+        .withIndex("by_user_session", q =>
+          q.eq("userId", userId).eq("sessionId", args.sessionId)
         )
         .unique();
 
@@ -262,17 +260,17 @@ export const joinSession = mutation({
 
 export const getUserSessions = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
     const sessions = await ctx.db.query("sessions").collect();
 
     return sessions.filter(
-      (session) =>
+      session =>
         session.hostId === userId ||
         session.players.includes(userId) ||
-        session.interestedPlayers.includes(userId),
+        session.interestedPlayers.includes(userId)
     );
   },
 });
@@ -283,8 +281,8 @@ export const getSessionHistory = query({
       v.union(
         v.literal("interested"),
         v.literal("declined"),
-        v.literal("accepted"),
-      ),
+        v.literal("accepted")
+      )
     ),
   },
   handler: async (ctx, args) => {
@@ -294,19 +292,19 @@ export const getSessionHistory = query({
     // Get user's interactions
     let interactions = await ctx.db
       .query("sessionInteractions")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .withIndex("by_user", q => q.eq("userId", userId))
       .collect();
 
     // Filter by interaction type if specified
     if (args.interactionType) {
       interactions = interactions.filter(
-        (i) => i.interactionType === args.interactionType,
+        i => i.interactionType === args.interactionType
       );
     }
 
     // Get the sessions for these interactions
     const sessions = await Promise.all(
-      interactions.map(async (interaction) => {
+      interactions.map(async interaction => {
         const session = await ctx.db.get(interaction.sessionId);
         if (!session) return null;
 
@@ -318,12 +316,12 @@ export const getSessionHistory = query({
             metadata: interaction.metadata,
           },
         };
-      }),
+      })
     );
 
     // Filter out null values and sort by interaction date
     return sessions
-      .filter((s) => s !== null)
+      .filter(s => s !== null)
       .sort((a, b) => b.interaction.createdAt - a.interaction.createdAt);
   },
 });

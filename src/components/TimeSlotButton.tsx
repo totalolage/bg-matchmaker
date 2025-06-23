@@ -11,9 +11,12 @@ const timeSlotButtonVariants = cva(
     variants: {
       state: {
         default: "bg-white hover:bg-gray-50 border-gray-200",
-        selected: "bg-purple-200 text-purple-900 border-purple-400 hover:bg-purple-300",
-        confirmed: "bg-purple-500 text-white border-purple-600 hover:bg-purple-600",
-        disabled: "bg-gray-50 text-gray-400 cursor-not-allowed hover:bg-gray-50",
+        selected:
+          "bg-purple-200 text-purple-900 border-purple-400 hover:bg-purple-300",
+        confirmed:
+          "bg-purple-500 text-white border-purple-600 hover:bg-purple-600",
+        disabled:
+          "bg-gray-50 text-gray-400 cursor-not-allowed hover:bg-gray-50",
         hoverRange: "bg-purple-200 text-purple-900 border-purple-400",
         hoverDelete: [
           "bg-purple-500 text-white border-purple-600 hover:bg-purple-500 hover:text-white",
@@ -31,7 +34,13 @@ export interface TimeSlotButtonProps
   extends ComponentProps<typeof Button>,
     VariantProps<typeof timeSlotButtonVariants> {
   time: string;
-  state?: "default" | "selected" | "confirmed" | "disabled" | "hoverRange" | "hoverDelete";
+  state?:
+    | "default"
+    | "selected"
+    | "confirmed"
+    | "disabled"
+    | "hoverRange"
+    | "hoverDelete";
 }
 
 export const TimeSlotButton = ({

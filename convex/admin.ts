@@ -8,11 +8,11 @@ import { GameSeedJobMetadata } from "./games";
 
 // Get admin seeding status with next run time
 export const getSeedingAdminStatus = query({
-  handler: async (ctx) => {
+  handler: async ctx => {
     // Get seeding job
     const job = await ctx.db
       .query("jobs")
-      .withIndex("by_name", (q) => q.eq("name", "bgg_seed"))
+      .withIndex("by_name", q => q.eq("name", "bgg_seed"))
       .unique();
 
     // Check if seeding is active (will self-schedule if in progress)
@@ -55,7 +55,7 @@ export const getSeedingAdminStatus = query({
 export const startSeeding = action({
   args: {},
   handler: async (
-    ctx,
+    ctx
   ): Promise<{
     processed: number;
     success: number;
@@ -66,7 +66,7 @@ export const startSeeding = action({
     scheduledNextRun: boolean;
   }> => {
     await requireAdminAction(ctx);
-    
+
     // Get current progress
     const progress = await ctx.runQuery(internal.games.getSeedingProgress, {
       name: "bgg_seed",
@@ -91,10 +91,10 @@ export const startSeeding = action({
 // Stop seeding (keeps progress)
 export const stopSeeding = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     const job = await ctx.db
       .query("jobs")
-      .withIndex("by_name", (q) => q.eq("name", "bgg_seed"))
+      .withIndex("by_name", q => q.eq("name", "bgg_seed"))
       .unique();
 
     if (job && job.status === "in_progress") {
@@ -104,7 +104,10 @@ export const stopSeeding = mutation({
           await ctx.scheduler.cancel(job.scheduledFunctionId);
           console.log("[Stop] Successfully cancelled scheduled function");
         } catch (e) {
-          console.log("[Stop] Could not cancel scheduled function (may have already run):", e);
+          console.log(
+            "[Stop] Could not cancel scheduled function (may have already run):",
+            e
+          );
         }
       }
 
@@ -114,7 +117,7 @@ export const stopSeeding = mutation({
         lastUpdatedAt: Date.now(),
         scheduledFunctionId: undefined,
       });
-      
+
       console.log("[Stop] Job status updated to stopping");
       return { status: "stopping" };
     }
@@ -127,7 +130,7 @@ export const stopSeeding = mutation({
 export const resumeSeeding = action({
   args: {},
   handler: async (
-    ctx,
+    ctx
   ): Promise<{
     processed: number;
     success: number;
@@ -138,7 +141,7 @@ export const resumeSeeding = action({
     scheduledNextRun: boolean;
   }> => {
     await requireAdminAction(ctx);
-    
+
     // Get current progress to check if this is a retry
     const progress = await ctx.runQuery(internal.games.getSeedingProgress, {
       name: "bgg_seed",
@@ -175,7 +178,7 @@ export const resetSeedingProgress = internalMutation({
   handler: async (ctx, args) => {
     const job = await ctx.db
       .query("jobs")
-      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .withIndex("by_name", q => q.eq("name", args.name))
       .unique();
 
     if (job) {
@@ -199,7 +202,7 @@ export const updateSeedingStatus = internalMutation({
   handler: async (ctx, args) => {
     const job = await ctx.db
       .query("jobs")
-      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .withIndex("by_name", q => q.eq("name", args.name))
       .unique();
 
     if (job) {
@@ -243,7 +246,7 @@ export const batchUpsertGames = mutation({
       // Check if game already exists
       const existing = await ctx.db
         .query("gameData")
-        .withIndex("by_bgg_id", (q) => q.eq("bggId", game.bggId))
+        .withIndex("by_bgg_id", q => q.eq("bggId", game.bggId))
         .first();
 
       const gameData = {

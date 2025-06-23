@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { useMutation as useConvexMutation } from "convex/react";
 
 import { api } from "../../convex/_generated/api";
-import { PageContent,PageHeader, PageLayout } from "../components/PageLayout";
+import { PageContent, PageHeader, PageLayout } from "../components/PageLayout";
 import { Button } from "../components/ui/button";
 import {
   Form,
@@ -73,7 +73,7 @@ function EditProfile() {
       router.subscribe("onBeforeNavigate", () => {
         void handleSave();
       }),
-    [handleSave, router],
+    [handleSave, router]
   );
 
   return (
@@ -147,4 +147,3 @@ function EditProfile() {
     </PageLayout>
   );
 }
-

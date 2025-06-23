@@ -1,14 +1,15 @@
 import { useState } from "react";
 
-import { 
+import {
   addInterval,
   AvailabilityInterval,
   getAvailabilityForDate,
   removeInterval,
-  updateDayAvailability} from "@/lib/availability";
+  updateDayAvailability,
+} from "@/lib/availability";
 import { Doc } from "@convex/_generated/dataModel";
 
-import { findIntervalContainingHour,isDateInPast } from "../utils";
+import { findIntervalContainingHour, isDateInPast } from "../utils";
 
 interface SelectedTime {
   date: string;
@@ -26,8 +27,8 @@ export const useAvailabilitySelection = (
     const intervals = getAvailabilityForDate(selectedSlots, date);
     const timeInMinutes = hour * 60;
     return intervals.some(
-      (interval) =>
-        timeInMinutes >= interval.start && timeInMinutes < interval.end,
+      interval =>
+        timeInMinutes >= interval.start && timeInMinutes < interval.end
     );
   };
 
@@ -63,8 +64,12 @@ export const useAvailabilitySelection = (
 
       const existingIntervals = getAvailabilityForDate(selectedSlots, date);
       const updatedIntervals = addInterval(existingIntervals, newInterval);
-      const newSlots = updateDayAvailability(selectedSlots, date, updatedIntervals);
-      
+      const newSlots = updateDayAvailability(
+        selectedSlots,
+        date,
+        updatedIntervals
+      );
+
       onUpdate(newSlots);
       setSelectedTime(null);
       return;
@@ -83,8 +88,12 @@ export const useAvailabilitySelection = (
 
       const existingIntervals = getAvailabilityForDate(selectedSlots, date);
       const updatedIntervals = addInterval(existingIntervals, newInterval);
-      const newSlots = updateDayAvailability(selectedSlots, date, updatedIntervals);
-      
+      const newSlots = updateDayAvailability(
+        selectedSlots,
+        date,
+        updatedIntervals
+      );
+
       onUpdate(newSlots);
       setSelectedTime(null);
       return;
@@ -98,11 +107,15 @@ export const useAvailabilitySelection = (
 
       if (intervalToRemove) {
         const updatedIntervals = removeInterval(intervals, intervalToRemove);
-        const newSlots = updateDayAvailability(selectedSlots, date, updatedIntervals);
-        
+        const newSlots = updateDayAvailability(
+          selectedSlots,
+          date,
+          updatedIntervals
+        );
+
         onUpdate(newSlots);
       }
-      
+
       setSelectedTime(null);
       return;
     }

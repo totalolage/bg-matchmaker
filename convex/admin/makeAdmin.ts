@@ -10,17 +10,17 @@ export const makeUserAdmin = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
-      .withIndex("by_discord_id", (q) => q.eq("discordId", args.discordId))
+      .withIndex("by_discord_id", q => q.eq("discordId", args.discordId))
       .unique();
-    
+
     if (!user) {
       throw new Error(`User with Discord ID ${args.discordId} not found`);
     }
-    
+
     await ctx.db.patch(user._id, {
       role: "Admin",
     });
-    
+
     return {
       success: true,
       userId: user._id,

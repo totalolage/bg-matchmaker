@@ -56,7 +56,10 @@ export async function makeRequest(
 /**
  * Build search parameters
  */
-export function buildSearchParams(query: string, exact: boolean = false): URLSearchParams {
+export function buildSearchParams(
+  query: string,
+  exact: boolean = false
+): URLSearchParams {
   return new URLSearchParams({
     query: query.trim(),
     type: "boardgame",
@@ -67,14 +70,17 @@ export function buildSearchParams(query: string, exact: boolean = false): URLSea
 /**
  * Build thing/details parameters
  */
-export function buildThingParams(bggIds: string | string[], includeStats: boolean = true): URLSearchParams {
+export function buildThingParams(
+  bggIds: string | string[],
+  includeStats: boolean = true
+): URLSearchParams {
   const ids = Array.isArray(bggIds) ? bggIds.join(",") : bggIds;
   const params = new URLSearchParams({ id: ids });
-  
+
   if (includeStats) {
     params.append("stats", "1");
   }
-  
+
   return params;
 }
 
@@ -95,4 +101,3 @@ export function buildTopRankedParams(page: number = 1): URLSearchParams {
     page: page.toString(),
   });
 }
-

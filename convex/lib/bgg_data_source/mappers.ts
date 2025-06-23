@@ -10,20 +10,20 @@ import {
 } from "../bggSchemas";
 import { hasProperty } from "../utils";
 
-import { BGGAPIError,BGGGameDetails, BGGSearchResult } from "./types";
+import { BGGAPIError, BGGGameDetails, BGGSearchResult } from "./types";
 
 /**
  * Transform BGG search response to search results
  */
 export function mapSearchResponse(
-  response: BGGSearchResponse,
+  response: BGGSearchResponse
 ): BGGSearchResult[] {
   if (!response.items || !response.items.item) {
     return [];
   }
 
   return response.items.item
-    .map((item) => mapSearchItem(item))
+    .map(item => mapSearchItem(item))
     .filter((item): item is BGGSearchResult => item !== null);
 }
 
@@ -48,7 +48,7 @@ function mapSearchItem(item: BGGSearchItem): BGGSearchResult | null {
  */
 export function mapThingResponse(
   response: BGGThingResponse,
-  bggId: string,
+  bggId: string
 ): BGGGameDetails {
   if (!response.items.item?.length)
     throw new BGGAPIError(`Game with BGG ID ${bggId} not found`, 404);
@@ -64,12 +64,12 @@ export function mapThingResponse(
  * Transform multiple thing items to game details
  */
 export function mapMultipleThingItems(
-  response: BGGThingResponse,
+  response: BGGThingResponse
 ): BGGGameDetails[] {
   if (!response.items.item?.length) return [];
 
   return response.items.item
-    .map((item) => {
+    .map(item => {
       try {
         const id = hasProperty(item, "id") ? String(item.id) : "";
         return mapThingItem(item, id);
@@ -86,7 +86,7 @@ export function mapMultipleThingItems(
 function mapThingItem(item: BGGThingItem, bggId: string): BGGGameDetails {
   // Extract primary name from name field
   const primaryName = extractPrimaryName(item);
-  
+
   const result: BGGGameDetails = {
     id: bggId,
     name: primaryName,
@@ -111,8 +111,8 @@ function mapThingItem(item: BGGThingItem, bggId: string): BGGGameDetails {
 function extractPrimaryName(item: BGGThingItem): string {
   // If name is an array, find the primary name
   if (Array.isArray(item.name)) {
-    const primary = item.name.find(n => n.type === 'primary');
-    return primary ? primary.value : item.name[0]?.value || 'Unknown';
+    const primary = item.name.find(n => n.type === "primary");
+    return primary ? primary.value : item.name[0]?.value || "Unknown";
   }
   // If name is a single object
   return item.name.value;
@@ -123,16 +123,16 @@ function extractPrimaryName(item: BGGThingItem): string {
  */
 function extractAlternateNames(item: BGGThingItem): string[] {
   const alternateNames: string[] = [];
-  
+
   // If name is an array, extract all non-primary names
   if (Array.isArray(item.name)) {
     for (const nameObj of item.name) {
-      if (nameObj.type === 'alternate' && nameObj.value) {
+      if (nameObj.type === "alternate" && nameObj.value) {
         alternateNames.push(nameObj.value);
       }
     }
   }
-  
+
   return alternateNames;
 }
 
@@ -221,11 +221,11 @@ export function mapHotResponse(response: BGGHotResponse): string[] {
   if (!response.items || !response.items.item) return [];
 
   return response.items.item
-    .map((item) => {
+    .map(item => {
       if (item && typeof item === "object" && hasProperty(item, "id")) {
         return String(item.id);
       }
       return "";
     })
-    .filter((id) => id !== "");
+    .filter(id => id !== "");
 }

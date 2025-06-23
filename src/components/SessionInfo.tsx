@@ -1,4 +1,4 @@
-import { Clock, MapPin,Users } from "lucide-react";
+import { Clock, MapPin, Users } from "lucide-react";
 import { ComponentProps } from "react";
 
 import { Doc } from "../../convex/_generated/dataModel";
@@ -6,11 +6,11 @@ import { cn } from "../lib/utils";
 
 import { IconText } from "./IconText";
 
-export const SessionInfo = ({ 
-  session, 
-  className, 
-  size = "md", 
-  showPlayers = true 
+export const SessionInfo = ({
+  session,
+  className,
+  size = "md",
+  showPlayers = true,
 }: {
   session: Doc<"sessions">;
   className?: string;
@@ -18,35 +18,36 @@ export const SessionInfo = ({
   showPlayers?: boolean;
 }) => {
   const iconSize = size === "sm" ? 14 : size === "base" ? 18 : 16;
-  const textClass = size === "sm" ? "text-xs" : size === "base" ? "text-base" : "text-sm";
-  
-  const scheduledDate = session.scheduledTime 
-    ? new Date(session.scheduledTime) 
+  const textClass =
+    size === "sm" ? "text-xs" : size === "base" ? "text-base" : "text-sm";
+
+  const scheduledDate = session.scheduledTime
+    ? new Date(session.scheduledTime)
     : null;
 
   return (
     <div className={cn("space-y-1", className)}>
       {showPlayers && (
-        <IconText 
+        <IconText
           icon={<Users size={iconSize} />}
           text={`${session.players.length}/${session.maxPlayers} players`}
           className={textClass}
         />
       )}
-      
+
       {scheduledDate && (
-        <IconText 
+        <IconText
           icon={<Clock size={iconSize} />}
           text={new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short'
+            dateStyle: "medium",
+            timeStyle: "short",
           }).format(scheduledDate)}
           className={textClass}
         />
       )}
-      
+
       {session.location && (
-        <IconText 
+        <IconText
           icon={<MapPin size={iconSize} />}
           text={session.location}
           className={textClass}

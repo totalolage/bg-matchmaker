@@ -17,7 +17,7 @@ export const getShortDate = (date: Date) => {
 export const getLocaleFirstDayOfWeek = () => {
   // Try modern Intl.Locale.getWeekInfo() API (Chrome 130+, Safari 17+)
   const locale = new Intl.Locale(navigator.language);
-  if ('getWeekInfo' in locale && typeof locale.getWeekInfo === 'function') {
+  if ("getWeekInfo" in locale && typeof locale.getWeekInfo === "function") {
     const weekInfo = locale.getWeekInfo();
     // getWeekInfo returns 1=Monday, 7=Sunday, but getDay() returns 0=Sunday, 6=Saturday
     // Convert: 1->1, 2->2, ..., 6->6, 7->0
@@ -33,13 +33,13 @@ export const getWeekDates = (currentDate: Date) => {
   const startOfWeek = new Date(currentDate);
   const currentDay = startOfWeek.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
   const localeFirstDay = getLocaleFirstDayOfWeek(); // 0=Sunday, 1=Monday
-  
+
   // Calculate how many days to go back to reach the first day of the week
   let daysBack = currentDay - localeFirstDay;
   if (daysBack < 0) {
     daysBack += 7;
   }
-  
+
   startOfWeek.setDate(startOfWeek.getDate() - daysBack);
 
   for (let i = 0; i < 7; i++) {
@@ -97,7 +97,7 @@ export const formatTime = (hour: number) => {
   if (resolvedOptions.hour12) {
     const formatted = formatter.format(date);
     // Replace lowercase am/pm with uppercase AM/PM
-    return formatted.replace(/\s(am|pm)$/i, (match) => match.toUpperCase());
+    return formatted.replace(/\s(am|pm)$/i, match => match.toUpperCase());
   }
 
   return new Intl.DateTimeFormat(undefined, {
@@ -110,7 +110,7 @@ export const formatTime = (hour: number) => {
 export const formatWeekRange = (weekDates: Date[]) => {
   const start = weekDates[0];
   const end = weekDates[6];
-  
+
   if (!start || !end) {
     return "";
   }
@@ -137,8 +137,8 @@ export const formatWeekRange = (weekDates: Date[]) => {
 
     // Extract month and year parts
     const parts = monthYearFormatter.formatToParts(start);
-    const month = parts.find((p) => p.type === "month")?.value || "";
-    const year = parts.find((p) => p.type === "year")?.value || "";
+    const month = parts.find(p => p.type === "month")?.value || "";
+    const year = parts.find(p => p.type === "year")?.value || "";
 
     return `${month} ${startDay} - ${endDay}, ${year}`;
   }
@@ -159,10 +159,12 @@ export const findIntervalContainingHour = (
   hour: number
 ): AvailabilityInterval | null => {
   const timeInMinutes = hour * 60;
-  return intervals.find(
-    (interval) =>
-      timeInMinutes >= interval.start && timeInMinutes < interval.end
-  ) || null;
+  return (
+    intervals.find(
+      interval =>
+        timeInMinutes >= interval.start && timeInMinutes < interval.end
+    ) || null
+  );
 };
 
 // Check if a time slot is selected

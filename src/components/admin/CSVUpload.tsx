@@ -46,7 +46,9 @@ export function CSVUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [parseProgress, setParseProgress] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [currentStage, setCurrentStage] = useState<"parsing" | "uploading" | null>(null);
+  const [currentStage, setCurrentStage] = useState<
+    "parsing" | "uploading" | null
+  >(null);
   const [gamesToUpload, setGamesToUpload] = useState(0);
   const [stats, setStats] = useState<{
     total: number;
@@ -69,20 +71,36 @@ export function CSVUpload() {
     return {
       bggId: row.id,
       name: row.name,
-      yearPublished: row.yearpublished ? parseInt(row.yearpublished, 10) : undefined,
+      yearPublished: row.yearpublished
+        ? parseInt(row.yearpublished, 10)
+        : undefined,
       rank: row.rank ? parseInt(row.rank, 10) : undefined,
       bayesAverage: row.bayesaverage ? parseFloat(row.bayesaverage) : undefined,
       average: row.average ? parseFloat(row.average) : undefined,
       usersRated: row.usersrated ? parseInt(row.usersrated, 10) : undefined,
       isExpansion: row.is_expansion === "1",
-      abstractsRank: row.abstracts_rank ? parseInt(row.abstracts_rank, 10) : undefined,
+      abstractsRank: row.abstracts_rank
+        ? parseInt(row.abstracts_rank, 10)
+        : undefined,
       cgsRank: row.cgs_rank ? parseInt(row.cgs_rank, 10) : undefined,
-      childrensGamesRank: row.childrensgames_rank ? parseInt(row.childrensgames_rank, 10) : undefined,
-      familyGamesRank: row.familygames_rank ? parseInt(row.familygames_rank, 10) : undefined,
-      partyGamesRank: row.partygames_rank ? parseInt(row.partygames_rank, 10) : undefined,
-      strategyGamesRank: row.strategygames_rank ? parseInt(row.strategygames_rank, 10) : undefined,
-      thematicRank: row.thematic_rank ? parseInt(row.thematic_rank, 10) : undefined,
-      wargamesRank: row.wargames_rank ? parseInt(row.wargames_rank, 10) : undefined,
+      childrensGamesRank: row.childrensgames_rank
+        ? parseInt(row.childrensgames_rank, 10)
+        : undefined,
+      familyGamesRank: row.familygames_rank
+        ? parseInt(row.familygames_rank, 10)
+        : undefined,
+      partyGamesRank: row.partygames_rank
+        ? parseInt(row.partygames_rank, 10)
+        : undefined,
+      strategyGamesRank: row.strategygames_rank
+        ? parseInt(row.strategygames_rank, 10)
+        : undefined,
+      thematicRank: row.thematic_rank
+        ? parseInt(row.thematic_rank, 10)
+        : undefined,
+      wargamesRank: row.wargames_rank
+        ? parseInt(row.wargames_rank, 10)
+        : undefined,
     };
   };
 
@@ -110,14 +128,14 @@ export function CSVUpload() {
     Papa.parse<CSVRow>(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: results => {
         localStats.total = results.data.length;
-        
+
         // Process each row
         for (const row of results.data) {
           try {
             const gameData = parseGameData(row);
-            
+
             // Only import non-expansion games with valid data
             if (!gameData.isExpansion && gameData.name && gameData.bggId) {
               allGames.push(gameData);
@@ -135,23 +153,25 @@ export function CSVUpload() {
 
         // Process games in batches of 1000
         setGamesToUpload(allGames.length);
-        
+
         void (async () => {
           setCurrentStage("uploading");
           setUploadProgress(0);
-          
+
           let totalImported = 0;
-          const totalBatches = Math.ceil(allGames.length / CSV_IMPORT.BATCH_SIZE);
-          
+          const totalBatches = Math.ceil(
+            allGames.length / CSV_IMPORT.BATCH_SIZE
+          );
+
           for (let i = 0; i < allGames.length; i += CSV_IMPORT.BATCH_SIZE) {
             const batch = allGames.slice(i, i + CSV_IMPORT.BATCH_SIZE);
             const batchNumber = Math.floor(i / CSV_IMPORT.BATCH_SIZE) + 1;
-            
+
             try {
               await uploadMutation.mutateAsync(batch);
               totalImported += batch.length;
               localStats.imported = totalImported;
-              
+
               // Update progress based on batches completed
               const progress = (batchNumber / totalBatches) * 100;
               setUploadProgress(progress);
@@ -159,7 +179,9 @@ export function CSVUpload() {
             } catch (error) {
               console.error(`Error importing batch ${batchNumber}:`, error);
               localStats.errors += batch.length;
-              toast.error(`Failed to import batch ${batchNumber} of ${totalBatches} (${batch.length} games)`);
+              toast.error(
+                `Failed to import batch ${batchNumber} of ${totalBatches} (${batch.length} games)`
+              );
             }
           }
 
@@ -179,7 +201,7 @@ export function CSVUpload() {
           }
         })();
       },
-      error: (error) => {
+      error: error => {
         setIsUploading(false);
         console.error("CSV parsing error:", error);
         toast.error("Failed to parse CSV file");
@@ -201,7 +223,9 @@ export function CSVUpload() {
         <div className="text-sm text-muted-foreground space-y-2">
           <p>Import board games from a CSV file with the following columns:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>id, name, yearpublished, rank, average, usersrated, is_expansion</li>
+            <li>
+              id, name, yearpublished, rank, average, usersrated, is_expansion
+            </li>
             <li>Optional: bayesaverage, various category ranks</li>
           </ul>
         </div>
@@ -247,9 +271,13 @@ export function CSVUpload() {
                   <span>Uploading to Database</span>
                   <span>{uploadProgress.toFixed(1)}%</span>
                 </div>
-                <Progress value={uploadProgress} className="transition-all duration-500" />
+                <Progress
+                  value={uploadProgress}
+                  className="transition-all duration-500"
+                />
                 <div className="text-sm text-muted-foreground text-center">
-                  Saving {gamesToUpload.toLocaleString()} games to database in batches of {CSV_IMPORT.BATCH_SIZE.toLocaleString()}...
+                  Saving {gamesToUpload.toLocaleString()} games to database in
+                  batches of {CSV_IMPORT.BATCH_SIZE.toLocaleString()}...
                 </div>
               </div>
             )}
@@ -265,7 +293,9 @@ export function CSVUpload() {
               </div>
               <div>
                 <p className="text-muted-foreground">Processed</p>
-                <p className="font-semibold">{stats.processed.toLocaleString()}</p>
+                <p className="font-semibold">
+                  {stats.processed.toLocaleString()}
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Imported</p>

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, LogOut,User } from "lucide-react";
-import { ComponentProps,useRef } from "react";
+import { ChevronDown, LogOut, User } from "lucide-react";
+import { ComponentProps, useRef } from "react";
 
 import { useCurrentUser } from "../hooks/useCurrentUser";
 
@@ -23,7 +23,9 @@ export const ProfileDropdown = () => {
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center space-x-2 hover:opacity-80 transition-opacity focus:outline-none">
           <UserAvatar size="sm" />
-          <span className="text-sm font-medium text-gray-700">{user.displayName || user.name}</span>
+          <span className="text-sm font-medium text-gray-700">
+            {user.displayName || user.name}
+          </span>
           <ChevronDown className="w-4 h-4 text-gray-500" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">

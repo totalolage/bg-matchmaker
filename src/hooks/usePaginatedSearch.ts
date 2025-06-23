@@ -1,4 +1,4 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { GameSearchResult } from "@/components/game-library/types";
 import { api } from "@convex/_generated/api";
@@ -39,7 +39,7 @@ export function usePaginatedSearch({
             cursor,
           },
         }
-      : "skip",
+      : "skip"
   );
 
   // Reset results when search query changes
@@ -57,11 +57,11 @@ export function usePaginatedSearch({
         setAllResults(paginatedResults.page);
       } else {
         // Subsequent pages, append results
-        setAllResults((prev) => {
+        setAllResults(prev => {
           // Avoid duplicates by checking bggId
-          const existingIds = new Set(prev.map((r) => r.bggId));
+          const existingIds = new Set(prev.map(r => r.bggId));
           const newResults = paginatedResults.page.filter(
-            (r) => !existingIds.has(r.bggId),
+            r => !existingIds.has(r.bggId)
           );
           return [...prev, ...newResults];
         });

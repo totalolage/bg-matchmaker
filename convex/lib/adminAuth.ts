@@ -10,16 +10,16 @@ export async function requireAdminAction(ctx: ActionCtx) {
   if (!userId) {
     throw new ConvexError("Not authenticated");
   }
-  
+
   // Query the user to check their role
   const user = await ctx.runQuery(api.auth.loggedInUser);
   if (!user) {
     throw new ConvexError("User not found");
   }
-  
+
   if (!user.role || user.role !== "Admin") {
     throw new ConvexError("Admin access required");
   }
-  
+
   return userId;
 }

@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { api } from "../../convex/_generated/api";
 import { EmptyState } from "../components/EmptyState";
-import { PageContent,PageHeader, PageLayout } from "../components/PageLayout";
+import { PageContent, PageHeader, PageLayout } from "../components/PageLayout";
 import { ProfileDropdown } from "../components/ProfileDropdown";
 import { SectionHeader } from "../components/SectionHeader";
 import { SessionCard } from "../components/SessionCard";
@@ -32,14 +32,17 @@ function Home() {
           <SectionHeader title="Your Sessions" />
           {sessions && sessions.length > 0 ? (
             <div className="space-y-3">
-              {sessions.map((session) => (
-                <div key={session._id} className="animate-in fade-in slide-in-from-bottom-5 duration-200">
+              {sessions.map(session => (
+                <div
+                  key={session._id}
+                  className="animate-in fade-in slide-in-from-bottom-5 duration-200"
+                >
                   <SessionCard session={session} />
                 </div>
               ))}
             </div>
           ) : (
-            <EmptyState 
+            <EmptyState
               emoji="🎯"
               title="No sessions yet"
               subtitle="Start discovering games to join!"

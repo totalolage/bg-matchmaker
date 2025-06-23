@@ -3,7 +3,7 @@ import { mutation } from "./_generated/server";
 
 export const seedTestUsers = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     const testUsers = [
       {
         name: "alice_boardgamer",
@@ -114,7 +114,7 @@ export const seedTestUsers = mutation({
 
 export const seedTestSessions = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     // Get all users to use as hosts and players
     const users = await ctx.db.query("users").collect();
 
@@ -247,7 +247,7 @@ export const seedTestSessions = mutation({
 
 export const clearTestSessions = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     // Get all sessions
     const sessions = await ctx.db.query("sessions").collect();
 

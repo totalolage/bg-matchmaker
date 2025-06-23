@@ -25,11 +25,11 @@ export const AvailabilitySummary = ({
         <div className="space-y-1 text-sm max-h-48 overflow-y-auto">
           {selectedSlots
             .sort((a, b) => a.date.localeCompare(b.date))
-            .flatMap((day) =>
-              day.intervals.map((interval) => ({
+            .flatMap(day =>
+              day.intervals.map(interval => ({
                 date: day.date,
                 interval,
-              })),
+              }))
             )
             .map(({ date, interval }) => {
               const dateObj = new Date(date + "T00:00:00");

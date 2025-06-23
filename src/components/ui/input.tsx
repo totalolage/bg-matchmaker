@@ -1,14 +1,16 @@
-import type { ComponentProps } from "react"
+import type { ComponentProps } from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-export const Input = (props: React.ComponentProps<"input"> & {
-  before?: React.ReactNode
-  after?: React.ReactNode
-  ref?: React.Ref<HTMLInputElement>
-}) => {
-  const { className, type, before, after, ref, ...rest } = props
-  
+export const Input = (
+  props: React.ComponentProps<"input"> & {
+    before?: React.ReactNode;
+    after?: React.ReactNode;
+    ref?: React.Ref<HTMLInputElement>;
+  }
+) => {
+  const { className, type, before, after, ref, ...rest } = props;
+
   if (before || after) {
     return (
       <div className="relative flex items-center">
@@ -34,7 +36,7 @@ export const Input = (props: React.ComponentProps<"input"> & {
           </div>
         )}
       </div>
-    )
+    );
   }
 
   return (
@@ -47,8 +49,7 @@ export const Input = (props: React.ComponentProps<"input"> & {
       ref={ref}
       {...rest}
     />
-  )
-}
+  );
+};
 
-export type InputProps = ComponentProps<typeof Input>
-
+export type InputProps = ComponentProps<typeof Input>;

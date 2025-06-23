@@ -25,7 +25,7 @@ export const PageHeader = ({
     <header
       className={cn(
         "bg-white border-b border-gray-200 p-4 sticky top-0 z-10",
-        className,
+        className
       )}
     >
       {children}

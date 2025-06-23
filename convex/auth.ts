@@ -70,8 +70,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       // Get the Discord account information to ensure discordId is set
       const accounts = await ctx.db
         .query("authAccounts")
-        .withIndex("userIdAndProvider", (q) =>
-          q.eq("userId", args.userId).eq("provider", "discord"),
+        .withIndex("userIdAndProvider", q =>
+          q.eq("userId", args.userId).eq("provider", "discord")
         )
         .collect();
 
@@ -91,7 +91,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 });
 
 export const loggedInUser = query({
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return null;

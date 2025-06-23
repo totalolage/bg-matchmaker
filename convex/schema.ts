@@ -27,9 +27,9 @@ const applicationTables = {
           v.literal("beginner"),
           v.literal("intermediate"),
           v.literal("advanced"),
-          v.literal("expert"),
+          v.literal("expert")
         ),
-      }),
+      })
     ),
     availability: v.array(
       v.object({
@@ -38,9 +38,9 @@ const applicationTables = {
           v.object({
             start: v.number(), // minutes since midnight (0-1439)
             end: v.number(), // minutes since midnight (0-1439)
-          }),
+          })
         ),
-      }),
+      })
     ),
     pushSubscription: v.optional(
       v.object({
@@ -49,7 +49,7 @@ const applicationTables = {
           p256dh: v.string(),
           auth: v.string(),
         }),
-      }),
+      })
     ),
   })
     .index("by_discord_id", ["discordId"])
@@ -67,7 +67,7 @@ const applicationTables = {
       v.literal("established"),
       v.literal("confirmed"),
       v.literal("completed"),
-      v.literal("cancelled"),
+      v.literal("cancelled")
     ),
     scheduledTime: v.optional(v.number()), // timestamp
     minPlayers: v.number(),
@@ -128,14 +128,14 @@ const applicationTables = {
     interactionType: v.union(
       v.literal("interested"),
       v.literal("declined"),
-      v.literal("accepted"),
+      v.literal("accepted")
     ),
     createdAt: v.number(),
     metadata: v.optional(
       v.object({
         swipeDirection: v.optional(v.string()),
         deviceType: v.optional(v.string()),
-      }),
+      })
     ),
   })
     .index("by_user", ["userId"])
@@ -152,7 +152,7 @@ const applicationTables = {
       v.literal("stopping"),
       v.literal("stopped"),
       v.literal("completed"),
-      v.literal("failed"),
+      v.literal("failed")
     ),
     progress: v.object({
       current: v.number(), // Current progress value

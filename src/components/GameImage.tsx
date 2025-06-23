@@ -9,11 +9,11 @@ const sizeClasses = {
   full: "w-full",
 } as const;
 
-export const GameImage = ({ 
-  src, 
-  alt, 
-  size = "md", 
-  className 
+export const GameImage = ({
+  src,
+  alt,
+  size = "md",
+  className,
 }: {
   src?: string;
   alt: string;
@@ -22,7 +22,7 @@ export const GameImage = ({
 }) => {
   if (!src) {
     return (
-      <div 
+      <div
         className={cn(
           "bg-gray-200 rounded-lg flex items-center justify-center",
           sizeClasses[size],
@@ -38,11 +38,7 @@ export const GameImage = ({
     <img
       src={src}
       alt={alt}
-      className={cn(
-        "rounded-lg object-cover",
-        sizeClasses[size],
-        className
-      )}
+      className={cn("rounded-lg object-cover", sizeClasses[size], className)}
     />
   );
 };

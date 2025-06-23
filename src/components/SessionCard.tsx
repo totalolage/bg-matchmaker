@@ -21,7 +21,7 @@ export const SessionCard = ({
   className?: string;
 }) => {
   const getStatusVariant = (
-    status: string,
+    status: string
   ): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "proposed":

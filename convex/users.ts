@@ -6,10 +6,10 @@ import { mutation, query } from "./_generated/server";
 
 export const getCurrentUser = query({
   args: {},
-  handler: async (ctx) => {
+  handler: async ctx => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
-    
+
     return await ctx.db.get(userId);
   },
 });
@@ -26,7 +26,7 @@ export const createOrUpdateProfile = mutation({
 
     const existingUser = await ctx.db
       .query("users")
-      .withIndex("by_discord_id", (q) => q.eq("discordId", args.discordId))
+      .withIndex("by_discord_id", q => q.eq("discordId", args.discordId))
       .unique();
 
     if (existingUser) {
@@ -50,18 +50,20 @@ export const createOrUpdateProfile = mutation({
 
 export const updateGameLibrary = mutation({
   args: {
-    gameLibrary: v.array(v.object({
-      gameId: v.string(),
-      gameName: v.string(),
-      gameImage: v.optional(v.string()),
-      expertiseLevel: v.union(
-        v.literal("novice"),
-        v.literal("beginner"),
-        v.literal("intermediate"),
-        v.literal("advanced"),
-        v.literal("expert")
-      )
-    })),
+    gameLibrary: v.array(
+      v.object({
+        gameId: v.string(),
+        gameName: v.string(),
+        gameImage: v.optional(v.string()),
+        expertiseLevel: v.union(
+          v.literal("novice"),
+          v.literal("beginner"),
+          v.literal("intermediate"),
+          v.literal("advanced"),
+          v.literal("expert")
+        ),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -78,13 +80,17 @@ export const updateGameLibrary = mutation({
 
 export const updateAvailability = mutation({
   args: {
-    availability: v.array(v.object({
-      date: v.string(),
-      intervals: v.array(v.object({
-        start: v.number(),
-        end: v.number(),
-      }))
-    })),
+    availability: v.array(
+      v.object({
+        date: v.string(),
+        intervals: v.array(
+          v.object({
+            start: v.number(),
+            end: v.number(),
+          })
+        ),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -98,7 +104,6 @@ export const updateAvailability = mutation({
     });
   },
 });
-
 
 export const updatePushSubscription = mutation({
   args: {
@@ -127,10 +132,10 @@ export const updateDisplayName = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    
+
     // Trim the display name
     const trimmed = args.displayName.trim();
-    
+
     // If empty, set displayName to undefined (will use username)
     await ctx.db.patch(userId, {
       displayName: trimmed.length > 0 ? trimmed : undefined,

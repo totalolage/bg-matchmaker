@@ -17,27 +17,29 @@ function Discover() {
     ...convexQuery(api.sessions.getDiscoverySessions, {}),
   });
   const swipeSession = useConvexMutation(api.sessions.swipeSession);
-  
+
   // Track sessions that have been interacted with optimistically
   const [interactedSessionIds, setInteractedSessionIds] = useState<Set<string>>(
     new Set()
   );
-  
+
   // Filter out sessions that have been optimistically interacted with
-  const visibleSessions = sessions.filter((session) => !interactedSessionIds.has(session._id));
+  const visibleSessions = sessions.filter(
+    session => !interactedSessionIds.has(session._id)
+  );
 
   const handleDecline = (sessionId: string) => {
     // Optimistically update UI immediately
-    setInteractedSessionIds((prev) => new Set(prev).add(sessionId));
-    
+    setInteractedSessionIds(prev => new Set(prev).add(sessionId));
+
     // Perform mutation in the background
     swipeSession({
       sessionId: sessionId as Id<"sessions">,
       action: "pass",
-    }).catch((error) => {
+    }).catch(error => {
       // On error, rollback the optimistic update
       console.error("Failed to decline session:", error);
-      setInteractedSessionIds((prev) => {
+      setInteractedSessionIds(prev => {
         const next = new Set(prev);
         next.delete(sessionId);
         return next;
@@ -47,16 +49,16 @@ function Discover() {
 
   const handleInterest = (sessionId: string) => {
     // Optimistically update UI immediately
-    setInteractedSessionIds((prev) => new Set(prev).add(sessionId));
-    
+    setInteractedSessionIds(prev => new Set(prev).add(sessionId));
+
     // Perform mutation in the background
     swipeSession({
       sessionId: sessionId as Id<"sessions">,
       action: "like",
-    }).catch((error) => {
+    }).catch(error => {
       // On error, rollback the optimistic update
       console.error("Failed to express interest in session:", error);
-      setInteractedSessionIds((prev) => {
+      setInteractedSessionIds(prev => {
         const next = new Set(prev);
         next.delete(sessionId);
         return next;
