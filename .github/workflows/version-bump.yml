@@ -76,9 +76,8 @@ jobs:
           # Create tag on the new commit
           git tag -a "v${{ env.new_version }}" -m "Release v${{ env.new_version }}"
           
-          # Push commit and tag together
-          git push origin HEAD:${{ github.ref_name }}
-          git push origin "v${{ env.new_version }}"
+          # Push commit and tag together in a single push to ensure Vercel sees both
+          git push origin HEAD:${{ github.ref_name }} "v${{ env.new_version }}"
       
       - name: Create GitHub Release (if not prerelease)
         if: env.BUMP_LEVEL != '' && !contains(env.new_version, '-')
