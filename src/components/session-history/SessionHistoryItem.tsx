@@ -29,8 +29,8 @@ const interactionConfig = {
   interested: {
     label: "Interested",
     icon: Heart,
-    color: "text-pink-600 bg-pink-50",
-    borderColor: "border-pink-200",
+    color: "text-blue-600 bg-blue-50",
+    borderColor: "border-blue-200",
   },
   declined: {
     label: "Declined",
