@@ -3,9 +3,13 @@
  * Optimized for efficient merging and querying without loops
  */
 
+import { Id } from "@convex/_generated/dataModel";
+
 export type AvailabilityInterval = {
   start: number; // minutes since midnight (0-1439)
   end: number; // minutes since midnight (0-1439)
+  type?: "available" | "committed"; // default is "available"
+  sessionId?: Id<"sessions">; // for committed slots
 };
 
 export type DayAvailability = {

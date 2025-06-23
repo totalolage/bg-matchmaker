@@ -15,6 +15,7 @@ interface TimeGridProps {
   hoveredTime: { date: string; hour: number } | null;
   isTimeSelected: (date: string, hour: number) => boolean;
   isSlotSelected: (date: string, hour: number) => boolean;
+  isSlotCommitted: (date: string, hour: number) => boolean;
   isInHoverRange: (date: string, hour: number) => boolean;
   onSlotClick: (date: string, hour: number) => void;
   onSlotHover: (time: { date: string; hour: number } | null) => void;
@@ -27,6 +28,7 @@ export const TimeGrid = ({
   hoveredTime,
   isTimeSelected,
   isSlotSelected,
+  isSlotCommitted,
   isInHoverRange,
   onSlotClick,
   onSlotHover,
@@ -40,6 +42,7 @@ export const TimeGrid = ({
         const timeString = formatTime(hour);
         const isSelected = dateISO ? isTimeSelected(dateISO, hour) : false;
         const isConfirmed = dateISO ? isSlotSelected(dateISO, hour) : false;
+        const isCommitted = dateISO ? isSlotCommitted(dateISO, hour) : false;
         const inHoverRange = dateISO ? isInHoverRange(dateISO, hour) : false;
 
         // Find which interval contains the hovered time (only when not selecting)
@@ -68,12 +71,15 @@ export const TimeGrid = ({
           | "default"
           | "selected"
           | "confirmed"
+          | "committed"
           | "disabled"
           | "hoverRange"
           | "hoverDelete" = "default";
 
         if (isPast) {
           buttonState = "disabled";
+        } else if (isCommitted) {
+          buttonState = "committed";
         } else if (isConfirmed) {
           // If this slot is part of the one being hovered for deletion
           if (isPartOfDeleteSlot) buttonState = "hoverDelete";

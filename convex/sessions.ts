@@ -93,10 +93,12 @@ export const getDiscoverySessions = query({
         const availableSlot = user.availability.find(slot => {
           if (slot.date !== sessionDateISO) return false;
 
-          // Check if session time falls within any interval
+          // Check if session time falls within any available (non-committed) interval
           return slot.intervals.some(
             interval =>
-              sessionMinutes >= interval.start && sessionMinutes < interval.end
+              sessionMinutes >= interval.start &&
+              sessionMinutes < interval.end &&
+              interval.type !== "committed" // Exclude committed slots
           );
         });
 
@@ -269,6 +271,31 @@ export const joinSession = mutation({
           status: "confirmed",
         });
       }
+
+      // Commit the availability slot if session has a scheduled time
+      if (session.scheduledTime) {
+        const sessionDate = new Date(session.scheduledTime);
+        const dateStr = sessionDate.toISOString().split("T")[0] as string;
+        const startMinutes =
+          sessionDate.getHours() * 60 + sessionDate.getMinutes();
+
+        // Assuming sessions are 3 hours by default
+        // TODO: Add duration to session schema
+        const durationMinutes = 180;
+        const endMinutes = Math.min(startMinutes + durationMinutes, 1439); // Cap at end of day
+
+        try {
+          await ctx.runMutation(api.users.commitAvailabilitySlot, {
+            sessionId: args.sessionId,
+            date: dateStr,
+            startTime: startMinutes,
+            endTime: endMinutes,
+          });
+        } catch (error) {
+          // Log error but don't fail the join operation
+          console.error("Failed to commit availability slot:", error);
+        }
+      }
     }
   },
 });
@@ -315,6 +342,20 @@ export const cancelSession = mutation({
     await ctx.db.patch(args.sessionId, {
       status: "cancelled",
     });
+
+    // Restore availability for all players who had committed slots
+    for (const playerId of session.players) {
+      try {
+        await ctx.runMutation(api.users.restoreAvailabilitySlot, {
+          sessionId: args.sessionId,
+        });
+      } catch (error) {
+        console.error(
+          `Failed to restore availability for user ${playerId}:`,
+          error
+        );
+      }
+    }
 
     // TODO: In the future, send notifications to interested/accepted players
   },

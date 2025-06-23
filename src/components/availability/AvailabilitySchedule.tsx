@@ -82,6 +82,7 @@ export const AvailabilitySchedule = ({
     hoveredTime,
     setHoveredTime,
     isSlotSelected,
+    isSlotCommitted,
     isTimeSelected,
     isInHoverRange,
     handleSlotClick,
@@ -212,6 +213,7 @@ export const AvailabilitySchedule = ({
                     hoveredTime={hoveredTime}
                     isTimeSelected={isTimeSelected}
                     isSlotSelected={isSlotSelected}
+                    isSlotCommitted={isSlotCommitted}
                     isInHoverRange={isInHoverRange}
                     onSlotClick={handleSlotClick}
                     onSlotHover={setHoveredTime}

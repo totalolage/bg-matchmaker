@@ -28,7 +28,20 @@ export const useAvailabilitySelection = (
     const timeInMinutes = hour * 60;
     return intervals.some(
       interval =>
-        timeInMinutes >= interval.start && timeInMinutes < interval.end
+        timeInMinutes >= interval.start &&
+        timeInMinutes < interval.end &&
+        interval.type !== "committed" // Don't count committed slots as selected
+    );
+  };
+
+  const isSlotCommitted = (date: string, hour: number) => {
+    const intervals = getAvailabilityForDate(selectedSlots, date);
+    const timeInMinutes = hour * 60;
+    return intervals.some(
+      interval =>
+        timeInMinutes >= interval.start &&
+        timeInMinutes < interval.end &&
+        interval.type === "committed"
     );
   };
 
@@ -134,6 +147,7 @@ export const useAvailabilitySelection = (
     hoveredTime,
     setHoveredTime,
     isSlotSelected,
+    isSlotCommitted,
     isTimeSelected,
     isInHoverRange,
     handleSlotClick,

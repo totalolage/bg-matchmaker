@@ -15,6 +15,10 @@ const timeSlotButtonVariants = cva(
           "bg-purple-200 text-purple-900 border-purple-400 hover:bg-purple-300",
         confirmed:
           "bg-purple-500 text-white border-purple-600 hover:bg-purple-600",
+        committed: [
+          "bg-green-600 text-white border-green-700 cursor-not-allowed",
+          "[background-image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(255,255,255,0.1)_5px,rgba(255,255,255,0.1)_10px)]",
+        ],
         disabled:
           "bg-gray-50 text-gray-400 cursor-not-allowed hover:bg-gray-50",
         hoverRange: "bg-purple-200 text-purple-900 border-purple-400",
@@ -38,6 +42,7 @@ export interface TimeSlotButtonProps
     | "default"
     | "selected"
     | "confirmed"
+    | "committed"
     | "disabled"
     | "hoverRange"
     | "hoverDelete";
@@ -55,9 +60,11 @@ export const TimeSlotButton = ({
       variant="outline"
       size="sm"
       className={cn(timeSlotButtonVariants({ state }), className)}
-      disabled={disabled || state === "disabled"}
+      disabled={disabled || state === "disabled" || state === "committed"}
       aria-label={`Select ${time} time slot`}
-      aria-pressed={state === "selected" || state === "confirmed"}
+      aria-pressed={
+        state === "selected" || state === "confirmed" || state === "committed"
+      }
       {...props}
     >
       {time}

@@ -159,9 +159,11 @@ export function UserProposalsPage() {
                                 sessionId: proposal._id,
                               })
                                 .then(() => {
-                                  toast.success("Session cancelled successfully");
+                                  toast.success(
+                                    "Session cancelled successfully"
+                                  );
                                 })
-                                .catch((error) => {
+                                .catch(error => {
                                   toast.error("Failed to cancel session");
                                   console.error(error);
                                 });

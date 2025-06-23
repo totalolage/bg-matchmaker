@@ -38,6 +38,10 @@ const applicationTables = {
           v.object({
             start: v.number(), // minutes since midnight (0-1439)
             end: v.number(), // minutes since midnight (0-1439)
+            type: v.optional(
+              v.union(v.literal("available"), v.literal("committed"))
+            ), // default is "available"
+            sessionId: v.optional(v.id("sessions")), // for committed slots
           })
         ),
       })

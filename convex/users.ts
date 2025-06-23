@@ -87,6 +87,10 @@ export const updateAvailability = mutation({
           v.object({
             start: v.number(),
             end: v.number(),
+            type: v.optional(
+              v.union(v.literal("available"), v.literal("committed"))
+            ),
+            sessionId: v.optional(v.id("sessions")),
           })
         ),
       })
@@ -101,6 +105,178 @@ export const updateAvailability = mutation({
 
     await ctx.db.patch(userId, {
       availability: args.availability,
+    });
+  },
+});
+
+export const commitAvailabilitySlot = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    date: v.string(),
+    startTime: v.number(),
+    endTime: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    // Find the availability record for the given date
+    const availabilityIndex = user.availability.findIndex(
+      a => a.date === args.date
+    );
+
+    if (availabilityIndex === -1) {
+      throw new Error("No availability found for the specified date");
+    }
+
+    const dayAvailability = user.availability[availabilityIndex];
+    if (!dayAvailability) {
+      throw new Error("Availability data not found");
+    }
+    const newIntervals: typeof dayAvailability.intervals = [];
+
+    // Process each existing interval
+    for (const interval of dayAvailability.intervals) {
+      // Skip if already committed
+      if (interval.type === "committed") {
+        newIntervals.push(interval);
+        continue;
+      }
+
+      // Check for overlap
+      if (interval.end <= args.startTime || interval.start >= args.endTime) {
+        // No overlap, keep the interval
+        newIntervals.push(interval);
+      } else {
+        // Handle overlap - split the interval if needed
+
+        // Add the part before the committed slot
+        if (interval.start < args.startTime) {
+          newIntervals.push({
+            start: interval.start,
+            end: args.startTime,
+            type: "available" as const,
+          });
+        }
+
+        // Add the committed slot (only once)
+        const committedSlotExists = newIntervals.some(
+          i =>
+            i.type === "committed" &&
+            i.sessionId === args.sessionId &&
+            i.start === args.startTime &&
+            i.end === args.endTime
+        );
+
+        if (!committedSlotExists) {
+          newIntervals.push({
+            start: args.startTime,
+            end: args.endTime,
+            type: "committed" as const,
+            sessionId: args.sessionId,
+          });
+        }
+
+        // Add the part after the committed slot
+        if (interval.end > args.endTime) {
+          newIntervals.push({
+            start: args.endTime,
+            end: interval.end,
+            type: "available" as const,
+          });
+        }
+      }
+    }
+
+    // Update the availability array
+    const updatedAvailability = [...user.availability];
+    updatedAvailability[availabilityIndex] = {
+      date: args.date,
+      intervals: newIntervals.sort((a, b) => a.start - b.start),
+    };
+
+    await ctx.db.patch(userId, {
+      availability: updatedAvailability,
+    });
+  },
+});
+
+export const restoreAvailabilitySlot = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+
+    // Remove all committed slots for this session
+    const updatedAvailability = user.availability.map(dayAvail => {
+      const newIntervals: typeof dayAvail.intervals = [];
+      let needsMerge = false;
+
+      for (const interval of dayAvail.intervals) {
+        if (
+          interval.type === "committed" &&
+          interval.sessionId === args.sessionId
+        ) {
+          // Convert back to available
+          newIntervals.push({
+            start: interval.start,
+            end: interval.end,
+            type: "available" as const,
+          });
+          needsMerge = true;
+        } else {
+          newIntervals.push(interval);
+        }
+      }
+
+      // Merge adjacent available intervals if we made changes
+      if (needsMerge) {
+        const mergedIntervals: typeof dayAvail.intervals = [];
+        const sortedIntervals = newIntervals.sort((a, b) => a.start - b.start);
+
+        for (let i = 0; i < sortedIntervals.length; i++) {
+          const current = sortedIntervals[i];
+          const next = sortedIntervals[i + 1];
+
+          if (!current) continue;
+
+          if (
+            current.type === "available" &&
+            next &&
+            next.type === "available" &&
+            current.end >= next.start
+          ) {
+            // Merge intervals
+            mergedIntervals.push({
+              start: current.start,
+              end: Math.max(current.end, next.end),
+              type: "available" as const,
+            });
+            i++; // Skip next interval since we merged it
+          } else {
+            mergedIntervals.push(current);
+          }
+        }
+
+        return {
+          date: dayAvail.date,
+          intervals: mergedIntervals,
+        };
+      }
+
+      return dayAvail;
+    });
+
+    await ctx.db.patch(userId, {
+      availability: updatedAvailability,
     });
   },
 });
