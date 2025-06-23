@@ -341,6 +341,13 @@ describe("SessionProposalEngine", () => {
         expect(firstProposal.proposedToUserId).toBe(mockUser1._id);
         expect(firstProposal.proposedParticipants).toContain(mockUser1._id);
         expect(firstProposal.proposedParticipants).toContain(mockUser2._id);
+        expect(firstProposal.proposedByAlgorithm).toBe(true);
+        expect(firstProposal.status).toBe("pending");
+        expect(firstProposal.gameName).toBeDefined();
+        expect(firstProposal.createdAt).toBeLessThanOrEqual(Date.now());
+        expect(firstProposal.expiresAt).toBeGreaterThan(Date.now());
+        expect(firstProposal.metadata?.commonGames).toBeDefined();
+        expect(firstProposal.metadata?.overlappingTimeSlots).toBeGreaterThan(0);
       }
     });
 

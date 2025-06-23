@@ -168,6 +168,40 @@ const applicationTables = {
     .index("by_name", ["name"])
     .index("by_type", ["type"])
     .index("by_status", ["status"]),
+
+  sessionProposals: defineTable({
+    proposedToUserId: v.id("users"),
+    proposedByAlgorithm: v.boolean(),
+    gameId: v.string(),
+    gameName: v.string(),
+    gameImage: v.optional(v.string()),
+    proposedParticipants: v.array(v.id("users")),
+    preferenceScore: v.number(), // 0-1 range
+    timeCompatibilityScore: v.number(), // 0-1 range
+    successRateScore: v.number(), // 0-1 range
+    overallScore: v.number(), // 0-1 range
+    proposedDateTime: v.number(), // timestamp
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("declined"),
+      v.literal("expired")
+    ),
+    reason: v.optional(v.string()), // Human-readable reason for the proposal
+    createdAt: v.number(), // timestamp
+    expiresAt: v.optional(v.number()), // timestamp when proposal expires
+    metadata: v.optional(
+      v.object({
+        commonGames: v.optional(v.array(v.string())), // List of shared games
+        overlappingTimeSlots: v.optional(v.number()), // Number of overlapping time slots
+      })
+    ),
+  })
+    .index("by_user", ["proposedToUserId"])
+    .index("by_score", ["overallScore"])
+    .index("by_status", ["status"])
+    .index("by_created_at", ["createdAt"])
+    .index("by_user_status", ["proposedToUserId", "status"]),
 };
 
 export default defineSchema({

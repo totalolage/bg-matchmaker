@@ -21,10 +21,20 @@ export interface ProposalScore {
 
 export interface SessionProposal extends ProposalScore {
   proposedToUserId: Id<"users">;
+  proposedByAlgorithm: boolean;
   gameId: string;
+  gameName: string;
+  gameImage?: string;
   proposedParticipants: Id<"users">[];
   proposedDateTime: number;
+  status: "pending" | "accepted" | "declined" | "expired";
   reason: string;
+  createdAt: number;
+  expiresAt?: number;
+  metadata?: {
+    commonGames?: string[];
+    overlappingTimeSlots?: number;
+  };
 }
 
 export class SessionProposalEngine {
@@ -248,11 +258,20 @@ export class SessionProposalEngine {
           if (overlappingSlots.length > 0 && commonGames[0]) {
             const firstSlot = overlappingSlots[0];
             if (firstSlot) {
+              // Get the game details from the user's library
+              const gameDetails = this.user.gameLibrary.find(
+                g => g.gameId === commonGames[0]
+              );
+
               proposals.push({
                 proposedToUserId: this.user._id,
+                proposedByAlgorithm: true,
                 gameId: commonGames[0], // Pick the first common game
+                gameName: gameDetails?.gameName || "Unknown Game",
+                gameImage: gameDetails?.gameImage,
                 proposedParticipants: [this.user._id, otherUser._id],
                 proposedDateTime: this.calculateProposedDateTime(firstSlot),
+                status: "pending",
                 preferenceScore,
                 timeCompatibilityScore,
                 successRateScore,
@@ -262,6 +281,12 @@ export class SessionProposalEngine {
                   timeCompatibilityScore,
                   successRateScore
                 ),
+                createdAt: Date.now(),
+                expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+                metadata: {
+                  commonGames,
+                  overlappingTimeSlots: overlappingSlots.length,
+                },
               });
             }
           }
