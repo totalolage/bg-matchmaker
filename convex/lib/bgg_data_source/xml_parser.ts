@@ -27,19 +27,47 @@ const parserOptions = {
 const parser = new XMLParser(parserOptions);
 
 /**
+ * Helper to normalize items.item to always be an array
+ * We can't use arktype here because it doesn't support dynamic object manipulation
+ * in the way we need for this normalization
+ */
+function normalizeItemsArray(data: unknown): unknown {
+  if (typeof data !== "object" || data === null) {
+    return data;
+  }
+
+  // Create a shallow copy to avoid mutation
+  const result = { ...data } as Record<string, unknown>;
+
+  if (
+    result.items &&
+    typeof result.items === "object" &&
+    result.items !== null
+  ) {
+    const items = { ...result.items } as Record<string, unknown>;
+
+    if (items.item && !Array.isArray(items.item)) {
+      items.item = [items.item];
+    }
+
+    result.items = items;
+  }
+
+  return result;
+}
+
+/**
  * Parse and validate BGG search response
  */
 export function parseSearchResponse(xmlData: string): BGGSearchResponse {
   const parsed = parser.parse(xmlData);
 
-  // Normalize items.item to always be an array
-  if (parsed.items && parsed.items.item && !Array.isArray(parsed.items.item)) {
-    parsed.items.item = [parsed.items.item];
-  }
+  // Create a normalized version of the parsed data
+  const normalized = normalizeItemsArray(parsed);
 
   try {
-    validateSearchResponse(parsed);
-    return parsed;
+    validateSearchResponse(normalized);
+    return normalized;
   } catch (error) {
     throw new BGGAPIError(
       "Invalid response format from BGG search API",
@@ -55,14 +83,12 @@ export function parseSearchResponse(xmlData: string): BGGSearchResponse {
 export function parseThingResponse(xmlData: string): BGGThingResponse {
   const parsed = parser.parse(xmlData);
 
-  // Normalize items.item to always be an array
-  if (parsed.items && parsed.items.item && !Array.isArray(parsed.items.item)) {
-    parsed.items.item = [parsed.items.item];
-  }
+  // Create a normalized version of the parsed data
+  const normalized = normalizeItemsArray(parsed);
 
   try {
-    validateThingResponse(parsed);
-    return parsed;
+    validateThingResponse(normalized);
+    return normalized;
   } catch (error) {
     throw new BGGAPIError(
       "Invalid response format from BGG thing API",
@@ -78,14 +104,12 @@ export function parseThingResponse(xmlData: string): BGGThingResponse {
 export function parseHotResponse(xmlData: string): BGGHotResponse {
   const parsed = parser.parse(xmlData);
 
-  // Normalize items.item to always be an array
-  if (parsed.items && parsed.items.item && !Array.isArray(parsed.items.item)) {
-    parsed.items.item = [parsed.items.item];
-  }
+  // Create a normalized version of the parsed data
+  const normalized = normalizeItemsArray(parsed);
 
   try {
-    validateHotResponse(parsed);
-    return parsed;
+    validateHotResponse(normalized);
+    return normalized;
   } catch (error) {
     throw new BGGAPIError(
       "Invalid response format from BGG hot API",

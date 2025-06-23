@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { Search } from "lucide-react";
+import { useState } from "react";
+
+import { GameImage } from "@/components/GameImage";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
-import { Search } from "lucide-react";
-import { GameImage } from "@/components/GameImage";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useQuery } from "convex/react";
 
 interface Game {
   _id: Id<"gameData">;
@@ -28,59 +29,63 @@ interface GameSelectorProps {
     gameId: string;
     gameName: string;
     gameImage?: string;
-    expertiseLevel: "novice" | "beginner" | "intermediate" | "advanced" | "expert";
+    expertiseLevel:
+      | "novice"
+      | "beginner"
+      | "intermediate"
+      | "advanced"
+      | "expert";
   }>;
 }
 
-export const GameSelector = ({ selectedGame, onGameSelect, userGameLibrary }: GameSelectorProps) => {
+export const GameSelector = ({
+  selectedGame,
+  onGameSelect,
+  userGameLibrary,
+}: GameSelectorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  const [userLibraryGames, setUserLibraryGames] = useState<Game[]>([]);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // Get games from user's library
-  const userGameIds = new Set(userGameLibrary.map(g => g.gameId));
-  
-  // Fetch all games to match with user library
-  const allGames = useQuery(api.games.getAllGames);
-  
+  const userGameIds = userGameLibrary.map(g => g.gameId);
+
+  // Fetch only the games in user's library
+  const userLibraryGames = useQuery(api.games.getUserLibraryGames, {
+    gameIds: userGameIds,
+  });
+
   // Search for games when user types
   const searchResults = useQuery(
     api.games.searchGames,
     debouncedSearchTerm.length >= 2 ? { query: debouncedSearchTerm } : "skip"
   );
 
-  // Update user library games when allGames loads
-  useEffect(() => {
-    if (allGames) {
-      const libraryGames = allGames.filter(game => 
-        userGameIds.has(game.boardGameAtlasId)
-      );
-      setUserLibraryGames(libraryGames);
-    }
-  }, [allGames, userGameIds]);
-
   // Filter search results to only show games in user's library and convert to Game format
-  const filteredResults = searchResults?.filter(game => 
-    userGameIds.has(game.bggId)
-  ).map(result => {
-    // Find the full game data from allGames
-    const fullGame = allGames?.find(g => g.boardGameAtlasId === result.bggId);
-    if (fullGame) {
-      return fullGame;
-    }
-    // Fallback if not found in allGames (shouldn't happen if user library is correct)
-    return {
-      _id: result.bggId as unknown as Id<"gameData">,
-      boardGameAtlasId: result.bggId,
-      name: result.name,
-      imageUrl: result.image,
-      alternateNames: [],
-      minPlayers: result.minPlayers,
-      maxPlayers: result.maxPlayers,
-      playTime: result.playingTime,
-    };
-  }) || [];
+  const userGameIdSet = new Set(userGameIds);
+  const filteredResults =
+    searchResults
+      ?.filter(game => userGameIdSet.has(game.bggId))
+      .map(result => {
+        // Find the full game data from user library games
+        const fullGame = userLibraryGames?.find(
+          g => g.boardGameAtlasId === result.bggId
+        );
+        if (fullGame) {
+          return fullGame;
+        }
+        // Fallback if not found in library (shouldn't happen if user library is correct)
+        return {
+          _id: result.bggId as unknown as Id<"gameData">,
+          boardGameAtlasId: result.bggId,
+          name: result.name,
+          imageUrl: result.image,
+          alternateNames: [],
+          minPlayers: result.minPlayers,
+          maxPlayers: result.maxPlayers,
+          playTime: result.playingTime,
+        };
+      }) || [];
 
   const handleGameClick = (game: Game) => {
     onGameSelect(game);
@@ -139,7 +144,7 @@ export const GameSelector = ({ selectedGame, onGameSelect, userGameLibrary }: Ga
         <Input
           placeholder="Search your games..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
           className="pl-10"
         />
       </div>
@@ -154,7 +159,7 @@ export const GameSelector = ({ selectedGame, onGameSelect, userGameLibrary }: Ga
 
         {!searchTerm ? (
           // Show all user's games when not searching
-          userLibraryGames.map((game) => (
+          userLibraryGames?.map(game => (
             <Card
               key={game._id}
               className="p-3 cursor-pointer hover:bg-accent transition-colors"
@@ -185,12 +190,13 @@ export const GameSelector = ({ selectedGame, onGameSelect, userGameLibrary }: Ga
         ) : (
           // Show filtered search results
           <>
-            {filteredResults.length === 0 && debouncedSearchTerm.length >= 2 && (
-              <p className="text-center text-muted-foreground py-8">
-                No games from your library match "{debouncedSearchTerm}"
-              </p>
-            )}
-            {filteredResults.map((game) => (
+            {filteredResults.length === 0 &&
+              debouncedSearchTerm.length >= 2 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No games from your library match "{debouncedSearchTerm}"
+                </p>
+              )}
+            {filteredResults.map(game => (
               <Card
                 key={game._id}
                 className="p-3 cursor-pointer hover:bg-accent transition-colors"

@@ -59,6 +59,7 @@
     "@eslint/js": "^9.21.0",
     "@tanstack/router-devtools": "^1.120.11",
     "@tanstack/router-plugin": "^1.121.29",
+    "@total-typescript/ts-reset": "^0.6.1",
     "@types/bun": "^1.2.17",
     "@types/node": "^22.13.10",
     "@types/react": "^18.2.65",

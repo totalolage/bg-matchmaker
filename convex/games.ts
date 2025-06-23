@@ -146,7 +146,7 @@ export const searchGames = query({
       .take(200); // Get more results to ensure we don't miss popular games
 
     // Convert to a map to avoid duplicates
-    const gameMap = new Map();
+    const gameMap = new Map<string, (typeof nameResults)[0]>();
     nameResults.forEach(game => gameMap.set(game.bggId, game));
 
     const filteredResults = Array.from(gameMap.values());
@@ -270,12 +270,28 @@ export const searchGamesPaginated = query({
   },
 });
 
-export const getAllGames = query({
-  args: {},
-  handler: async (ctx) => {
-    const games = await ctx.db.query("gameData").collect();
-    
-    return games.map(game => ({
+export const getUserLibraryGames = query({
+  args: {
+    gameIds: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (args.gameIds.length === 0) {
+      return [];
+    }
+
+    // Batch fetch games by their IDs using individual queries
+    // This is the correct approach in Convex for "IN" style queries
+    const gamePromises = args.gameIds.map(async gameId => {
+      return await ctx.db
+        .query("gameData")
+        .withIndex("by_bgg_id", q => q.eq("bggId", gameId))
+        .unique();
+    });
+
+    const games = await Promise.all(gamePromises);
+
+    // Filter out null results and map to the expected format
+    return games.filter(Boolean).map(game => ({
       _id: game._id,
       boardGameAtlasId: game.bggId,
       name: game.name,
