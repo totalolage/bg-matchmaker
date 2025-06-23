@@ -36,6 +36,12 @@ task-master show <id>
 task-master set-status --id=<id> --status=done
 ```
 
+### Deployment
+
+This project is configured to deploy to Vercel only when a release tag is created. This prevents unnecessary builds on every commit.
+
+Release tags are automatically created by GitHub Actions when appropriate. The `vercel-build-ignore.sh` script checks for tags starting with `v` or `release-` and only allows builds for those commits.
+
 ### Developing and deploying your app
 
 Check out the [Convex docs](https://docs.convex.dev/) for more information on how to develop with Convex.
