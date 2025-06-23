@@ -59,7 +59,7 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
       
-      - name: Commit version bump
+      - name: Commit version bump and create tag
         if: env.BUMP_LEVEL != ''
         run: |
           git add package.json
@@ -73,9 +73,14 @@ jobs:
           Automated version bump from ${{ steps.current.outputs.version }} to ${{ env.new_version }}
           Bump level: ${{ env.BUMP_LEVEL }}"
           
+          # Create tag on the new commit
+          git tag -a "v${{ env.new_version }}" -m "Release v${{ env.new_version }}"
+          
+          # Push commit and tag together
           git push origin HEAD:${{ github.ref_name }}
+          git push origin "v${{ env.new_version }}"
       
-      - name: Create Release (if not prerelease)
+      - name: Create GitHub Release (if not prerelease)
         if: env.BUMP_LEVEL != '' && !contains(env.new_version, '-')
         uses: actions/create-release@v1
         env:
