@@ -1,6 +1,9 @@
 # Environment variables
-.env.local
 .env
+.env.local
+.env.*.local
+.env.local.backup
+.env.*.local.backup
 
 # Dependencies
 node_modules/
@@ -32,7 +35,6 @@ Thumbs.db
 CLAUDE.local.md
 .claude/settings.local.json
 .vercel
-.env*.local
 
 logs
 npm-debug.log*
