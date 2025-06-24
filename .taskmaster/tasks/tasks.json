@@ -743,12 +743,90 @@
         "description": "Set up and integrate a web push notification system including service worker support, user subscription management, and delivery of various notification types (session updates, new proposals, etc.).",
         "details": "1. Choose and configure a push service (e.g., Firebase Cloud Messaging or Web Push with VAPID keys).\n2. Extend the existing service worker (from Task 22) to handle `push` and `notificationclick` events: display notifications with title, body, icon, and deep‐linking to the app.\n3. Create backend endpoints in the API for `POST /notifications/subscribe` and `POST /notifications/unsubscribe` that accept a subscription object (endpoint, keys) and store or remove it in a new `pushSubscriptions` Convex table indexed by `userId`.\n4. Define a `notifications` topic or queue: implement server‐side functions to enqueue notifications when events occur (session status change, new match proposal, session reminders). Attach metadata (type, sessionId, timestamp).\n5. Implement a worker or cron job that reads pending notifications, fetches subscriptions for each user, and sends push payloads via the chosen service, marking notifications as sent or failed in the database.\n6. On the client app, add a toggle in the user settings page to opt into push notifications. When enabled, call the subscribe endpoint and handle permission requests; when disabled, call unsubscribe and remove permission visuals.\n7. Ensure secure handling of subscription data and enforce authentication on subscription endpoints.",
         "testStrategy": "1. Unit tests for subscription endpoints: verify valid subscriptions are saved, duplicates are handled, and removals delete records.\n2. Simulate push event in a headless browser or service worker test harness to verify notifications are displayed with correct payload and click behavior.\n3. Integration test against a staging push service: register a subscription in a test browser, trigger a test notification via the backend, and confirm receipt in the browser.\n4. End‐to‐end test: toggle subscription on/off in UI, trigger events (e.g., session update), and verify only subscribed users receive notifications.\n5. Error handling tests: invalid or expired subscription removal, network failures during send, and logging of failures.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           22
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up VAPID Key Infrastructure",
+            "description": "Generate and configure VAPID keys for Web Push authentication, create secure storage for keys, and implement helper functions for signing JWT tokens",
+            "dependencies": [],
+            "details": "1. Use web-push library to generate VAPID key pair\n2. Store public/private keys in Convex environment variables\n3. Create utility functions for generating authorization headers\n4. Implement JWT token signing for push service authentication",
+            "status": "done",
+            "testStrategy": "Verify VAPID key generation and JWT token creation with unit tests"
+          },
+          {
+            "id": 2,
+            "title": "Implement Service Worker Push Handler",
+            "description": "Extend service worker to handle push events and display notifications with proper formatting and interaction handling",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Add push event listener in service worker\n2. Parse notification payload (title, body, icon, data)\n3. Implement showNotification with proper options\n4. Add notificationclick handler for deep linking\n5. Handle notification close events",
+            "status": "done",
+            "testStrategy": "Test service worker registration and notification display using browser dev tools"
+          },
+          {
+            "id": 3,
+            "title": "Create Subscription Database Schema",
+            "description": "Design and implement database schema for storing push subscriptions with proper indexing and relationships",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create pushSubscriptions table in Convex\n2. Define fields: userId, endpoint, p256dh key, auth key, createDate\n3. Set up indexes for userId and endpoint\n4. Implement subscription validation helpers",
+            "status": "done",
+            "testStrategy": "Verify schema creation and indexing with test data"
+          },
+          {
+            "id": 4,
+            "title": "Implement Subscription Management Endpoints",
+            "description": "Create API endpoints for managing push notification subscriptions with proper authentication",
+            "dependencies": [
+              3
+            ],
+            "details": "1. Implement POST /notifications/subscribe endpoint\n2. Implement POST /notifications/unsubscribe endpoint\n3. Add authentication middleware\n4. Validate subscription objects\n5. Handle duplicate subscriptions",
+            "status": "done",
+            "testStrategy": "Test endpoints with valid and invalid subscription data"
+          },
+          {
+            "id": 5,
+            "title": "Develop Notification Queue System",
+            "description": "Create a queue system for managing pending notifications with metadata and delivery status",
+            "dependencies": [
+              3
+            ],
+            "details": "1. Create notifications table with status tracking\n2. Implement enqueue functions for different notification types\n3. Add metadata fields (type, sessionId, timestamp)\n4. Create batch processing capability",
+            "status": "done",
+            "testStrategy": "Test queue operations and status updates with mock notifications"
+          },
+          {
+            "id": 6,
+            "title": "Build Notification Delivery Worker",
+            "description": "Implement worker process to send queued notifications to subscribed users",
+            "dependencies": [
+              4,
+              5
+            ],
+            "details": "1. Create worker function to process notification queue\n2. Implement web-push sending logic\n3. Handle failed deliveries and subscription updates\n4. Add retry mechanism for failed attempts\n5. Update notification status after delivery",
+            "status": "done",
+            "testStrategy": "Test delivery process with mock subscriptions and error conditions"
+          },
+          {
+            "id": 7,
+            "title": "Implement Client-side Subscription UI",
+            "description": "Add user interface components for managing notification permissions and subscriptions",
+            "dependencies": [
+              2,
+              4
+            ],
+            "details": "1. Add notification toggle to user settings\n2. Implement permission request flow\n3. Handle subscription/unsubscription process\n4. Add visual feedback for subscription status\n5. Implement error handling and retry logic",
+            "status": "pending",
+            "testStrategy": "Test UI components and permission flows across different browsers"
+          }
+        ]
       },
       {
         "id": 24,
@@ -1041,11 +1119,24 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 38,
+        "title": "Implement React Hook Form for Session Creation",
+        "description": "Enhance the session creation page by implementing React Hook Form library to improve form handling, validation, and user experience with proper error messaging and real-time validation.",
+        "details": "1. Install and configure React Hook Form:\n```bash\nnpm install react-hook-form\n```\n\n2. Refactor session creation form component:\n```typescript\n// components/sessions/SessionCreationForm.tsx\nimport { useForm } from 'react-hook-form';\nimport { zodResolver } from '@hookform/resolvers/zod';\nimport { z } from 'zod';\n\nconst sessionSchema = z.object({\n  title: z.string().min(3, 'Title must be at least 3 characters'),\n  gameId: z.string().min(1, 'Please select a game'),\n  maxPlayers: z.number().min(2).max(20),\n  dateTime: z.date().min(new Date(), 'Session must be in the future'),\n  duration: z.number().min(30, 'Minimum duration is 30 minutes'),\n  description: z.string().optional(),\n  location: z.object({\n    type: z.enum(['online', 'in-person']),\n    details: z.string()\n  })\n});\n\nconst SessionCreationForm = () => {\n  const {\n    register,\n    handleSubmit,\n    formState: { errors },\n    watch,\n    setValue\n  } = useForm({\n    resolver: zodResolver(sessionSchema),\n    defaultValues: {\n      maxPlayers: 4,\n      duration: 120\n    }\n  });\n\n  const onSubmit = async (data) => {\n    try {\n      await mutation.mutateAsync(data);\n      // Handle success\n    } catch (error) {\n      // Handle error\n    }\n  };\n}\n```\n\n3. Implement form field components with validation:\n```typescript\n<form onSubmit={handleSubmit(onSubmit)}>\n  <FormField>\n    <Input\n      {...register('title')}\n      error={errors.title?.message}\n      placeholder=\"Session Title\"\n    />\n  </FormField>\n  \n  <Controller\n    name=\"dateTime\"\n    control={control}\n    render={({ field }) => (\n      <DateTimePicker\n        value={field.value}\n        onChange={field.onChange}\n        error={errors.dateTime?.message}\n      />\n    )}\n  />\n  {/* Additional form fields */}\n</form>\n```\n\n4. Add real-time validation and error handling:\n- Implement custom validation messages\n- Add field-level validation rules\n- Setup form submission handling with loading states\n- Add error boundary for form submission failures\n\n5. Implement form state persistence:\n- Add form data caching using localStorage\n- Implement form recovery on page reload\n- Add dirty form detection and navigation warnings",
+        "testStrategy": "1. Unit Tests:\n- Test form validation rules with valid and invalid inputs\n- Verify error message display for all validation scenarios\n- Test form submission handling with mock API calls\n- Verify form state persistence and recovery\n- Test field interactions and dependencies\n\n2. Integration Tests:\n- Test complete form submission flow\n- Verify API integration and error handling\n- Test form recovery after page reload\n- Validate navigation warnings for dirty forms\n\n3. E2E Tests:\n- Complete form filling and submission workflow\n- Test form validation in real browser environment\n- Verify proper error handling and user feedback\n- Test form accessibility using screen readers\n\n4. Performance Testing:\n- Measure form rendering performance\n- Test form handling with large datasets\n- Verify validation performance with rapid input",
+        "status": "pending",
+        "dependencies": [
+          33
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-23T21:33:29.718Z",
+      "updated": "2025-06-24T10:06:51.695Z",
       "description": "Tasks for master context"
     }
   }
