@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
+import { useAnalytics } from "@/hooks/useAnalytics";
+
 // Convert base64 to Uint8Array for subscription
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -31,25 +33,40 @@ export function usePushNotifications() {
   const subscriptionStatus = useQuery(api.notifications.getSubscriptionStatus);
   const subscribe = useMutation(api.notifications.subscribe);
   const unsubscribe = useMutation(api.notifications.unsubscribe);
+  const analytics = useAnalytics();
 
   // Subscribe to push notifications
   const subscribeToPush = async () => {
     if (!isSupported) {
       toast.error("Push notifications are not supported in this browser");
+      analytics.trackNotificationEvent({
+        action: "subscription_failed",
+        error: "not_supported",
+      });
       return;
     }
 
     setIsLoading(true);
 
     try {
+      // Track permission request
+      analytics.trackNotificationEvent({ action: "permission_requested" });
+
       // Request notification permission
       const permission = await Notification.requestPermission();
       setPermission(permission);
 
       if (permission !== "granted") {
         toast.error("Please enable notifications in your browser settings");
+        analytics.trackNotificationEvent({
+          action: "permission_denied",
+          error: `permission_${permission}`,
+        });
         return;
       }
+
+      // Track permission granted
+      analytics.trackNotificationEvent({ action: "permission_granted" });
 
       // Get service worker registration
       const registration = await navigator.serviceWorker.ready;
@@ -88,10 +105,30 @@ export function usePushNotifications() {
         },
       });
 
+      // Track successful subscription
+      analytics.trackNotificationEvent({ action: "subscription_created" });
+
       toast.success("You'll receive notifications for game sessions");
     } catch (error) {
       console.error("Error subscribing to push notifications:", error);
       toast.error("Failed to enable notifications. Please try again.");
+
+      // Track PWA-specific error
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      analytics.trackPWAError(
+        "notification_permission",
+        error instanceof Error ? error : errorMessage,
+        {
+          step: "subscription",
+          isSupported,
+          permission,
+        },
+      );
+      analytics.trackNotificationEvent({
+        action: "subscription_failed",
+        error: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -115,10 +152,20 @@ export function usePushNotifications() {
       // Remove subscription from backend
       await unsubscribe();
 
+      // Track successful unsubscription
+      analytics.trackNotificationEvent({ action: "subscription_removed" });
+
       toast.success("You won't receive notifications anymore");
     } catch (error) {
       console.error("Error unsubscribing from push notifications:", error);
       toast.error("Failed to disable notifications. Please try again.");
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to unsubscribe from notifications", { cause: error }),
+        "notification_unsubscribe",
+        { step: "unsubscription" },
+      );
     } finally {
       setIsLoading(false);
     }

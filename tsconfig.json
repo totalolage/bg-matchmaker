@@ -11,7 +11,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@convex/*": ["./convex/*"]
-    }
+    },
+    "types": ["vite/client", "vite-plugin-pwa/client"]
   },
   "exclude": ["scripts/**/*"]
 }

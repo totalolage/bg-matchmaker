@@ -6,6 +6,7 @@ import { Doc } from "@convex/_generated/dataModel";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 import { SessionProposal } from "./SessionProposal";
 
@@ -55,6 +56,8 @@ export const SessionDiscovery = ({
     { sessionId: string; action: "declined" | "interested" }[]
   >([]);
 
+  const analytics = useAnalytics();
+
   // Reset index when sessions change (e.g., after optimistic updates)
   useEffect(() => {
     setCurrentIndex(0);
@@ -72,6 +75,16 @@ export const SessionDiscovery = ({
       ...prev,
       { sessionId: currentSession._id, action: "declined" },
     ]);
+
+    // Track the swipe action
+    analytics.trackSessionSwipe({
+      sessionId: currentSession._id,
+      direction: "left",
+      gameTitle: currentSession.gameName || "Unknown Game",
+      gameBggId:
+        currentSession.gameId ? parseInt(currentSession.gameId) : undefined,
+      hostId: currentSession.hostId,
+    });
 
     // Call the parent handler immediately (optimistic update)
     onDecline(currentSession._id);
@@ -97,6 +110,16 @@ export const SessionDiscovery = ({
       ...prev,
       { sessionId: currentSession._id, action: "interested" },
     ]);
+
+    // Track the swipe action
+    analytics.trackSessionSwipe({
+      sessionId: currentSession._id,
+      direction: "right",
+      gameTitle: currentSession.gameName || "Unknown Game",
+      gameBggId:
+        currentSession.gameId ? parseInt(currentSession.gameId) : undefined,
+      hostId: currentSession.hostId,
+    });
 
     // Call the parent handler immediately (optimistic update)
     onInterest(currentSession._id);

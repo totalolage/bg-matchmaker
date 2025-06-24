@@ -10,6 +10,8 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
 
+import { useAnalytics } from "@/hooks/useAnalytics";
+
 import { GameSelector } from "./session-discovery/GameSelector";
 import { Button } from "./ui/button";
 import {
@@ -94,6 +96,7 @@ export const CreateSessionForm = () => {
 
   const user = useQuery(api.users.getCurrentUser);
   const createSession = useMutation(api.sessions.createSession);
+  const analytics = useAnalytics();
 
   const form = useForm<SessionFormData>({
     resolver: arktypeResolver(sessionFormSchema),
@@ -135,6 +138,9 @@ export const CreateSessionForm = () => {
         location: data.location,
       });
 
+      // Track successful session creation
+      analytics.trackSessionCreated(sessionId, data.gameName, data.maxPlayers);
+
       toast.success("Session created successfully!");
       form.reset();
       setSelectedGame(null);
@@ -147,6 +153,17 @@ export const CreateSessionForm = () => {
     } catch (error) {
       console.error("Failed to create session:", error);
       toast.error("Failed to create session");
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to create session", { cause: error }),
+        "session_creation",
+        {
+          gameId: data.gameId,
+          gameName: data.gameName,
+          location: data.location,
+        },
+      );
     }
   });
 

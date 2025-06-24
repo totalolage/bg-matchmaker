@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button/Button";
 import { Card } from "@/components/ui/card";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -24,6 +25,7 @@ export const PWAInstallPrompt: React.FC = () => {
     useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const isInstalled = window.matchMedia("(display-mode: standalone)").matches;
+  const analytics = useAnalytics();
 
   useEffect(() => {
     const ac = new AbortController();
@@ -33,6 +35,12 @@ export const PWAInstallPrompt: React.FC = () => {
         e.preventDefault();
         setDeferredPrompt(e);
         setIsVisible(true);
+
+        // Track PWA install prompt shown
+        analytics.captureEvent("pwa_install_prompt_shown", {
+          platforms: e.platforms,
+          user_agent: navigator.userAgent,
+        });
       },
       {
         signal: ac.signal,
@@ -42,20 +50,43 @@ export const PWAInstallPrompt: React.FC = () => {
     return () => {
       ac.abort();
     };
-  }, []);
+  }, [analytics]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
 
     try {
+      // Track install button clicked
+      analytics.captureEvent("pwa_install_clicked", {});
+
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
 
+      // Track user choice
+      analytics.captureEvent("pwa_install_choice", {
+        outcome,
+        is_installed: outcome === "accepted",
+      });
+
       if (outcome === "accepted") {
         setIsVisible(false);
+
+        // Track successful installation
+        analytics.captureEvent("pwa_installed", {
+          install_source: "prompt",
+        });
       }
     } catch (error) {
       console.error("Error showing install prompt:", error);
+
+      // Track PWA error
+      analytics.trackPWAError(
+        "install",
+        error instanceof Error ? error : "Unknown error",
+        {
+          step: "prompt_interaction",
+        },
+      );
     }
 
     setDeferredPrompt(null);
@@ -63,6 +94,11 @@ export const PWAInstallPrompt: React.FC = () => {
 
   const handleCloseClick = () => {
     setIsVisible(false);
+
+    // Track install prompt dismissed
+    analytics.captureEvent("pwa_install_dismissed", {
+      action: "close_button",
+    });
   };
 
   if (!isVisible || isInstalled) {
@@ -101,7 +137,17 @@ export const PWAInstallPrompt: React.FC = () => {
                 <Download className="h-4 w-4" />
                 Install
               </Button>
-              <Button onClick={handleCloseClick} variant="ghost" size="sm">
+              <Button
+                onClick={() => {
+                  handleCloseClick();
+                  // Track "Not now" specifically
+                  analytics.captureEvent("pwa_install_dismissed", {
+                    action: "not_now_button",
+                  });
+                }}
+                variant="ghost"
+                size="sm"
+              >
                 Not now
               </Button>
             </div>

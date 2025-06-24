@@ -66,6 +66,7 @@
     "framer-motion": "^12.18.1",
     "lucide-react": "^0.511.0",
     "papaparse": "^5.5.3",
+    "posthog-js": "^1.255.1",
     "react": "^0.0.0-experimental-fa3feba6-20250623",
     "react-day-picker": "8.10.1",
     "react-dom": "^0.0.0-experimental-fa3feba6-20250623",

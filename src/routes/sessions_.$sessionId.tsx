@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "@/components/UserAvatar";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export const Route = createFileRoute("/sessions_/$sessionId")({
   component: SessionDetail,
@@ -42,6 +43,7 @@ function SessionDetail() {
     sessionId: typedSessionId,
   });
   const currentUser = useQuery(api.users.getCurrentUser);
+  const analytics = useAnalytics();
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
@@ -96,9 +98,25 @@ function SessionDetail() {
     try {
       await expressInterest({ sessionId: typedSessionId });
       toast.success("Interest expressed!");
+
+      // Track interest expressed
+      analytics.captureEvent("session_interest_expressed", {
+        session_id: typedSessionId,
+        game_title: session?.gameName || "Unknown",
+        host_id: session?.hostId,
+        player_count: session?.players.length || 0,
+        max_players: session?.maxPlayers || 0,
+      });
     } catch (error) {
       toast.error("Failed to express interest");
       console.error(error);
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to express interest", { cause: error }),
+        "session_interest_express",
+        { sessionId: typedSessionId },
+      );
     }
   };
 
@@ -106,9 +124,24 @@ function SessionDetail() {
     try {
       await declineSession({ sessionId: typedSessionId });
       toast.success("Session declined");
+
+      // Track session declined
+      analytics.captureEvent("session_declined", {
+        session_id: typedSessionId,
+        game_title: session?.gameName || "Unknown",
+        host_id: session?.hostId,
+        player_count: session?.players.length || 0,
+      });
     } catch (error) {
       toast.error("Failed to decline session");
       console.error(error);
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to decline session", { cause: error }),
+        "session_decline",
+        { sessionId: typedSessionId },
+      );
     }
   };
 
@@ -116,9 +149,25 @@ function SessionDetail() {
     try {
       await joinSession({ sessionId: typedSessionId });
       toast.success("Joined session successfully!");
+
+      // Track session joined
+      analytics.captureEvent("session_joined", {
+        session_id: typedSessionId,
+        game_title: session?.gameName || "Unknown",
+        host_id: session?.hostId,
+        player_count: (session?.players.length || 0) + 1,
+        max_players: session?.maxPlayers || 0,
+      });
     } catch (error) {
       toast.error("Failed to join session");
       console.error(error);
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to join session", { cause: error }),
+        "session_join",
+        { sessionId: typedSessionId },
+      );
     }
   };
 
@@ -128,14 +177,48 @@ function SessionDetail() {
     try {
       await cancelSession({ sessionId: typedSessionId });
       toast.success("Session cancelled");
+
+      // Track session cancelled
+      analytics.captureEvent("session_cancelled", {
+        session_id: typedSessionId,
+        game_title: session?.gameName || "Unknown",
+        player_count: session?.players.length || 0,
+        had_interested_players: (session?.interestedPlayers.length || 0) > 0,
+      });
     } catch (error) {
       toast.error("Failed to cancel session");
       console.error(error);
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to cancel session", { cause: error }),
+        "session_cancel",
+        { sessionId: typedSessionId },
+      );
     }
   };
 
   const handleSaveChanges = async () => {
     try {
+      // Collect fields that were changed
+      const changedFields: string[] = [];
+      if (
+        session?.scheduledTime &&
+        formData.scheduledTime &&
+        new Date(session.scheduledTime).getTime() !==
+          new Date(formData.scheduledTime).getTime()
+      ) {
+        changedFields.push("scheduledTime");
+      }
+      if (session?.location !== formData.location)
+        changedFields.push("location");
+      if (session?.description !== formData.description)
+        changedFields.push("description");
+      if (session?.minPlayers !== formData.minPlayers)
+        changedFields.push("minPlayers");
+      if (session?.maxPlayers !== formData.maxPlayers)
+        changedFields.push("maxPlayers");
+
       await updateSession({
         sessionId: typedSessionId,
         scheduledTime:
@@ -149,9 +232,24 @@ function SessionDetail() {
       });
       toast.success("Session updated successfully!");
       setIsEditing(false);
+
+      // Track session updated
+      analytics.captureEvent("session_updated", {
+        session_id: typedSessionId,
+        game_title: session?.gameName || "Unknown",
+        fields_changed: changedFields,
+        changed_count: changedFields.length,
+      });
     } catch (error) {
       toast.error("Failed to update session");
       console.error(error);
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to update session", { cause: error }),
+        "session_update",
+        { sessionId: typedSessionId },
+      );
     }
   };
 
@@ -595,6 +693,13 @@ function SessionDetail() {
                           description: session.description || "",
                           minPlayers: session.minPlayers,
                           maxPlayers: session.maxPlayers,
+                        });
+
+                        // Track edit started
+                        analytics.captureEvent("session_edit_started", {
+                          session_id: typedSessionId,
+                          game_title: session.gameName,
+                          session_status: session.status,
                         });
                       }}
                     >

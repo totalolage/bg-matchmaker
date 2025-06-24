@@ -63,6 +63,7 @@ export default defineConfig(({ mode }) => {
         },
         devOptions: {
           enabled: true,
+          type: "module",
         },
         manifest: {
           name: "DeskoSpojka - Board Game Matchmaker",

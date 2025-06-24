@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 
 import { Authenticated, Unauthenticated } from "convex/react";
 
+import { AnalyticsContext } from "@/components/AnalyticsContext";
+import { AuthStateTracker } from "@/components/AuthStateTracker";
 import { Navigation } from "@/components/Navigation";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { SignInForm } from "@/SignInForm";
@@ -17,7 +19,9 @@ export const Route = createRootRouteWithContext<{
       className="min-h-dvh bg-gradient-to-br from-purple-50 to-blue-50 overscroll-none"
       id="app-root"
     >
+      <AnalyticsContext />
       <Authenticated>
+        <AuthStateTracker />
         <div className="relative max-w-xl mx-auto bg-white min-h-dvh shadow-xl flex flex-col px-s-0">
           <div
             className="grid flex-1 overflow-hidden"

@@ -10,6 +10,7 @@ import { Id } from "@convex/_generated/dataModel";
 import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { SessionDiscovery } from "@/components/session-discovery";
 import { Button } from "@/components/ui/button";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export const Route = createFileRoute("/discover")({
   component: Discover,
@@ -20,6 +21,7 @@ function Discover() {
     ...convexQuery(api.sessions.getDiscoverySessions, {}),
   });
   const swipeSession = useConvexMutation(api.sessions.swipeSession);
+  const analytics = useAnalytics();
 
   // Track sessions that have been interacted with optimistically
   const [interactedSessionIds, setInteractedSessionIds] = useState<Set<string>>(
@@ -42,6 +44,14 @@ function Discover() {
     }).catch(error => {
       // On error, rollback the optimistic update
       console.error("Failed to decline session:", error);
+
+      // Track the error
+      analytics.trackError(
+        new Error("Failed to decline session", { cause: error }),
+        "session_swipe_decline",
+        { sessionId, action: "pass" },
+      );
+
       setInteractedSessionIds(prev => {
         const next = new Set(prev);
         next.delete(sessionId);
@@ -61,6 +71,14 @@ function Discover() {
     }).catch(error => {
       // On error, rollback the optimistic update
       console.error("Failed to express interest in session:", error);
+
+      // Track the error
+      analytics.trackError(
+        new Error("Failed to express interest", { cause: error }),
+        "session_swipe_interest",
+        { sessionId, action: "like" },
+      );
+
       setInteractedSessionIds(prev => {
         const next = new Set(prev);
         next.delete(sessionId);

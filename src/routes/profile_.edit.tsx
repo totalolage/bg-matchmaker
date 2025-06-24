@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/UserAvatar";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const profileFormSchema = type({
@@ -44,6 +45,7 @@ function EditProfile() {
   const user = useCurrentUser();
   const navigate = useNavigate();
   const router = useRouter();
+  const analytics = useAnalytics();
   const updateDisplayName = useMutation({
     mutationFn: useConvexMutation(api.users.updateDisplayName),
   });
@@ -63,10 +65,29 @@ function EditProfile() {
     )
       return false;
 
-    await updateDisplayName.mutateAsync({ displayName });
+    try {
+      const oldDisplayName = user.displayName || user.name;
+      await updateDisplayName.mutateAsync({ displayName });
 
-    toast.success("Profile updated");
-    return true; // Successfully saved
+      // Track profile update
+      analytics.captureEvent("profile_updated", {
+        field_updated: "displayName",
+        old_value_length: oldDisplayName.length,
+        new_value_length: displayName.trim().length,
+      });
+
+      toast.success("Profile updated");
+      return true; // Successfully saved
+    } catch (error) {
+      // Track error
+      analytics.trackError(
+        new Error("Failed to update profile", { cause: error }),
+        "profile_update",
+        { field: "displayName" },
+      );
+      toast.error("Failed to update profile");
+      return false;
+    }
   });
 
   useEffect(

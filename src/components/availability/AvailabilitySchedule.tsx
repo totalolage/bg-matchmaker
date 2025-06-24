@@ -1,7 +1,7 @@
 import { useDebouncer } from "@tanstack/react-pacer";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearch } from "@tanstack/react-router";
-import { Ref, useEffect, useImperativeHandle, useState } from "react";
+import { Ref, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useMutation as useConvexMutation } from "convex/react";
@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 import { AvailabilitySummary } from "./components/AvailabilitySummary";
 import { TimeGrid } from "./components/TimeGrid";
@@ -44,6 +45,7 @@ export const AvailabilitySchedule = ({
 }) => {
   const router = useRouter();
   const search = useSearch({ from: "/profile" });
+  const analytics = useAnalytics();
 
   // Use availability directly from Convex query - no local state
   const selectedSlots = user.availability;
@@ -58,14 +60,43 @@ export const AvailabilitySchedule = ({
     },
   );
 
+  // Track availability changes
+  const previousAvailabilityRef = useRef(selectedSlots);
+
   // Mutation with debounced success notification
   const updateAvailability = useMutation({
     mutationFn: useConvexMutation(api.users.updateAvailability),
     onSuccess: () => {
       successDebouncer.maybeExecute();
+
+      // Track availability update
+      const oldSlotCount = previousAvailabilityRef.current.reduce(
+        (sum, daySlots) => sum + daySlots.intervals.length,
+        0,
+      );
+      const newSlotCount = selectedSlots.reduce(
+        (sum, daySlots) => sum + daySlots.intervals.length,
+        0,
+      );
+
+      analytics.captureEvent("availability_updated", {
+        old_slot_count: oldSlotCount,
+        new_slot_count: newSlotCount,
+        slots_added: Math.max(0, newSlotCount - oldSlotCount),
+        slots_removed: Math.max(0, oldSlotCount - newSlotCount),
+      });
+
+      previousAvailabilityRef.current = selectedSlots;
     },
-    onError: () => {
+    onError: error => {
       toast.error("Failed to update availability");
+
+      // Track error
+      analytics.trackError(
+        new Error("Failed to update availability", { cause: error }),
+        "availability_update",
+        {},
+      );
     },
   });
 

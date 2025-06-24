@@ -555,16 +555,104 @@
       {
         "id": 13,
         "title": "Integrate PostHog analytics for session discovery tracking",
-        "description": "Set up PostHog analytics to track user interactions in the session discovery interface, including swipe actions, session accepts/declines, and proposal generation events.",
-        "details": "1. Install PostHog JavaScript SDK:\n```bash\nnpm install posthog-js\n```\n\n2. Create PostHog configuration and provider:\n```typescript\n// lib/analytics/posthog.ts\nimport posthog from 'posthog-js';\n\nexport const initPostHog = () => {\n  if (typeof window !== 'undefined') {\n    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {\n      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',\n      capture_pageviews: true,\n      capture_pageleaves: true,\n      persistence: 'localStorage+cookie'\n    });\n  }\n};\n```\n\n3. Create analytics hooks for session discovery events:\n```typescript\n// hooks/useSessionAnalytics.ts\nimport posthog from 'posthog-js';\n\nexport const useSessionAnalytics = () => {\n  const trackSwipeAction = (sessionId: string, direction: 'left' | 'right', gameTitle: string) => {\n    posthog.capture('session_swipe', {\n      session_id: sessionId,\n      swipe_direction: direction,\n      game_title: gameTitle,\n      timestamp: Date.now()\n    });\n  };\n\n  const trackSessionAccept = (sessionId: string, proposalId: string) => {\n    posthog.capture('session_accepted', {\n      session_id: sessionId,\n      proposal_id: proposalId\n    });\n  };\n\n  const trackProposalGeneration = (userId: string, proposalCount: number) => {\n    posthog.capture('proposals_generated', {\n      user_id: userId,\n      proposal_count: proposalCount\n    });\n  };\n\n  return { trackSwipeAction, trackSessionAccept, trackProposalGeneration };\n};\n```\n\n4. Integrate analytics into existing swipe interface and session management components.\n\n5. Implement user privacy controls with opt-out functionality and ensure GDPR compliance by anonymizing user data appropriately.",
-        "testStrategy": "1. Unit tests for analytics hooks to verify correct event tracking with proper parameters. 2. Integration tests to ensure PostHog events are fired during swipe actions in the discovery interface. 3. Test privacy controls and data anonymization functionality. 4. Verify PostHog dashboard receives events correctly by performing test swipes and checking event logs. 5. Test analytics initialization across different browser environments and ensure graceful fallback when PostHog is unavailable. 6. Validate that sensitive user data is not included in tracking events.",
-        "status": "pending",
+        "description": "Implement a comprehensive PostHog analytics integration covering three main pillars: 1) Event tracking for all user interactions including session discovery, swipe actions, and proposal generation, 2) Session recording with robust privacy controls, and 3) Error logging and monitoring system with special attention to PWA-specific issues.",
+        "status": "in-progress",
         "dependencies": [
           8,
           9
         ],
         "priority": "low",
-        "subtasks": []
+        "details": "1. Install PostHog JavaScript SDK:\n```bash\nnpm install posthog-js\n```\n\n2. Create PostHog configuration and provider with comprehensive tracking setup:\n```typescript\n// lib/analytics/posthog.ts\nimport posthog from 'posthog-js';\n\nexport const initPostHog = () => {\n  if (typeof window !== 'undefined') {\n    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {\n      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',\n      capture_pageviews: true,\n      capture_pageleaves: true,\n      persistence: 'localStorage+cookie',\n      enable_recording: true,\n      mask_all_text: true,\n      mask_all_element_attributes: true\n    });\n  }\n};\n```\n\n3. Create comprehensive analytics hooks for all user interactions:\n```typescript\n// hooks/useAnalytics.ts\nimport posthog from 'posthog-js';\n\nexport const useAnalytics = () => {\n  // Session discovery events\n  const trackSwipeAction = (sessionId: string, direction: 'left' | 'right', gameTitle: string) => {\n    posthog.capture('session_swipe', {\n      session_id: sessionId,\n      swipe_direction: direction,\n      game_title: gameTitle,\n      timestamp: Date.now()\n    });\n  };\n\n  // Error tracking\n  const trackError = (error: Error, context: string, metadata: object) => {\n    posthog.capture('error_occurred', {\n      error_message: error.message,\n      error_stack: error.stack,\n      context,\n      ...metadata\n    });\n  };\n\n  // PWA-specific error tracking\n  const trackPWAError = (type: string, error: Error) => {\n    posthog.capture('pwa_error', {\n      error_type: type,\n      error_message: error.message,\n      error_stack: error.stack\n    });\n  };\n\n  return { trackSwipeAction, trackError, trackPWAError };\n};\n```\n\n4. Implement session recording with privacy controls:\n- Configure automatic PII masking\n- Set up user opt-out mechanisms\n- Implement data retention policies\n\n5. Create comprehensive error monitoring system:\n- Global error boundary integration\n- Service worker error tracking\n- Network request failure monitoring\n- PWA-specific error handlers\n\n6. Ensure GDPR compliance across all tracking mechanisms:\n- User consent management\n- Data anonymization\n- Clear opt-out procedures\n- Data retention controls",
+        "testStrategy": "1. Unit tests for all analytics hooks covering event tracking, error logging, and privacy controls\n2. Integration tests for PostHog event emission across all user interactions\n3. End-to-end tests for session recording functionality\n4. Privacy control validation tests\n5. Error tracking system tests including PWA-specific scenarios\n6. Performance impact testing of analytics integration\n7. Cross-browser compatibility testing\n8. GDPR compliance validation tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install and Initialize PostHog in React PWA",
+            "description": "Set up PostHog analytics in the React Progressive Web App (PWA) by installing the PostHog JavaScript SDK and initializing it with the appropriate configuration.",
+            "status": "done",
+            "dependencies": [],
+            "details": "Install the PostHog JavaScript SDK using npm and initialize it in the main entry point of the React application. Ensure that the API key and host are correctly configured.\n<info added on 2025-06-24T12:13:45.669Z>\nPostHog integration completed with the following implementation details:\n\n- Installed posthog-js via bun package manager\n- Created dedicated analytics configuration in src/lib/analytics/posthog.ts with privacy-focused default settings\n- Implemented PostHogProvider component to handle React context integration\n- Added PostHog provider wrapper around App component with error boundary protection\n- Set up required PostHog environment variables and documented in .env.example\n- Implemented session recording functionality with privacy controls for sensitive data\n- Configured error tracking using PostHog's captureException\n- Created useAnalytics custom hooks for simplified analytics integration across components\n- Resolved all TypeScript compilation issues and type definitions\n- Successfully validated PostHog initialization and configuration through TypeScript checks\n\nAll core PostHog SDK setup and initialization requirements have been met with privacy and type safety considerations in place.\n</info added on 2025-06-24T12:13:45.669Z>",
+            "testStrategy": "Verify that PostHog is correctly initialized by checking the network requests in the browser's developer tools and confirming that events are being sent to PostHog."
+          },
+          {
+            "id": 2,
+            "title": "Implement Event Tracking for User Interactions",
+            "description": "Capture user interactions such as swipe actions, session accepts/declines, and proposal generation events within the session discovery interface.",
+            "status": "done",
+            "dependencies": [
+              1
+            ],
+            "details": "Create custom hooks or utility functions to capture specific user interactions and send them as events to PostHog. Ensure that each event includes relevant properties for detailed analysis.",
+            "testStrategy": "Simulate user interactions in the session discovery interface and verify that the corresponding events are accurately captured and appear in the PostHog dashboard."
+          },
+          {
+            "id": 3,
+            "title": "Set Up Session Recording with Privacy Controls",
+            "description": "Enable session recording in PostHog to monitor user behavior while implementing privacy controls to protect sensitive information.",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "details": "Configure PostHog to record user sessions, ensuring that sensitive data is redacted or excluded from recordings. Implement mechanisms to allow users to opt out of session recording.",
+            "testStrategy": "Review session recordings to confirm that user interactions are captured without exposing sensitive information. Test the opt-out functionality to ensure it works as intended."
+          },
+          {
+            "id": 4,
+            "title": "Integrate Error Tracking and Logging",
+            "description": "Utilize PostHog's error capture capabilities to monitor and log errors occurring within the PWA.",
+            "status": "pending",
+            "dependencies": [
+              1
+            ],
+            "details": "Set up error tracking by capturing exceptions and sending error events to PostHog. Ensure that error messages, stack traces, and relevant context are included in the events.",
+            "testStrategy": "Introduce intentional errors in the application and verify that they are accurately captured and logged in PostHog with all relevant details."
+          },
+          {
+            "id": 5,
+            "title": "Implement Custom Error Tracking for PWA-Specific Issues",
+            "description": "Capture and log errors specific to PWA functionalities, such as notification permissions and service worker errors.",
+            "status": "pending",
+            "dependencies": [
+              4
+            ],
+            "details": "Monitor PWA-specific features and capture errors related to them. Send these errors as custom events to PostHog for analysis and debugging.",
+            "testStrategy": "Test PWA features like push notifications and service workers, intentionally causing errors to ensure they are captured and logged correctly in PostHog."
+          },
+          {
+            "id": 6,
+            "title": "Develop Analytics Hooks and Utilities",
+            "description": "Create reusable hooks and utility functions to simplify the integration of analytics throughout the application.",
+            "status": "pending",
+            "dependencies": [
+              2
+            ],
+            "details": "Develop custom React hooks and utility functions that encapsulate PostHog event capturing logic, making it easier to track user interactions across different components.",
+            "testStrategy": "Integrate the hooks and utilities in various components and verify that they correctly capture and send events to PostHog."
+          },
+          {
+            "id": 7,
+            "title": "Implement User Privacy Controls and Ensure GDPR Compliance",
+            "description": "Provide users with privacy controls, including opt-out functionality, and ensure that data collection practices comply with GDPR regulations.",
+            "status": "pending",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement mechanisms for users to opt out of data collection and session recording. Anonymize user data where necessary and ensure that all data handling practices align with GDPR requirements.",
+            "testStrategy": "Test the opt-out functionality to confirm that it stops data collection as expected. Review data handling processes to ensure compliance with GDPR guidelines."
+          },
+          {
+            "id": 8,
+            "title": "Set Up Testing and Monitoring for Analytics Integration",
+            "description": "Establish a testing and monitoring framework to ensure the accuracy and reliability of the analytics integration.",
+            "status": "pending",
+            "dependencies": [
+              6,
+              7
+            ],
+            "details": "Implement automated tests to validate event capturing and data accuracy. Set up monitoring tools to detect anomalies or issues in the analytics data.",
+            "testStrategy": "Run automated tests to verify the correctness of event tracking. Use monitoring tools to observe analytics data and identify any discrepancies or issues."
+          }
+        ]
       },
       {
         "id": 14,
@@ -822,8 +910,8 @@
               2,
               4
             ],
-            "details": "1. Add notification toggle to user settings\n2. Implement permission request flow\n3. Handle subscription/unsubscription process\n4. Add visual feedback for subscription status\n5. Implement error handling and retry logic",
-            "status": "pending",
+            "details": "1. Add notification toggle to user settings\n2. Implement permission request flow\n3. Handle subscription/unsubscription process\n4. Add visual feedback for subscription status\n5. Implement error handling and retry logic\n<info added on 2025-06-24T11:37:41.001Z>\nError Handling Requirements for Notification Permissions:\n- Implement comprehensive error logging system for notification permission failures\n- Display user-friendly error messages with clear instructions for resolution\n- Create error state UI components showing specific permission failure reasons\n- Include detailed console logging with stack traces and browser context\n- Handle specific PWA notification scenarios:\n  * HTTPS requirement not met\n  * Browser compatibility issues\n  * iOS-specific limitations\n  * Permission state conflicts\n  * Service worker registration failures\n- Implement progressive retry mechanism:\n  * Clear visual feedback during retry attempts\n  * Exponential backoff between attempts\n  * Maximum retry limit with permanent error state\n  * Option for user-initiated retry\n  * Persistence of permission state between sessions\n</info added on 2025-06-24T11:37:41.001Z>",
+            "status": "in-progress",
             "testStrategy": "Test UI components and permission flows across different browsers"
           }
         ]
@@ -1136,7 +1224,7 @@
     ],
     "metadata": {
       "created": "2025-06-22T11:18:07.489Z",
-      "updated": "2025-06-24T10:06:51.695Z",
+      "updated": "2025-06-24T13:07:48.762Z",
       "description": "Tasks for master context"
     }
   }

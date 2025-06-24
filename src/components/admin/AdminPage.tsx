@@ -24,11 +24,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import { CSVUpload } from "./CSVUpload";
 
 export function AdminPage() {
+  const analytics = useAnalytics();
+
   // Query seeding status - automatically stays up to date
   const { data: status } = useQuery(
     convexQuery(api.admin.getSeedingAdminStatus, {}),
@@ -60,6 +63,16 @@ export function AdminPage() {
   // TanStack mutations
   const startSeeding = useMutation({
     mutationFn: () => startSeedingAction({}),
+    onSuccess: () => {
+      analytics.captureEvent("admin_seeding_started", {});
+    },
+    onError: error => {
+      analytics.trackError(
+        new Error("Failed to start seeding", { cause: error }),
+        "admin_seeding_start",
+        {},
+      );
+    },
   });
 
   const stopSeeding = useMutation({
@@ -69,9 +82,15 @@ export function AdminPage() {
     },
     onSuccess: () => {
       console.log("[AdminPage] Stop mutation succeeded");
+      analytics.captureEvent("admin_seeding_stopped", {});
     },
     onError: error => {
       console.error("[AdminPage] Stop mutation failed:", error);
+      analytics.trackError(
+        new Error("Failed to stop seeding", { cause: error }),
+        "admin_seeding_stop",
+        {},
+      );
     },
   });
 
@@ -82,9 +101,15 @@ export function AdminPage() {
     },
     onSuccess: () => {
       console.log("[AdminPage] Resume mutation succeeded");
+      analytics.captureEvent("admin_seeding_resumed", {});
     },
     onError: error => {
       console.error("[AdminPage] Resume mutation failed:", error);
+      analytics.trackError(
+        new Error("Failed to resume seeding", { cause: error }),
+        "admin_seeding_resume",
+        {},
+      );
     },
   });
 
@@ -104,15 +129,28 @@ export function AdminPage() {
 
   const handleTestNotification = async () => {
     try {
+      analytics.captureEvent("admin_test_notification_attempted", {});
+
       const result = await sendTestNotification();
       if (result.queued) {
         toast.success("Test notification sent successfully!");
+        analytics.captureEvent("admin_test_notification_sent", {});
       } else {
         toast.error("Failed to send test notification");
+        analytics.trackError(
+          new Error("Test notification not queued"),
+          "admin_test_notification",
+          { queued: false },
+        );
       }
     } catch (error) {
       console.error("Failed to send test notification:", error);
       toast.error("Failed to send test notification");
+      analytics.trackError(
+        new Error("Failed to send test notification", { cause: error }),
+        "admin_test_notification",
+        {},
+      );
     }
   };
 

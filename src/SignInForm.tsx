@@ -2,9 +2,31 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 
 import { Button } from "./components/ui/button";
+import { useAnalytics } from "./hooks/useAnalytics";
 
 export function SignInForm() {
   const { signIn } = useAuthActions();
+  const analytics = useAnalytics();
+
+  const handleSignIn = async () => {
+    try {
+      // Track sign in attempt
+      analytics.captureEvent("auth_signin_attempted", {
+        provider: "discord",
+      });
+
+      await signIn("discord");
+
+      // The success tracking will happen after redirect when user is authenticated
+    } catch (error) {
+      // Track sign in error
+      analytics.trackError(
+        new Error("Failed to sign in", { cause: error }),
+        "auth_signin",
+        { provider: "discord" },
+      );
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto p-6">
@@ -15,7 +37,7 @@ export function SignInForm() {
 
       <Button
         className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white gap-3"
-        onClick={() => void signIn("discord")}
+        onClick={() => void handleSignIn()}
         size="lg"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

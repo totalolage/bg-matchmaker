@@ -5,6 +5,8 @@ import { RouterProvider } from "@tanstack/react-router";
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PostHogProvider } from "./components/PostHogProvider";
 import { createRouter } from "./router";
 
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL!;
@@ -31,12 +33,16 @@ const router = createRouter();
 
 export default function App() {
   return (
-    <ConvexProvider client={convex}>
-      <ConvexAuthProvider client={convex}>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} context={{ queryClient }} />
-        </QueryClientProvider>
-      </ConvexAuthProvider>
-    </ConvexProvider>
+    <ErrorBoundary>
+      <PostHogProvider>
+        <ConvexProvider client={convex}>
+          <ConvexAuthProvider client={convex}>
+            <QueryClientProvider client={queryClient}>
+              <RouterProvider router={router} context={{ queryClient }} />
+            </QueryClientProvider>
+          </ConvexAuthProvider>
+        </ConvexProvider>
+      </PostHogProvider>
+    </ErrorBoundary>
   );
 }

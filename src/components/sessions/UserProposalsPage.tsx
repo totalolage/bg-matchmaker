@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/UserAvatar";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 type ProposalWithStats = {
   _id: Id<"sessions">;
@@ -52,6 +53,7 @@ type ProposalWithStats = {
 export function UserProposalsPage() {
   const proposals = useQuery(api.sessions.getUserProposals);
   const cancelSession = useMutation(api.sessions.cancelSession);
+  const analytics = useAnalytics();
 
   if (!proposals) {
     return (
@@ -161,10 +163,30 @@ export function UserProposalsPage() {
                                   toast.success(
                                     "Session cancelled successfully",
                                   );
+                                  // Track successful cancellation
+                                  analytics.captureEvent(
+                                    "session_cancelled_from_proposals",
+                                    {
+                                      session_id: proposal._id,
+                                      game_title: proposal.gameName,
+                                      interested_count:
+                                        proposal.stats.interestedCount,
+                                      accepted_count:
+                                        proposal.stats.acceptedCount,
+                                    },
+                                  );
                                 })
                                 .catch(error => {
                                   toast.error("Failed to cancel session");
                                   console.error(error);
+                                  // Track error
+                                  analytics.trackError(
+                                    new Error("Failed to cancel session", {
+                                      cause: error,
+                                    }),
+                                    "session_cancel_proposals",
+                                    { sessionId: proposal._id },
+                                  );
                                 });
                             }
                           }}

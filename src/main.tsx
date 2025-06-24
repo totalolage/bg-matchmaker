@@ -1,8 +1,12 @@
 import { createRoot } from "react-dom/client";
 
+import { initPostHog } from "./lib/analytics/posthog";
 import App from "./App";
 
 import "./index.css";
+
+// Initialize PostHog analytics
+initPostHog();
 
 // Disable pull-to-refresh in standalone PWA mode
 if (window.matchMedia("(display-mode: standalone)").matches) {
