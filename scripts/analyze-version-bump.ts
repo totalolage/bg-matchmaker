@@ -1,13 +1,11 @@
 #!/usr/bin/env bun
 
-const fs = require("fs");
-const { execSync } = require("child_process");
-const path = require("path");
+import fs from "fs";
+import { execSync } from "child_process";
+import path from "path";
 
 // Get the commit message file path from command line arguments
 const commitMsgFile = process.argv[2];
-const commitSource = process.argv[3];
-const sha = process.argv[4];
 
 if (!commitMsgFile) {
   console.error("Missing commit message file argument");
@@ -47,7 +45,7 @@ if (!stagedDiff.trim()) {
 }
 
 // Function to analyze changes and determine version bump
-function analyzeVersionBump(diff) {
+function analyzeVersionBump(diff: string) {
   // Basic heuristics for version bump detection
   const lines = diff.split("\n");
 
@@ -87,13 +85,13 @@ function analyzeVersionBump(diff) {
   ];
 
   for (const line of lines) {
-    if (breakingPatterns.some((pattern) => pattern.test(line))) {
+    if (breakingPatterns.some(pattern => pattern.test(line))) {
       hasBreakingChanges = true;
     }
-    if (featurePatterns.some((pattern) => pattern.test(line))) {
+    if (featurePatterns.some(pattern => pattern.test(line))) {
       hasNewFeatures = true;
     }
-    if (bugFixPatterns.some((pattern) => pattern.test(line))) {
+    if (bugFixPatterns.some(pattern => pattern.test(line))) {
       hasBugFixes = true;
     }
   }
@@ -126,7 +124,7 @@ function analyzeVersionBump(diff) {
 }
 
 // Try to use Claude API if available
-async function getClaudeAnalysis(diff) {
+async function getClaudeAnalysis(diff: string) {
   // Check if claude CLI is available
   try {
     execSync("which claude", { stdio: "ignore" });
@@ -188,7 +186,7 @@ ${diff.substring(0, 50000)}`; // Limit diff size to avoid token limits
   }
 
   // Append version bump to commit message
-  const updatedMsg = commitMsg.trimRight() + `\n\n[version:${versionBump}]`;
+  const updatedMsg = commitMsg.trimEnd() + `\n\n[version:${versionBump}]`;
 
   try {
     fs.writeFileSync(commitMsgFile, updatedMsg);

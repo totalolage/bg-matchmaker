@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 
-const {
+import {
   extractVersionBump,
   getHighestBumpLevel,
   isPrerelease,
   getReleaseConfig,
-} = require("./parse-commits.js");
+} from "./parse-commits";
 
 console.log("Testing Version Bump System\n");
 

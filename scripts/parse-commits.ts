@@ -1,14 +1,14 @@
 #!/usr/bin/env bun
 
-const { execSync } = require("child_process");
-const fs = require("fs");
-const path = require("path");
+import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
 
 /**
  * Get the last version tag in the repository
- * @returns {string|null} The last version tag or null if no tags exist
+ * @returns  The last version tag or null if no tags exist
  */
-function getLastVersionTag() {
+function getLastVersionTag(): string | null {
   try {
     const tag = execSync("git describe --tags --abbrev=0", {
       encoding: "utf8",
@@ -24,11 +24,11 @@ function getLastVersionTag() {
 
 /**
  * Get commit messages since the last version tag
- * @param {string|null} lastTag - The last version tag or null
- * @returns {string[]} Array of commit messages
+ * @param  lastTag - The last version tag or null
+ * @returns  Array of commit messages
  */
-function getCommitsSince(lastTag) {
-  let command;
+function getCommitsSince(lastTag: string | null): string[] {
+  let command: string;
   if (lastTag) {
     // Get commits since last tag
     command = `git log --format=%B ${lastTag}..HEAD`;
@@ -40,7 +40,7 @@ function getCommitsSince(lastTag) {
   try {
     const commits = execSync(command, { encoding: "utf8" })
       .split("\n\n")
-      .filter((msg) => msg.trim().length > 0);
+      .filter(msg => msg.trim().length > 0);
     return commits;
   } catch (error) {
     console.error("Failed to get commit messages:", error);
@@ -50,20 +50,20 @@ function getCommitsSince(lastTag) {
 
 /**
  * Extract version bump level from a commit message
- * @param {string} message - The commit message
- * @returns {string|null} The version bump level (major, minor, patch) or null
+ * @param  message - The commit message
+ * @returns  The version bump level (major, minor, patch) or null
  */
-function extractVersionBump(message) {
+export function extractVersionBump(message: string): string | null {
   const match = message.match(/\[version:(patch|minor|major)\]/i);
-  return match ? match[1].toLowerCase() : null;
+  return match ? match[1]!.toLowerCase() : null;
 }
 
 /**
  * Determine the highest version bump level from multiple levels
- * @param {string[]} levels - Array of version bump levels
- * @returns {string} The highest level (defaults to patch)
+ * @param  levels - Array of version bump levels
+ * @returns  The highest level (defaults to patch)
  */
-function getHighestBumpLevel(levels) {
+export function getHighestBumpLevel(levels: string[]): string {
   const hierarchy = { patch: 0, minor: 1, major: 2 };
   let highest = "patch";
   let highestValue = 0;
@@ -80,9 +80,9 @@ function getHighestBumpLevel(levels) {
 
 /**
  * Check if we're in a prerelease state
- * @returns {boolean} True if in prerelease (version < 1.0.0)
+ * @returns  True if in prerelease (version < 1.0.0)
  */
-function isPrerelease() {
+export function isPrerelease(): boolean {
   try {
     const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
     const version = packageJson.version;
@@ -96,9 +96,9 @@ function isPrerelease() {
 
 /**
  * Read release configuration
- * @returns {object} The release configuration
+ * @returns The release configuration
  */
-function getReleaseConfig() {
+export function getReleaseConfig() {
   try {
     if (fs.existsSync(".versionrc.json")) {
       return JSON.parse(fs.readFileSync(".versionrc.json", "utf8"));
@@ -132,7 +132,7 @@ function main() {
   // Extract version bumps from all commits
   const versionBumps = commits
     .map(extractVersionBump)
-    .filter((bump) => bump !== null);
+    .filter(bump => bump !== null);
 
   if (versionBumps.length === 0) {
     console.log("No version bump indicators found in commit messages");
@@ -160,7 +160,10 @@ function main() {
   if (process.env.GITHUB_ACTIONS) {
     console.log(`::set-output name=bump::${bumpLevel}`);
     // Also set as environment variable
-    fs.appendFileSync(process.env.GITHUB_ENV, `BUMP_LEVEL=${bumpLevel}\n`);
+    fs.appendFileSync(
+      process.env.GITHUB_ENV ?? "development",
+      `BUMP_LEVEL=${bumpLevel}\n`,
+    );
   } else {
     // For local testing
     console.log(`BUMP_LEVEL=${bumpLevel}`);
@@ -171,13 +174,3 @@ function main() {
 if (require.main === module) {
   main();
 }
-
-// Export functions for testing
-module.exports = {
-  getLastVersionTag,
-  getCommitsSince,
-  extractVersionBump,
-  getHighestBumpLevel,
-  isPrerelease,
-  getReleaseConfig,
-};
