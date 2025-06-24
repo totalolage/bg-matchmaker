@@ -3,6 +3,7 @@ import { convexQuery } from "@convex-dev/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
+  Bell,
   CheckCircle,
   Clock,
   Database,
@@ -12,7 +13,9 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
+import { useMutation as useConvexMutationDirect } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { BGG_SEEDING } from "@convex/lib/constants";
 
@@ -21,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import { CSVUpload } from "./CSVUpload";
 
@@ -41,6 +45,12 @@ export function AdminPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Push notifications
+  const { isSubscribed, permission } = usePushNotifications();
+  const sendTestNotification = useConvexMutationDirect(
+    api.notifications.sendTestNotification,
+  );
 
   // Get Convex actions and mutations
   const startSeedingAction = useConvexAction(api.admin.startSeeding);
@@ -90,6 +100,20 @@ export function AdminPage() {
   const handleResume = () => {
     console.log("[AdminPage] Resume button clicked");
     resumeSeeding.mutate();
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      const result = await sendTestNotification();
+      if (result.queued) {
+        toast.success("Test notification sent successfully!");
+      } else {
+        toast.error("Failed to send test notification");
+      }
+    } catch (error) {
+      console.error("Failed to send test notification:", error);
+      toast.error("Failed to send test notification");
+    }
   };
 
   const getStatusBadge = () => {
@@ -161,6 +185,54 @@ export function AdminPage() {
       <PageContent>
         <div className="space-y-6">
           <CSVUpload />
+
+          {/* Push Notifications Test */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Push Notifications Test
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                <p>
+                  Test your push notification setup by sending a test
+                  notification.
+                </p>
+                <p className="mt-2">
+                  Status:{" "}
+                  {isSubscribed ?
+                    <span className="text-green-600 font-medium">
+                      Subscribed
+                    </span>
+                  : <span className="text-amber-600 font-medium">
+                      Not subscribed
+                    </span>
+                  }
+                </p>
+                <p>
+                  Permission:{" "}
+                  <span className="font-medium capitalize">{permission}</span>
+                </p>
+              </div>
+              <Button
+                onClick={() => void handleTestNotification()}
+                disabled={!isSubscribed}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Bell className="h-4 w-4" />
+                Send Test Notification
+              </Button>
+              {!isSubscribed && (
+                <p className="text-sm text-muted-foreground">
+                  You need to enable notifications in your profile settings
+                  first.
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>

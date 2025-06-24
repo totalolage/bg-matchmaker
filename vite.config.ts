@@ -18,6 +18,12 @@ export default defineConfig(({ mode }) => {
         registerType: "prompt",
         injectRegister: "auto",
         includeAssets: ["favicon.ico", "apple-touch-icon.png", "icon.svg"],
+        srcDir: "src",
+        filename: "sw.ts",
+        strategies: "injectManifest",
+        injectManifest: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        },
         workbox: {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
           runtimeCaching: [

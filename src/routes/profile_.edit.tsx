@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useMutation as useConvexMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 
+import { NotificationSettings } from "@/components/NotificationSettings";
 import { PageContent, PageHeader, PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -141,6 +142,9 @@ function EditProfile() {
                 be changed here.
               </p>
             </div>
+
+            {/* Notification Settings */}
+            <NotificationSettings />
           </div>
         </Form>
       </PageContent>

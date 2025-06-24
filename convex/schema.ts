@@ -173,6 +173,54 @@ const applicationTables = {
     .index("by_type", ["type"])
     .index("by_status", ["status"]),
 
+  notifications: defineTable({
+    userId: v.id("users"),
+    type: v.union(
+      v.literal("session_reminder"),
+      v.literal("session_update"),
+      v.literal("new_proposal"),
+      v.literal("player_joined"),
+      v.literal("player_left"),
+      v.literal("session_cancelled"),
+      v.literal("session_confirmed"),
+    ),
+    title: v.string(),
+    body: v.string(),
+    icon: v.optional(v.string()),
+    badge: v.optional(v.string()),
+    data: v.optional(
+      v.object({
+        url: v.optional(v.string()),
+        sessionId: v.optional(v.id("sessions")),
+        tag: v.optional(v.string()),
+        requireInteraction: v.optional(v.boolean()),
+        actions: v.optional(
+          v.array(
+            v.object({
+              action: v.string(),
+              title: v.string(),
+              icon: v.optional(v.string()),
+            }),
+          ),
+        ),
+      }),
+    ),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("sent"),
+      v.literal("failed"),
+      v.literal("cancelled"),
+    ),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+    sentAt: v.optional(v.number()),
+    retryCount: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_status", ["status"])
+    .index("by_created_at", ["createdAt"])
+    .index("by_user_status", ["userId", "status"]),
+
   sessionProposals: defineTable({
     proposedToUserId: v.id("users"),
     proposedByAlgorithm: v.boolean(),
